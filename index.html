@@ -286,7 +286,12 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 </head>
 <body>
 
-<div class="load-overlay" id="loadOverlay"><div class="load-icon">🏋️</div></div>
+<div class="load-overlay" id="loadOverlay">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:12px">
+    <div class="load-icon">🏋️</div>
+    <div style="font-size:10px;letter-spacing:2px;color:var(--dim2);text-transform:uppercase" id="loadMsg">Syncing with Supabase…</div>
+  </div>
+</div>
 <div class="pr-flash" id="prFlash">🏆 NEW PR!</div>
 <div class="toast" id="toast">✓ SAVED</div>
 
@@ -300,6 +305,7 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
       <div class="hdr-right">
         <div class="hdr-day" id="hdrDay">—</div>
         <div class="hdr-wtype" id="hdrType">—</div>
+        <div id="syncBadge" style="font-size:8px;letter-spacing:1px;color:var(--dim);margin-top:3px;display:none">● SYNCED</div>
       </div>
     </div>
     <div class="day-scroll" id="dayScroll"></div>
@@ -600,6 +606,91 @@ const REST_CONTENT = {
 };
 
 // ============================================================
+// SUPABASE CONFIG
+// ============================================================
+const SUPABASE_URL = 'https://fnjjfnsdxibjbzldfgit.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZuampmbnNkeGliamJ6bGRmZ2l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY1MDM2MjAsImV4cCI6MjA4MjA3OTYyMH0.oZYn5OXKZH2h1wGfIj_R1L8Hlk3ytGFBgDCyGqUcatk';
+
+async function sbFetch(path, opts = {}) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+    ...opts,
+    headers: {
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation',
+      ...(opts.headers || {})
+    }
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Supabase error ${res.status}: ${err}`);
+  }
+  const text = await res.text();
+  return text ? JSON.parse(text) : [];
+}
+
+async function loadHistoryFromSupabase() {
+  try {
+    const rows = await sbFetch('workouts?select=*&order=workout_date.desc&limit=30');
+    // Convert Supabase rows to app history format
+    return rows.map(row => ({
+      id: row.id,
+      date: row.workout_date,
+      type: row.workout_type,
+      title: (WORKOUTS[row.workout_type]?.title) || row.workout_type.toUpperCase(),
+      emoji: (WORKOUTS[row.workout_type]?.emoji) || '💪',
+      location: row.location,
+      duration: row.duration_minutes ? `${row.duration_minutes}:00` : null,
+      watch: {
+        avgHr: row.avg_heart_rate || null,
+        maxHr: row.max_heart_rate || null,
+        calories: row.calories_burned || null
+      },
+      body_weight: row.body_weight,
+      notes: row.session_notes || '',
+      exercises: (row.exercises || []).map(ex => ({
+        name: ex.name,
+        muscle: ex.muscleGroup,
+        done: true,
+        failureWeight: ex.failureWeight,
+        sets: ex.sets || (ex.ladderSets ? ex.ladderSets.map(s => ({ weight: s.weight, reps: s.reps })) : []),
+        notes: ex.notes || ''
+      })),
+      newPRs: []
+    }));
+  } catch(e) {
+    console.warn('Supabase history load failed:', e);
+    return [];
+  }
+}
+
+async function buildPRStoreFromSupabase(history) {
+  const prs = {};
+  // Go oldest to newest so newer PRs win
+  const reversed = [...history].reverse();
+  for (const session of reversed) {
+    for (const ex of (session.exercises || [])) {
+      if (!ex.name) continue;
+      const key = ex.name.toLowerCase().replace(/\s+/g,'-');
+      let topWeight = 0;
+      if (ex.failureWeight) topWeight = ex.failureWeight;
+      const sets = ex.sets || [];
+      for (const s of sets) {
+        const w = parseFloat(s.weight) || 0;
+        if (w > topWeight) topWeight = w;
+      }
+      if (topWeight > 0) {
+        if (!prs[key] || topWeight >= prs[key].weight) {
+          prs[key] = { weight: topWeight, date: session.date, name: ex.name };
+        }
+      }
+    }
+  }
+  return prs;
+}
+
+// ============================================================
 // APP STATE
 // ============================================================
 let currentDayIdx = 0;
@@ -692,20 +783,28 @@ async function init() {
   buildUI();
   setTimeout(() => {
     document.getElementById('loadOverlay').classList.add('hidden');
+    // Show sync badge
+    const badge = document.getElementById('syncBadge');
+    if (badge) {
+      badge.style.display = 'block';
+      badge.style.color = historyStore.length > 0 ? 'var(--green)' : 'var(--dim)';
+      badge.textContent = historyStore.length > 0 ? `● SYNCED · ${historyStore.length} sessions` : '● OFFLINE';
+    }
   }, 400);
 }
 
 async function loadAll() {
+  // Load history + PRs from Supabase
   try {
-    const r1 = await window.storage.get('workout-history');
-    if (r1?.value) historyStore = JSON.parse(r1.value);
-  } catch(e) { historyStore = []; }
+    historyStore = await loadHistoryFromSupabase();
+    prStore = await buildPRStoreFromSupabase(historyStore);
+  } catch(e) {
+    console.warn('Supabase load failed, falling back to local:', e);
+    historyStore = [];
+    prStore = {};
+  }
 
-  try {
-    const r2 = await window.storage.get('pr-store');
-    if (r2?.value) prStore = JSON.parse(r2.value);
-  } catch(e) { prStore = {}; }
-
+  // Exercise frequency + rest overrides stay local (session-level prefs)
   try {
     const r3 = await window.storage.get('exercise-freq');
     if (r3?.value) exerciseFreq = JSON.parse(r3.value);
@@ -716,7 +815,7 @@ async function loadAll() {
     if (r5?.value) restOverrides = JSON.parse(r5.value);
   } catch(e) { restOverrides = {}; }
 
-  // Load today's session
+  // Load today's in-progress session state (local only — not yet saved)
   try {
     const todayKey = `session-${getDateStr()}`;
     const r4 = await window.storage.get(todayKey);
@@ -958,7 +1057,7 @@ function buildExCard(ex, isDone, savedWeights, hasPR, type) {
     <tr><th>Set</th><th>Weight (lbs)</th><th>Target</th><th></th><th></th></tr>`;
   ex.sets.forEach((set, i) => {
     const w = savedWeights[i] !== undefined ? savedWeights[i] : set.wt;
-    const storedPR = prStore[ex.id];
+    const storedPR = getExPR(ex.id);
     const isSetPR = storedPR && parseFloat(w) > parseFloat(storedPR.weight);
     const prClass = isSetPR ? 'pr' : '';
     const starHtml = `<span class="pr-star ${isSetPR?'visible':''}">🏆</span>`;
@@ -1018,14 +1117,14 @@ function buildExCard(ex, isDone, savedWeights, hasPR, type) {
 // PR LOGIC
 // ============================================================
 function checkIfPR(exId, weights) {
-  const stored = prStore[exId];
+  const stored = getExPR(exId);
   if (!stored) return false;
   return weights.some(w => parseFloat(w) > parseFloat(stored.weight));
 }
 
 function onWeightInput(input, exId, setIdx) {
   const val = parseFloat(input.value) || 0;
-  const stored = prStore[exId];
+  const stored = getExPR(exId);
   const isNewPR = stored && val > parseFloat(stored.weight);
   input.classList.toggle('pr', isNewPR);
   const star = document.getElementById(`wi-${exId}-${setIdx}`)?.parentElement?.parentElement?.querySelector('.pr-star');
@@ -1042,14 +1141,24 @@ async function updatePRStore(exId, weights) {
   const maxWeight = Math.max(...weights.map(w => parseFloat(w) || 0));
   if (maxWeight === 0) return false;
   
-  const stored = prStore[exId];
+  // Use name-based key to match Supabase prStore format
+  const ex = getExById(exId);
+  const nameKey = ex ? ex.name.toLowerCase().replace(/\s+/g,'-') : exId;
+  
+  const stored = prStore[nameKey];
   if (!stored || maxWeight > parseFloat(stored.weight)) {
-    const wasNewPR = !stored || maxWeight > parseFloat(stored.weight);
-    prStore[exId] = { weight: maxWeight, date: getDateStr() };
-    try { await window.storage.set('pr-store', JSON.stringify(prStore)); } catch(e){}
-    return wasNewPR;
+    prStore[nameKey] = { weight: maxWeight, date: getDateStr(), name: ex?.name || exId };
+    return true;
   }
   return false;
+}
+
+function getExPR(exId) {
+  // Look up PR by name key (Supabase format)
+  const ex = getExById(exId);
+  if (!ex) return prStore[exId]; // fallback to id
+  const nameKey = ex.name.toLowerCase().replace(/\s+/g,'-');
+  return prStore[nameKey] || prStore[exId];
 }
 
 function showPRFlash() {
@@ -1401,8 +1510,35 @@ async function saveWorkout(type, dayKey) {
   historyStore.unshift(entry);
   if (historyStore.length > 100) historyStore = historyStore.slice(0, 100);
 
+  // Save to Supabase
   try {
-    await window.storage.set('workout-history', JSON.stringify(historyStore));
+    const watch = sessionState['__watch__'] || {};
+    const supabaseRow = {
+      workout_date: getDateStr(),
+      workout_type: type,
+      location: 'home',
+      body_weight: null,
+      avg_heart_rate: watch.avgHr ? Math.round(watch.avgHr) : null,
+      max_heart_rate: watch.maxHr ? Math.round(watch.maxHr) : null,
+      calories_burned: watch.calories ? Math.round(watch.calories) : null,
+      duration_minutes: null,
+      session_notes: entry.notes || null,
+      exercises: exercises.map(ex => ({
+        name: ex.name,
+        muscleGroup: ex.muscle,
+        type: 'straight',
+        sets: ex.sets,
+        notes: ex.done ? 'Completed via app' : 'Skipped'
+      }))
+    };
+    // Check for duplicate before inserting
+    const existing = await sbFetch(`workouts?workout_date=eq.${getDateStr()}&workout_type=eq.${type}&select=id`);
+    if (existing.length === 0) {
+      await sbFetch('workouts', { method: 'POST', body: JSON.stringify(supabaseRow) });
+    }
+  } catch(e) { console.warn('Supabase save failed:', e); }
+
+  try {
     if (newPRs.length > 0) {
       showPRFlash();
       showToast(`🏆 ${newPRs.length} NEW PR${newPRs.length>1?'s':''}!`, true);
@@ -1410,8 +1546,11 @@ async function saveWorkout(type, dayKey) {
       showToast('✓ WORKOUT SAVED');
     }
     const btn = document.getElementById('saveBtn');
-    if (btn) { btn.textContent = '✓ SAVED TO HISTORY'; btn.classList.add('saved-state'); }
+    if (btn) { btn.textContent = '✓ SAVED'; btn.classList.add('saved-state'); }
     buildDayPills();
+    // Refresh history from Supabase
+    historyStore = await loadHistoryFromSupabase();
+    prStore = await buildPRStoreFromSupabase(historyStore);
   } catch(e) { alert('Save failed.'); }
 }
 
@@ -1450,11 +1589,13 @@ function renderSummaryView() {
     return;
   }
 
-  // Build per-exercise PR summary
-  const prEntries = Object.entries(prStore).map(([id, data]) => {
-    const ex = getExById(id);
-    return { id, name: ex?.name || id, weight: data.weight, date: data.date };
-  }).filter(e => e.weight > 0).sort((a,b) => b.weight - a.weight);
+  // Build per-exercise PR summary from Supabase prStore
+  const prEntries = Object.entries(prStore).map(([key, data]) => ({
+    id: key,
+    name: data.name || key,
+    weight: data.weight,
+    date: data.date
+  })).filter(e => e.weight > 0).sort((a,b) => b.weight - a.weight);
 
   // Last 4 workouts per type
   const recentByType = {};
@@ -1581,7 +1722,8 @@ function renderHistoryView() {
         <div>
           <div class="he-date">${formatDate(entry.date)}</div>
           <div class="he-type">${entry.emoji} ${entry.title}</div>
-          <span class="he-badge bg-${entry.type} c-${entry.type}">${doneExes.length}/${entry.exercises.length} exercises</span>
+          <span class="he-badge bg-${entry.type} c-${entry.type}">${doneExes.length} exercises</span>
+          ${entry.body_weight ? `<span style="font-size:9px;color:var(--dim2);margin-top:2px;display:block">⚖️ ${entry.body_weight} lbs · ${entry.location || 'home'}</span>` : ''}
         </div>
         ${entry.duration ? `<div style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--dim2)">${entry.duration}</div>` : ''}
       </div>`;
