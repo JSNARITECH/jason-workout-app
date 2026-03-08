@@ -431,6 +431,12 @@ const WORKOUTS = {
           chips:{sets:'2 Sets',reps:'12-15 reps',pr:'PR: 55×15',tag:'Hassan'},
           hassan:true,
           cue:'Elbows locked at sides. Spread rope at bottom. 1-sec squeeze.' }
+      ]},
+      { label:'Ab Finisher 🔥', exercises:[
+        { id:'u-cable-crunch', name:'Cable Crunch', muscle:'core',
+          sets:[{wt:70,reps:'15-20'},{wt:90,reps:'15-20'}],
+          chips:{sets:'2 Sets',reps:'15-20 reps',pr:'PR: 120 lbs baseline',target:'Target: 90→120 lbs'},
+          cue:'Kneel facing cable. Rope behind neck. CRUNCH DOWN — bring elbows to knees. Do NOT pull with arms. Full stretch at top. Slow negative. Per Nippard 8-set/week protocol.' }
       ]}
     ]
   },
@@ -550,6 +556,12 @@ const WORKOUTS = {
           sets:[{wt:225,reps:'15-20'},{wt:225,reps:'15-20'},{wt:225,reps:'15-20'}],
           chips:{sets:'3 Sets',reps:'15-20 reps',pr:'PR: 225×15',target:'Target: 225 all 3 sets'},
           cue:'STRAIGHT KNEE. Deep stretch at bottom. 2-sec squeeze at top. No bouncing.' }
+      ]},
+      { label:'Ab Finisher 🔥', exercises:[
+        { id:'l-cable-crunch', name:'Cable Crunch', muscle:'core',
+          sets:[{wt:90,reps:'15-20'},{wt:120,reps:'15-20'}],
+          chips:{sets:'2 Sets',reps:'15-20 reps',pr:'PR: 120 lbs baseline',target:'Target: 90→120 lbs'},
+          cue:'Kneel facing cable. Rope behind neck. CRUNCH DOWN — elbows to knees. Do NOT pull with arms. Full stretch at top. Slow negative. Sunday slot per Nippard 8-set/week protocol.' }
       ]}
     ]
   },
@@ -562,6 +574,12 @@ const WORKOUTS = {
           sets:[{wt:0,reps:'Full session'}],
           chips:{sets:'Full Class',reps:'Coach-led'},
           cue:'Trust the programming. Log post-class: total sets, intensity 1-10, lower back status. Report back for integration assessment.' }
+      ]},
+      { label:'AM Ab Work (After Treadmill) 🔥', exercises:[
+        { id:'f-ab-wheel', name:'Ab Wheel Rollout', muscle:'core',
+          sets:[{wt:0,reps:'8-10'},{wt:0,reps:'8-10'}],
+          chips:{sets:'2 Sets',reps:'8-10 reps',target:'BW — controlled rollout'},
+          cue:'From knees. Roll OUT until fully extended — full stretch on abs. Pull back using abs ONLY, not hips. If lower back loads up, reduce range. Do AFTER incline treadmill walk. Per Nippard 8-set/week protocol.' }
       ]},
       { label:'If Lower Day (Sub)', exercises:[
         { id:'f-ext', name:'Leg Extension', muscle:'quads',
@@ -1818,10 +1836,14 @@ function startTimer(exName, nextName, restSeconds, setInfo, nextInfoOverride) {
   timerInterval = setInterval(() => {
     timerSec--;
     updateTimerDisplay();
+    // Countdown ticks at 5 seconds remaining
+    if (timerSec > 0 && timerSec <= 5) {
+      playCountdownTick(timerSec === 1);
+    }
     if (timerSec <= 0) {
       clearInterval(timerInterval);
       playBeep();
-      setTimeout(() => closeTimer(), 700);
+      setTimeout(() => closeTimer(), 1200);
     }
   }, 1000);
 }
@@ -1854,16 +1876,43 @@ function closeTimer() {
 function playBeep() {
   try {
     const ctx = new (window.AudioContext||window.webkitAudioContext)();
-    [[0,660],[150,660],[300,880]].forEach(([d,f]) => {
+    // 3-note ascending fanfare — punchy and clear
+    const notes = [
+      [0, 523, 0.4],     // C5
+      [180, 659, 0.4],   // E5
+      [360, 784, 0.5],   // G5
+      [560, 1047, 0.6],  // C6 — high and clear
+    ];
+    notes.forEach(([delay, freq, gain]) => {
       const o = ctx.createOscillator();
       const g = ctx.createGain();
-      o.connect(g); g.connect(ctx.destination);
-      o.frequency.value = f;
-      g.gain.setValueAtTime(0.3, ctx.currentTime + d/1000);
-      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + d/1000 + 0.25);
-      o.start(ctx.currentTime + d/1000);
-      o.stop(ctx.currentTime + d/1000 + 0.3);
+      const t = ctx.currentTime + delay / 1000;
+      o.type = 'sine';
+      o.frequency.value = freq;
+      o.connect(g);
+      g.connect(ctx.destination);
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(gain, t + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+      o.start(t);
+      o.stop(t + 0.4);
     });
+  } catch(e) {}
+}
+
+function playCountdownTick(isLast) {
+  try {
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = 'sine';
+    o.frequency.value = isLast ? 880 : 660;
+    o.connect(g);
+    g.connect(ctx.destination);
+    g.gain.setValueAtTime(isLast ? 0.25 : 0.12, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+    o.start(ctx.currentTime);
+    o.stop(ctx.currentTime + 0.15);
   } catch(e) {}
 }
 
