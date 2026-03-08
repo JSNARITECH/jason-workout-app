@@ -175,6 +175,16 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .t-type-moderate{background:var(--orange-dim);color:var(--orange);}
 .t-type-light{background:var(--green-dim);color:var(--green);}
 .t-type-burnout{background:var(--purple-dim);color:var(--purple);}
+/* TIMER NEXT SET TARGET */
+.t-next-target{font-size:13px;font-weight:700;color:var(--white);background:var(--card2);border:1px solid var(--border2);border-radius:9px;padding:7px 12px;margin-bottom:12px;display:none;}
+.t-next-target.visible{display:block;}
+.t-next-target-label{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--dim2);font-weight:600;margin-bottom:2px;}
+.t-next-target-val{color:var(--accent);}
+/* CRASH RECOVERY BANNER */
+.recovery-banner{background:rgba(255,154,77,0.12);border:1px solid rgba(255,154,77,0.35);border-radius:10px;padding:9px 13px;margin-bottom:12px;display:none;align-items:center;gap:9px;font-size:11px;color:var(--orange);}
+.recovery-banner.visible{display:flex;}
+.recovery-banner strong{color:var(--white);}
+.recovery-dismiss{margin-left:auto;font-size:10px;color:var(--dim2);cursor:pointer;text-decoration:underline;flex-shrink:0;}
 
 /* PR FLASH */
 .pr-flash{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:300;pointer-events:none;opacity:0;font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:2px;color:var(--gold);text-shadow:0 0 30px rgba(255,215,0,0.6);transition:all 0.3s;}
@@ -225,16 +235,50 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .sc-pr-row{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:8px;}
 .sc-pr-badge{font-size:9px;background:var(--gold-dim);color:var(--gold);padding:2px 7px;border-radius:7px;font-weight:700;}
 .empty-state{text-align:center;padding:40px 16px;color:var(--dim2);font-size:12px;}
-.history-entry{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:13px;margin-bottom:7px;}
-.he-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:7px;}
-.he-date{font-size:9px;letter-spacing:1.5px;color:var(--dim2);text-transform:uppercase;}
-.he-type{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1px;}
-.he-badge{font-size:9px;font-weight:700;padding:2px 8px;border-radius:9px;display:inline-block;margin-top:2px;}
-.he-exes{display:flex;flex-direction:column;gap:4px;}
-.he-ex-row{display:flex;align-items:center;justify-content:space-between;font-size:11px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.04);}
+
+/* HISTORY SEARCH / FILTER */
+.hist-toolbar{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
+.hist-search-wrap{position:relative;}
+.hist-search{width:100%;background:var(--card);border:1px solid var(--border2);border-radius:10px;color:var(--white);padding:9px 36px 9px 12px;font-size:13px;font-family:'DM Sans',sans-serif;}
+.hist-search:focus{outline:none;border-color:var(--accent);}
+.hist-search-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--dim2);font-size:15px;cursor:pointer;padding:2px 4px;display:none;}
+.hist-search-clear.visible{display:block;}
+.hist-filter-row{display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;}
+.hist-filter-row::-webkit-scrollbar{display:none;}
+.hf-btn{flex-shrink:0;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:5px 11px;border-radius:20px;border:1px solid var(--border2);background:none;color:var(--dim2);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.15s;}
+.hf-btn.active{border-color:var(--accent);color:var(--accent);background:var(--accent-dim);}
+.hf-btn:active{transform:scale(0.95);}
+.hist-meta{font-size:10px;color:var(--dim2);letter-spacing:1px;margin-bottom:10px;}
+.hist-loading{text-align:center;padding:40px 0;color:var(--dim2);}
+.hist-spinner{font-size:28px;animation:spin 1s linear infinite;display:block;margin-bottom:10px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hist-empty{text-align:center;padding:40px 20px;color:var(--dim2);}
+.hist-error{background:var(--red-dim);border:1px solid rgba(255,77,77,0.3);border-radius:10px;padding:12px 14px;font-size:12px;color:var(--red);margin-bottom:12px;}
+.hist-month{font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:3px;color:var(--dim);margin:16px 0 7px;display:flex;align-items:center;gap:8px;}
+.hist-month::after{content:'';flex:1;height:1px;background:var(--border);}
+/* HISTORY ENTRY */
+.history-entry{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:14px;margin-bottom:8px;}
+.history-entry.has-pr{border-color:rgba(255,215,0,0.35);}
+.he-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;}
+.he-left{flex:1;min-width:0;}
+.he-date{font-size:9px;color:var(--dim2);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:2px;}
+.he-type{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;line-height:1.1;}
+.he-loc{font-size:10px;color:var(--dim2);margin-top:2px;}
+.he-right{text-align:right;flex-shrink:0;margin-left:10px;}
+.he-duration{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--dim2);line-height:1;}
+.he-cals{font-size:10px;color:var(--dim2);}
+.he-stats{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;}
+.he-stat{font-size:10px;background:var(--border2);padding:2px 8px;border-radius:7px;color:var(--dim2);}
+.he-stat strong{color:var(--white);}
+.he-exercises{display:flex;flex-direction:column;gap:3px;}
+.he-ex-row{display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.03);}
 .he-ex-row:last-child{border-bottom:none;}
-.he-ex-name{color:var(--dim2);}
-.he-ex-wt{font-weight:700;}
+.he-ex-name{color:var(--dim2);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.he-ex-name.matched{color:var(--accent);}
+.he-ex-wt{font-weight:700;color:var(--white);flex-shrink:0;margin-left:8px;}
+.he-pr-row{display:flex;flex-wrap:wrap;gap:4px;margin-top:7px;}
+.he-notes-text{font-size:10px;color:var(--dim2);font-style:italic;margin-top:7px;padding-top:7px;border-top:1px solid var(--border);}
+/* keep legacy he-notes for summary view compat */
 .he-notes{font-size:10px;color:var(--dim2);font-style:italic;margin-top:7px;padding-top:7px;border-top:1px solid var(--border);}
 .he-watch{display:flex;gap:8px;margin-top:7px;flex-wrap:wrap;}
 .he-watch-stat{font-size:10px;background:var(--border2);padding:2px 8px;border-radius:7px;color:var(--dim2);}
@@ -286,12 +330,7 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 </head>
 <body>
 
-<div class="load-overlay" id="loadOverlay">
-  <div style="display:flex;flex-direction:column;align-items:center;gap:12px">
-    <div class="load-icon">🏋️</div>
-    <div style="font-size:10px;letter-spacing:2px;color:var(--dim2);text-transform:uppercase" id="loadMsg">Syncing with Supabase…</div>
-  </div>
-</div>
+<div class="load-overlay" id="loadOverlay"><div class="load-icon">🏋️</div></div>
 <div class="pr-flash" id="prFlash">🏆 NEW PR!</div>
 <div class="toast" id="toast">✓ SAVED</div>
 
@@ -305,7 +344,6 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
       <div class="hdr-right">
         <div class="hdr-day" id="hdrDay">—</div>
         <div class="hdr-wtype" id="hdrType">—</div>
-        <div id="syncBadge" style="font-size:8px;letter-spacing:1px;color:var(--dim);margin-top:3px;display:none">● SYNCED</div>
       </div>
     </div>
     <div class="day-scroll" id="dayScroll"></div>
@@ -342,6 +380,10 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
       <button class="adj-btn" onclick="adjTimer(-15)">−15</button>
       <span class="adj-label">Adjust rest</span>
       <button class="adj-btn" onclick="adjTimer(+15)">+15</button>
+    </div>
+    <div class="t-next-target" id="tNextTarget">
+      <div class="t-next-target-label">NEXT SET TARGET</div>
+      <div class="t-next-target-val" id="tNextTargetVal"></div>
     </div>
     <div class="t-next" id="tNext"></div>
     <div class="t-actions">
@@ -432,11 +474,11 @@ const WORKOUTS = {
           hassan:true,
           cue:'Elbows locked at sides. Spread rope at bottom. 1-sec squeeze.' }
       ]},
-      { label:'Ab Finisher 🔥', exercises:[
-        { id:'u-cable-crunch', name:'Cable Crunch', muscle:'core',
-          sets:[{wt:70,reps:'15-20'},{wt:90,reps:'15-20'}],
-          chips:{sets:'2 Sets',reps:'15-20 reps',pr:'PR: 120 lbs baseline',target:'Target: 90→120 lbs'},
-          cue:'Kneel facing cable. Rope behind neck. CRUNCH DOWN — bring elbows to knees. Do NOT pull with arms. Full stretch at top. Slow negative. Per Nippard 8-set/week protocol.' }
+      { label:'Ab Finisher 🎯', exercises:[
+        { id:'u-cable-crunch', name:'Cable Crunch', muscle:'abs',
+          sets:[{wt:0,reps:'15-20'},{wt:0,reps:'15-20'}],
+          chips:{sets:'2 Sets',reps:'15-20 reps',tag:'Nippard Abs'},
+          cue:'Kneel facing cable. Hands at temples. Crunch DOWN — flex spine, not arms. Full stretch at top. 8 sets/week per Nippard.' }
       ]}
     ]
   },
@@ -447,38 +489,39 @@ const WORKOUTS = {
       { label:'Pre-Exhaust', exercises:[
         { id:'p-fly', name:'Cable Low-to-High Fly', muscle:'chest',
           sets:[{wt:20,reps:'Warm'},{wt:30,reps:'FAIL'}],
-          chips:{sets:'2 Sets',reps:'15-20 reps',pr:'PR: 80 lbs × 29 reps (Upper 3/2)',tag:'Hassan'},
+          chips:{sets:'2 Sets',reps:'15-20 reps',pr:'PR: 30 lbs',tag:'Hassan'},
           hassan:true, ladder:['20×warm','30×FAIL'], burnout:'Drop 20%, 20 reps',
-          cue:'Start externally rotated. Pull elbows up and in. Last session went big — 80 lbs straight sets on Upper.' }
+          cue:'Start externally rotated. Pull elbows up and in.' }
       ]},
       { label:'Main Movement', exercises:[
         { id:'p-chest', name:'Machine Chest Press', muscle:'chest',
-          sets:[{wt:132,reps:'6'},{wt:154,reps:'FAIL'},{wt:121,reps:'20',note:'Burnout'}],
-          chips:{sets:'2 Sets',reps:'8-12 reps',pr:'PR: 154 lbs failure (Upper 3/2)',target:'Target: Beat 154',tag:'Hassan'},
-          hassan:true, ladder:['132×6','143×4','154×FAIL'], burnout:'121 lbs × 20 reps',
-          cue:'Scapulae retracted and depressed. Drive through chest, not shoulders. Push Day = dedicated chest — go deeper than Upper.' },
+          sets:[{wt:121,reps:'6'},{wt:143,reps:'FAIL'},{wt:121,reps:'20',note:'Burnout'}],
+          chips:{sets:'2 Sets',reps:'8-12 reps',pr:'PR: 137×12',target:'Target: 143 lbs',tag:'Hassan'},
+          hassan:true, ladder:['121×6','132×4','143×FAIL'], burnout:'121 lbs × 20 reps',
+          cue:'Scapulae retracted and depressed. Drive through chest, not shoulders.' },
         { id:'p-shoulder', name:'Seated Shoulder Press', muscle:'shoulders',
           sets:[{wt:121,reps:'4'},{wt:143,reps:'FAIL'},{wt:121,reps:'20',note:'Burnout'}],
-          chips:{sets:'2 Sets',reps:'8-10 reps',pr:'PR: 154 lbs failure (Upper 3/2)',target:'Target: 154×FAIL',tag:'Hassan'},
-          hassan:true, ladder:['121×4','132×2','154×FAIL'], burnout:'121 lbs × 20 reps',
-          cue:'Torso upright. Full ROM to shoulder level every rep. Last Upper hit 154 — match it here.' }
+          chips:{sets:'2 Sets',reps:'8-10 reps',pr:'PR: 143×10',target:'Target: 143×11',tag:'Hassan'},
+          hassan:true, ladder:['121×4','132×2','143×FAIL'], burnout:'121 lbs × 20 reps',
+          cue:'Torso upright. Full ROM to shoulder level every rep.' }
       ]},
       { label:'Isolation', exercises:[
         { id:'p-lat-raise', name:'Cable Lateral Raise', muscle:'shoulders',
-          sets:[{wt:35,reps:'15'},{wt:35,reps:'15'}],
-          chips:{sets:'2 Sets',reps:'12-15 reps',pr:'PR: 30 lbs × 15 (bump to 35 per notes)'},
-          cue:'Lean away from cable. Pinky up first. Lead with elbows not wrists. Notes said bump to 35 lbs this session.' },
+          sets:[{wt:15,reps:'15'},{wt:15,reps:'15'}],
+          chips:{sets:'2 Sets',reps:'12-15 reps',pr:'PR: 15×15'},
+          cue:'Lean away from cable. Pinky up first. Lead with elbows not wrists.' },
         { id:'p-tricep', name:'Tricep Rope Pushdown', muscle:'triceps',
-          sets:[{wt:130,reps:'FAIL'},{wt:130,reps:'FAIL'}],
-          chips:{sets:'2 Sets',reps:'12-15 reps',pr:'PR: 130 lbs failure + 20-rep burnout (2/26)',tag:'Hassan'},
+          sets:[{wt:55,reps:'FAIL'},{wt:55,reps:'FAIL'}],
+          chips:{sets:'2 Sets',reps:'12-15 reps',pr:'PR: 55×15',tag:'Hassan'},
           hassan:true,
-          cue:'Elbows locked at sides. Spread rope at bottom. 1-sec squeeze. Previous Push hit 130 — match it today.' }
+          cue:'Elbows locked at sides. Spread rope at bottom. 1-sec squeeze.' }
       ]},
-      { label:'Ab Finisher 🔥', exercises:[
-        { id:'p-bicycle', name:'Bicycle Crunch', muscle:'core',
-          sets:[{wt:0,reps:'12/side'},{wt:0,reps:'12/side'}],
-          chips:{sets:'2 Sets',reps:'12 reps each side',pr:'Nippard Ab Protocol — 8 sets/week'},
-          cue:'SLOW AND CONTROLLED. Opposite elbow to knee. Fully extend the other leg. 2-sec squeeze at peak rotation. No neck pulling. Feel the obliques.' }
+      { label:'Ab Finisher 🎯', exercises:[
+        { id:'p-bicycle', name:'Bicycle Crunch', muscle:'abs',
+          sets:[{wt:0,reps:'12 each side'},{wt:0,reps:'12 each side'}],
+          chips:{sets:'2 Sets',reps:'12 each side',tag:'Nippard Abs'},
+          supersetWith:'Superset with last tricep set',
+          cue:'Opposite knee to elbow. FLEX THE SPINE — rotation comes from obliques, not hip flexors. Slow and controlled beats fast and sloppy.' }
       ]}
     ]
   },
@@ -488,36 +531,32 @@ const WORKOUTS = {
     sections:[
       { label:'Pre-Exhaust', exercises:[
         { id:'pull-sa', name:'Straight-Arm Cable Pulldown', muscle:'back',
-          sets:[{wt:100,reps:'17'},{wt:100,reps:'20'}],
-          chips:{sets:'2 Sets',reps:'15-20 reps',pr:'PR: 100×20 (2/27)'},
-          cue:'Drive elbow down and in. Laterally flex into direction of pull. Hit 20 on set 2 last time — match it.' }
+          sets:[{wt:30,reps:'20'},{wt:40,reps:'15-20'}],
+          chips:{sets:'2 Sets',reps:'15-20 reps',pr:'PR: 40×20'},
+          cue:'Drive elbow down and in. Laterally flex into direction of pull.' }
       ]},
       { label:'Main Movement', exercises:[
-        { id:'pull-pullups', name:'Pull-Ups (Bodyweight)', muscle:'back',
-          sets:[{wt:0,reps:'5+'},{wt:0,reps:'5+'}],
-          chips:{sets:'2 Sets',reps:'Max reps',pr:'PR: 5 full ROM @ 225 lbs BW (2/27)'},
-          cue:'MILESTONE MOVE 🏆 Full ROM — dead hang to chin over bar. Last session: 5 full + partials. Chase 6 today.' },
         { id:'pull-lat', name:'Lat Pulldown (Wide Grip)', muscle:'back',
-          sets:[{wt:121,reps:'6'},{wt:154,reps:'FAIL'},{wt:110,reps:'20',note:'Burnout'}],
-          chips:{sets:'2 Sets',reps:'8-12 reps',pr:'PR: 171 lbs × 6 (2/27)',target:'Target: 171×6 or 176',tag:'Hassan'},
-          hassan:true, ladder:['121×6','143×4','154×FAIL'], burnout:'110 lbs × 20 reps',
-          cue:'Pull elbows down and in. Chest tall. No shoulder shrug. 171 was last PR — go for 176 or more reps at 171.' },
-        { id:'pull-row', name:'Floor Cable Row', muscle:'back',
-          sets:[{wt:200,reps:'15'},{wt:200,reps:'15'}],
-          chips:{sets:'2 Sets',reps:'10-15 reps',pr:'PR: 200 lbs × 15 (2/27)'},
-          hassan:false,
-          cue:'Sit on floor, cable at foot level. Initiate with scapular retraction. Pull elbows back. Torso still. Slow negative.' }
+          sets:[{wt:121,reps:'6'},{wt:143,reps:'FAIL'},{wt:110,reps:'20',note:'Burnout'}],
+          chips:{sets:'2 Sets',reps:'8-12 reps',pr:'PR: 143×10',target:'Target: 154 lbs',tag:'Hassan'},
+          hassan:true, ladder:['121×6','132×4','143×FAIL'], burnout:'110 lbs × 20 reps',
+          cue:'Pull elbows down and in. Chest tall. No shoulder shrug.' },
+        { id:'pull-row', name:'Seated Cable Row', muscle:'back',
+          sets:[{wt:132,reps:'6'},{wt:154,reps:'FAIL'}],
+          chips:{sets:'2 Sets',reps:'10-12 reps',pr:'PR: 154×10',tag:'Hassan'},
+          hassan:true, ladder:['132×6','154×FAIL'],
+          cue:'Initiate with scapular retraction. Pull elbows back. Torso still.' }
       ]},
       { label:'Isolation', exercises:[
         { id:'pull-face', name:'Rope Face Pull', muscle:'back_fly',
-          sets:[{wt:100,reps:'20'},{wt:100,reps:'20'}],
-          chips:{sets:'2 Sets',reps:'15-20 reps',pr:'PR: 100 lbs × 20 (2/27)'},
-          cue:'Pull elbows up and out. Retract scapulae at peak. Slow reps — rear delt is about time-under-tension.' },
-        { id:'pull-curl', name:'Bayesian Cable Curl (Single Arm)', muscle:'biceps',
-          sets:[{wt:50,reps:'12'},{wt:60,reps:'12'},{wt:60,reps:'FAIL'}],
-          chips:{sets:'3 Sets',reps:'12 reps / arm',pr:'PR: 60 lbs × 12 per arm (2/27)',target:'Target: 65 lbs'},
-          hassan:false,
-          cue:'Face AWAY from cable. Arm behind body for long head stretch. Drive elbow forward at top. Full supination. Per Nippard.' }
+          sets:[{wt:55,reps:'20'},{wt:55,reps:'20'}],
+          chips:{sets:'2 Sets',reps:'15-20 reps',pr:'PR: 55×20'},
+          cue:'Pull elbows up and out. Retract scapulae at peak.' },
+        { id:'pull-curl', name:'Cable Bicep Curl (Supinated)', muscle:'biceps',
+          sets:[{wt:40,reps:'12'},{wt:50,reps:'FAIL'}],
+          chips:{sets:'2 Sets',reps:'12-15 reps',pr:'PR: 50×12',tag:'Hassan'},
+          hassan:true,
+          cue:'Drive pinky toward lateral delt. Full supination throughout.' }
       ]}
     ]
   },
@@ -557,11 +596,11 @@ const WORKOUTS = {
           chips:{sets:'3 Sets',reps:'15-20 reps',pr:'PR: 225×15',target:'Target: 225 all 3 sets'},
           cue:'STRAIGHT KNEE. Deep stretch at bottom. 2-sec squeeze at top. No bouncing.' }
       ]},
-      { label:'Ab Finisher 🔥', exercises:[
-        { id:'l-cable-crunch', name:'Cable Crunch', muscle:'core',
-          sets:[{wt:90,reps:'15-20'},{wt:120,reps:'15-20'}],
-          chips:{sets:'2 Sets',reps:'15-20 reps',pr:'PR: 120 lbs baseline',target:'Target: 90→120 lbs'},
-          cue:'Kneel facing cable. Rope behind neck. CRUNCH DOWN — elbows to knees. Do NOT pull with arms. Full stretch at top. Slow negative. Sunday slot per Nippard 8-set/week protocol.' }
+      { label:'Ab Finisher 🎯', exercises:[
+        { id:'l-cable-crunch', name:'Cable Crunch', muscle:'abs',
+          sets:[{wt:0,reps:'15-20'},{wt:0,reps:'15-20'}],
+          chips:{sets:'2 Sets',reps:'15-20 reps',tag:'Nippard Abs'},
+          cue:'Kneel facing cable. Hands at temples. Crunch DOWN — flex spine, not arms. Full stretch at top. Completes your 8 sets/week ab volume.' }
       ]}
     ]
   },
@@ -574,12 +613,6 @@ const WORKOUTS = {
           sets:[{wt:0,reps:'Full session'}],
           chips:{sets:'Full Class',reps:'Coach-led'},
           cue:'Trust the programming. Log post-class: total sets, intensity 1-10, lower back status. Report back for integration assessment.' }
-      ]},
-      { label:'AM Ab Work (After Treadmill) 🔥', exercises:[
-        { id:'f-ab-wheel', name:'Ab Wheel Rollout', muscle:'core',
-          sets:[{wt:0,reps:'8-10'},{wt:0,reps:'8-10'}],
-          chips:{sets:'2 Sets',reps:'8-10 reps',target:'BW — controlled rollout'},
-          cue:'From knees. Roll OUT until fully extended — full stretch on abs. Pull back using abs ONLY, not hips. If lower back loads up, reduce range. Do AFTER incline treadmill walk. Per Nippard 8-set/week protocol.' }
       ]},
       { label:'If Lower Day (Sub)', exercises:[
         { id:'f-ext', name:'Leg Extension', muscle:'quads',
@@ -602,9 +635,16 @@ const WORKOUTS = {
           sets:[{wt:55,reps:'15-20'},{wt:66,reps:'15-20'}],
           chips:{sets:'2 Sets',reps:'15-20 reps',pr:'PR: 55 lbs (NEW baseline)'},
           cue:'LEAN FORWARD 30°. 55 lbs baseline. Feel glute medius.' }
+      ]},
+      { label:'Ab Finisher 🎯', exercises:[
+        { id:'f-abwheel', name:'Ab Wheel Rollout', muscle:'abs',
+          sets:[{wt:0,reps:'8-10'},{wt:0,reps:'8-10'}],
+          chips:{sets:'2 Sets',reps:'8-10 reps',tag:'Nippard Abs'},
+          note:'Do after AM treadmill',
+          cue:'Posteriorly tilt pelvis (squeeze glutes). Roll out ONLY as far as you can maintain. Short ROM with control > full ROM with lower back cave.' }
       ]}
     ]
-  }
+  },
 };
 
 const REST_CONTENT = {
@@ -624,98 +664,14 @@ const REST_CONTENT = {
 };
 
 // ============================================================
-// SUPABASE CONFIG
-// ============================================================
-const SUPABASE_URL = 'https://fnjjfnsdxibjbzldfgit.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZuampmbnNkeGliamJ6bGRmZ2l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY1MDM2MjAsImV4cCI6MjA4MjA3OTYyMH0.oZYn5OXKZH2h1wGfIj_R1L8Hlk3ytGFBgDCyGqUcatk';
-
-async function sbFetch(path, opts = {}) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
-    ...opts,
-    headers: {
-      'apikey': SUPABASE_ANON_KEY,
-      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-      'Content-Type': 'application/json',
-      'Prefer': 'return=representation',
-      ...(opts.headers || {})
-    }
-  });
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`Supabase error ${res.status}: ${err}`);
-  }
-  const text = await res.text();
-  return text ? JSON.parse(text) : [];
-}
-
-async function loadHistoryFromSupabase() {
-  try {
-    const rows = await sbFetch('workouts?select=*&order=workout_date.desc&limit=30');
-    // Convert Supabase rows to app history format
-    return rows.map(row => ({
-      id: row.id,
-      date: row.workout_date,
-      type: row.workout_type,
-      title: (WORKOUTS[row.workout_type]?.title) || row.workout_type.toUpperCase(),
-      emoji: (WORKOUTS[row.workout_type]?.emoji) || '💪',
-      location: row.location,
-      duration: row.duration_minutes ? `${row.duration_minutes}:00` : null,
-      watch: {
-        avgHr: row.avg_heart_rate || null,
-        maxHr: row.max_heart_rate || null,
-        calories: row.calories_burned || null
-      },
-      body_weight: row.body_weight,
-      notes: row.session_notes || '',
-      exercises: (row.exercises || []).map(ex => ({
-        name: ex.name,
-        muscle: ex.muscleGroup,
-        done: true,
-        failureWeight: ex.failureWeight,
-        sets: ex.sets || (ex.ladderSets ? ex.ladderSets.map(s => ({ weight: s.weight, reps: s.reps })) : []),
-        notes: ex.notes || ''
-      })),
-      newPRs: []
-    }));
-  } catch(e) {
-    console.warn('Supabase history load failed:', e);
-    return [];
-  }
-}
-
-async function buildPRStoreFromSupabase(history) {
-  const prs = {};
-  // Go oldest to newest so newer PRs win
-  const reversed = [...history].reverse();
-  for (const session of reversed) {
-    for (const ex of (session.exercises || [])) {
-      if (!ex.name) continue;
-      const key = ex.name.toLowerCase().replace(/\s+/g,'-');
-      let topWeight = 0;
-      if (ex.failureWeight) topWeight = ex.failureWeight;
-      const sets = ex.sets || [];
-      for (const s of sets) {
-        const w = parseFloat(s.weight) || 0;
-        if (w > topWeight) topWeight = w;
-      }
-      if (topWeight > 0) {
-        if (!prs[key] || topWeight >= prs[key].weight) {
-          prs[key] = { weight: topWeight, date: session.date, name: ex.name };
-        }
-      }
-    }
-  }
-  return prs;
-}
-
-// ============================================================
 // APP STATE
 // ============================================================
 let currentDayIdx = 0;
 let currentView = 'workout';
 let sessionState = {}; // exercise state for today
 let prStore = {};       // PRs: { exId: { weight, date } }
-let historyStore = [];  // saved workouts array
+let historyStore = [];  // saved workouts array (local window.storage)
+let completedDates = new Set(); // dates logged in Supabase — drives green dot on day pills
 let exerciseFreq = {};  // { exId: consecutive_sessions_count }
 let sessionStart = null;
 let sessionTimerInterval = null;
@@ -801,28 +757,20 @@ async function init() {
   buildUI();
   setTimeout(() => {
     document.getElementById('loadOverlay').classList.add('hidden');
-    // Show sync badge
-    const badge = document.getElementById('syncBadge');
-    if (badge) {
-      badge.style.display = 'block';
-      badge.style.color = historyStore.length > 0 ? 'var(--green)' : 'var(--dim)';
-      badge.textContent = historyStore.length > 0 ? `● SYNCED · ${historyStore.length} sessions` : '● OFFLINE';
-    }
   }, 400);
 }
 
 async function loadAll() {
-  // Load history + PRs from Supabase
   try {
-    historyStore = await loadHistoryFromSupabase();
-    prStore = await buildPRStoreFromSupabase(historyStore);
-  } catch(e) {
-    console.warn('Supabase load failed, falling back to local:', e);
-    historyStore = [];
-    prStore = {};
-  }
+    const r1 = await window.storage.get('workout-history');
+    if (r1?.value) historyStore = JSON.parse(r1.value);
+  } catch(e) { historyStore = []; }
 
-  // Exercise frequency + rest overrides stay local (session-level prefs)
+  try {
+    const r2 = await window.storage.get('pr-store');
+    if (r2?.value) prStore = JSON.parse(r2.value);
+  } catch(e) { prStore = {}; }
+
   try {
     const r3 = await window.storage.get('exercise-freq');
     if (r3?.value) exerciseFreq = JSON.parse(r3.value);
@@ -833,12 +781,40 @@ async function loadAll() {
     if (r5?.value) restOverrides = JSON.parse(r5.value);
   } catch(e) { restOverrides = {}; }
 
-  // Load today's in-progress session state (local only — not yet saved)
+  // Fetch completed workout dates from Supabase (populates green dots on day pills)
+  try {
+    const HIST_API = 'https://fnjjfnsdxibjbzldfgit.supabase.co/functions/v1/workout-history?limit=200';
+    const res = await fetch(HIST_API);
+    const json = await res.json();
+    if (json.ok && Array.isArray(json.workouts)) {
+      completedDates = new Set(json.workouts.map(w => w.workout_date));
+    }
+  } catch(e) { /* non-fatal — dots just won't show */ }
+
+  // Load today's session — try window.storage first, fall back to localStorage crash save
   try {
     const todayKey = `session-${getDateStr()}`;
     const r4 = await window.storage.get(todayKey);
-    if (r4?.value) sessionState = JSON.parse(r4.value);
-  } catch(e) { sessionState = {}; }
+    if (r4?.value) {
+      sessionState = JSON.parse(r4.value);
+    } else {
+      // window.storage had nothing — check localStorage crash backup
+      const crashSave = localStorage.getItem(`workout-crash-${getDateStr()}`);
+      if (crashSave) {
+        sessionState = JSON.parse(crashSave);
+        window._sessionRestoredFromCache = true;
+      }
+    }
+  } catch(e) {
+    // window.storage failed entirely — try localStorage crash backup
+    try {
+      const crashSave = localStorage.getItem(`workout-crash-${getDateStr()}`);
+      if (crashSave) {
+        sessionState = JSON.parse(crashSave);
+        window._sessionRestoredFromCache = true;
+      }
+    } catch(e2) { sessionState = {}; }
+  }
 }
 
 // ============================================================
@@ -886,7 +862,8 @@ function buildDayPills() {
     if (idx === todayIdx) btn.classList.add('today');
 
     const dateStr = getDayDate(idx);
-    const hasData = historyStore.some(h => h.date === dateStr);
+    // Use Supabase-sourced completedDates for green dots (historyStore is local only)
+    const hasData = completedDates.has(dateStr) || historyStore.some(h => h.date === dateStr);
     const hasPR = historyStore.some(h => h.date === dateStr && h.newPRs && h.newPRs.length > 0);
     if (hasPR) btn.classList.add('has-pr');
     else if (hasData) btn.classList.add('has-data');
@@ -973,6 +950,12 @@ function renderWorkoutView() {
     <div class="done-sub">Steam room time. You earned it. 🔥</div>
   </div>`;
 
+  // Crash recovery banner (shown if session was restored from localStorage)
+  html += `<div class="recovery-banner" id="recoveryBanner">
+    ⚡ <span><strong>Session restored.</strong> Your data was recovered after a page reload.</span>
+    <span class="recovery-dismiss" onclick="document.getElementById('recoveryBanner').classList.remove('visible')">Dismiss</span>
+  </div>`;
+
   // Rotation alerts
   if (rotationAlerts.length > 0) {
     rotationAlerts.forEach(alert => {
@@ -1040,6 +1023,13 @@ function renderWorkoutView() {
   updateDayProgress(allExIds);
   scroll.scrollTop = 0;
 
+  // Show recovery banner if session was restored from localStorage crash recovery
+  if (window._sessionRestoredFromCache) {
+    const banner = document.getElementById('recoveryBanner');
+    if (banner) banner.classList.add('visible');
+    window._sessionRestoredFromCache = false;
+  }
+
   // Start session timer
   startSessionTimer();
 
@@ -1075,7 +1065,7 @@ function buildExCard(ex, isDone, savedWeights, hasPR, type) {
     <tr><th>Set</th><th>Weight (lbs)</th><th>Target</th><th></th><th></th></tr>`;
   ex.sets.forEach((set, i) => {
     const w = savedWeights[i] !== undefined ? savedWeights[i] : set.wt;
-    const storedPR = getExPR(ex.id);
+    const storedPR = prStore[ex.id];
     const isSetPR = storedPR && parseFloat(w) > parseFloat(storedPR.weight);
     const prClass = isSetPR ? 'pr' : '';
     const starHtml = `<span class="pr-star ${isSetPR?'visible':''}">🏆</span>`;
@@ -1135,14 +1125,14 @@ function buildExCard(ex, isDone, savedWeights, hasPR, type) {
 // PR LOGIC
 // ============================================================
 function checkIfPR(exId, weights) {
-  const stored = getExPR(exId);
+  const stored = prStore[exId];
   if (!stored) return false;
   return weights.some(w => parseFloat(w) > parseFloat(stored.weight));
 }
 
 function onWeightInput(input, exId, setIdx) {
   const val = parseFloat(input.value) || 0;
-  const stored = getExPR(exId);
+  const stored = prStore[exId];
   const isNewPR = stored && val > parseFloat(stored.weight);
   input.classList.toggle('pr', isNewPR);
   const star = document.getElementById(`wi-${exId}-${setIdx}`)?.parentElement?.parentElement?.querySelector('.pr-star');
@@ -1159,24 +1149,14 @@ async function updatePRStore(exId, weights) {
   const maxWeight = Math.max(...weights.map(w => parseFloat(w) || 0));
   if (maxWeight === 0) return false;
   
-  // Use name-based key to match Supabase prStore format
-  const ex = getExById(exId);
-  const nameKey = ex ? ex.name.toLowerCase().replace(/\s+/g,'-') : exId;
-  
-  const stored = prStore[nameKey];
+  const stored = prStore[exId];
   if (!stored || maxWeight > parseFloat(stored.weight)) {
-    prStore[nameKey] = { weight: maxWeight, date: getDateStr(), name: ex?.name || exId };
-    return true;
+    const wasNewPR = !stored || maxWeight > parseFloat(stored.weight);
+    prStore[exId] = { weight: maxWeight, date: getDateStr() };
+    try { await window.storage.set('pr-store', JSON.stringify(prStore)); } catch(e){}
+    return wasNewPR;
   }
   return false;
-}
-
-function getExPR(exId) {
-  // Look up PR by name key (Supabase format)
-  const ex = getExById(exId);
-  if (!ex) return prStore[exId]; // fallback to id
-  const nameKey = ex.name.toLowerCase().replace(/\s+/g,'-');
-  return prStore[nameKey] || prStore[exId];
 }
 
 function showPRFlash() {
@@ -1336,11 +1316,15 @@ function startTimerForEx(exId, type) {
   if (!workout) return;
   const allExes = workout.sections.flatMap(s => s.exercises);
   let exName = '', nextName = null, found = false;
-  for (const ex of allExes) {
-    if (ex.id === exId) { exName = ex.name; found = true; }
-    else if (found && !nextName) nextName = ex.name;
+  let ex = null;
+  for (const e of allExes) {
+    if (e.id === exId) { exName = e.name; found = true; ex = e; }
+    else if (found && !nextName) nextName = e.name;
   }
-  startTimer(exName, nextName, 90, 'Exercise complete');
+  const protocol = ex?.hassan ? 'Hassan Protocol' : 'Straight Sets';
+  const totalSets = ex?.sets?.length || 0;
+  const setInfo = `All sets complete · ${totalSets} sets · ${protocol}`;
+  startTimer(exName, nextName, 90, setInfo, null, null);
 }
 
 // ============================================================
@@ -1375,13 +1359,20 @@ function completeSet(exId, setIdx, type) {
   const nextSetIdx = setIdx + 1;
   const hasNextSet = nextSetIdx < ex.sets.length;
 
-  // Determine next info
+  // Determine next info and next set target
   let nextInfo = '';
+  let nextTargetText = null;
   if (hasNextSet) {
     const nextSet = ex.sets[nextSetIdx];
     const nextLabel = nextSet.note || `Set ${nextSetIdx + 1}`;
     const nextReps = nextSet.reps;
-    nextInfo = `Next: <strong>${ex.name} — ${nextLabel}</strong> (${nextReps} reps)`;
+    // Get the current logged weight for the next set (or fallback to default)
+    const nextWeight = sessionState[exId]?.weights?.[nextSetIdx] ?? nextSet.wt;
+    nextInfo = `Next: <strong>${ex.name} — ${nextLabel}</strong>`;
+    // Build next target pill
+    const protocolTag = ex.hassan ? 'Hassan' : 'Straight';
+    const burnoutTag = (nextSet.note === 'Burnout' || String(nextReps).toLowerCase().includes('burn')) ? ' · Burnout' : '';
+    nextTargetText = `${nextWeight} lbs · ${nextReps} reps · ${protocolTag}${burnoutTag}`;
   } else {
     // Find next exercise
     const workout = WORKOUTS[type];
@@ -1414,7 +1405,10 @@ function completeSet(exId, setIdx, type) {
     }
   }
 
-  startTimer(ex.name, null, restTime, `${setLabel} complete`, nextInfo);
+  const protocol = ex.hassan ? 'Hassan' : 'Straight Sets';
+  const burnoutLabel = (set.note === 'Burnout') ? ' · Burnout' : '';
+  const setInfoLine = `${setLabel} of ${ex.sets.length} · ${protocol}${burnoutLabel}`;
+  startTimer(ex.name, null, restTime, setInfoLine, nextInfo, nextTargetText);
 }
 
 async function setRestOverride(exId, seconds) {
@@ -1528,35 +1522,8 @@ async function saveWorkout(type, dayKey) {
   historyStore.unshift(entry);
   if (historyStore.length > 100) historyStore = historyStore.slice(0, 100);
 
-  // Save to Supabase
   try {
-    const watch = sessionState['__watch__'] || {};
-    const supabaseRow = {
-      workout_date: getDateStr(),
-      workout_type: type,
-      location: 'home',
-      body_weight: null,
-      avg_heart_rate: watch.avgHr ? Math.round(watch.avgHr) : null,
-      max_heart_rate: watch.maxHr ? Math.round(watch.maxHr) : null,
-      calories_burned: watch.calories ? Math.round(watch.calories) : null,
-      duration_minutes: null,
-      session_notes: entry.notes || null,
-      exercises: exercises.map(ex => ({
-        name: ex.name,
-        muscleGroup: ex.muscle,
-        type: 'straight',
-        sets: ex.sets,
-        notes: ex.done ? 'Completed via app' : 'Skipped'
-      }))
-    };
-    // Check for duplicate before inserting
-    const existing = await sbFetch(`workouts?workout_date=eq.${getDateStr()}&workout_type=eq.${type}&select=id`);
-    if (existing.length === 0) {
-      await sbFetch('workouts', { method: 'POST', body: JSON.stringify(supabaseRow) });
-    }
-  } catch(e) { console.warn('Supabase save failed:', e); }
-
-  try {
+    await window.storage.set('workout-history', JSON.stringify(historyStore));
     if (newPRs.length > 0) {
       showPRFlash();
       showToast(`🏆 ${newPRs.length} NEW PR${newPRs.length>1?'s':''}!`, true);
@@ -1564,17 +1531,20 @@ async function saveWorkout(type, dayKey) {
       showToast('✓ WORKOUT SAVED');
     }
     const btn = document.getElementById('saveBtn');
-    if (btn) { btn.textContent = '✓ SAVED'; btn.classList.add('saved-state'); }
+    if (btn) { btn.textContent = '✓ SAVED TO HISTORY'; btn.classList.add('saved-state'); }
+    invalidateHistoryCache();
     buildDayPills();
-    // Refresh history from Supabase
-    historyStore = await loadHistoryFromSupabase();
-    prStore = await buildPRStoreFromSupabase(historyStore);
   } catch(e) { alert('Save failed.'); }
 }
 
 async function saveSession() {
+  const dateKey = getDateStr();
+  const payload = JSON.stringify(sessionState);
+  // Fast synchronous crash-safe backup to localStorage
+  try { localStorage.setItem(`workout-crash-${dateKey}`, payload); } catch(e) {}
+  // Async durable save to window.storage
   try {
-    await window.storage.set(`session-${getDateStr()}`, JSON.stringify(sessionState));
+    await window.storage.set(`session-${dateKey}`, payload);
   } catch(e) {}
 }
 
@@ -1607,13 +1577,11 @@ function renderSummaryView() {
     return;
   }
 
-  // Build per-exercise PR summary from Supabase prStore
-  const prEntries = Object.entries(prStore).map(([key, data]) => ({
-    id: key,
-    name: data.name || key,
-    weight: data.weight,
-    date: data.date
-  })).filter(e => e.weight > 0).sort((a,b) => b.weight - a.weight);
+  // Build per-exercise PR summary
+  const prEntries = Object.entries(prStore).map(([id, data]) => {
+    const ex = getExById(id);
+    return { id, name: ex?.name || id, weight: data.weight, date: data.date };
+  }).filter(e => e.weight > 0).sort((a,b) => b.weight - a.weight);
 
   // Last 4 workouts per type
   const recentByType = {};
@@ -1719,66 +1687,217 @@ function renderSummaryView() {
 }
 
 // ============================================================
-// HISTORY VIEW
+// HISTORY VIEW — Live query from Supabase Edge Function
 // ============================================================
-function renderHistoryView() {
+const HISTORY_API = 'https://fnjjfnsdxibjbzldfgit.supabase.co/functions/v1/workout-history';
+const WORKOUT_EMOJIS = { legs:'🦵', push:'🔥', pull:'💙', upper:'💪', lower:'🟢', fort:'🏙️', cardio:'🏃', arms:'💪', 'full body':'⚡' };
+const WORKOUT_LABELS_H = { legs:'Legs', push:'Push Day', pull:'Pull Day', upper:'Upper Day', lower:'Lower Day', fort:'FORT / Lower', cardio:'Cardio', arms:'Arms', 'full body':'Full Body' };
+
+let historyCache = null;       // full data from API
+let historyFilter = 'all';     // current type filter
+let historySearch = '';        // current search term
+let historyLoading = false;
+
+async function renderHistoryView() {
   const scroll = document.getElementById('mainScroll');
-  if (historyStore.length === 0) {
-    scroll.innerHTML = `<div class="empty-state" style="margin-top:40px">
-      <div style="font-size:36px;margin-bottom:10px">📅</div>
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px;margin-bottom:6px">No History Yet</div>
-      <div>Save your first workout and it appears here.</div>
+
+  // Render shell with toolbar immediately
+  scroll.innerHTML = `
+    <div class="hist-toolbar">
+      <div class="hist-search-wrap">
+        <input class="hist-search" id="histSearch" type="text" placeholder="Search exercise (e.g. leg extension)…"
+          value="${historySearch}"
+          oninput="onHistorySearch(this.value)">
+        <button class="hist-search-clear ${historySearch ? 'visible' : ''}" id="histClear" onclick="clearHistorySearch()">✕</button>
+      </div>
+      <div class="hist-filter-row" id="histFilters">
+        ${['all','legs','push','pull','upper','fort','cardio'].map(f =>
+          `<button class="hf-btn ${historyFilter===f?'active':''}" onclick="setHistoryFilter('${f}')">${f==='all'?'All':WORKOUT_LABELS_H[f]||f}</button>`
+        ).join('')}
+      </div>
+    </div>
+    <div id="histContent"></div>`;
+
+  scroll.scrollTop = 0;
+
+  // Use cache if available and no new fetch needed
+  if (historyCache) {
+    renderHistoryContent(historyCache);
+    return;
+  }
+
+  await fetchAndRenderHistory();
+}
+
+async function fetchAndRenderHistory() {
+  if (historyLoading) return;
+  historyLoading = true;
+  const content = document.getElementById('histContent');
+  if (content) content.innerHTML = `<div class="hist-loading"><span class="hist-spinner">⏳</span>Loading your history…</div>`;
+
+  try {
+    const res = await fetch(`${HISTORY_API}?limit=200`);
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error || 'API error');
+    historyCache = json.workouts || [];
+    renderHistoryContent(historyCache);
+  } catch(e) {
+    const content = document.getElementById('histContent');
+    if (content) content.innerHTML = `<div class="hist-error">⚠️ Could not load history: ${e.message}<br><br><button onclick="fetchAndRenderHistory()" style="margin-top:8px;padding:6px 14px;border-radius:8px;border:1px solid var(--border2);background:none;color:var(--white);cursor:pointer;font-family:'DM Sans',sans-serif">Retry</button></div>`;
+  } finally {
+    historyLoading = false;
+  }
+}
+
+function renderHistoryContent(allWorkouts) {
+  const content = document.getElementById('histContent');
+  if (!content) return;
+
+  // Apply type filter
+  let filtered = historyFilter === 'all'
+    ? allWorkouts
+    : allWorkouts.filter(w => w.workout_type === historyFilter);
+
+  // Apply search
+  const term = historySearch.trim().toLowerCase();
+  if (term) {
+    filtered = filtered.filter(w =>
+      Array.isArray(w.exercises) && w.exercises.some(ex => ex?.name?.toLowerCase().includes(term))
+    );
+  }
+
+  if (filtered.length === 0) {
+    content.innerHTML = `<div class="hist-empty">
+      <div style="font-size:36px;margin-bottom:10px">🔍</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;margin-bottom:6px;color:var(--white)">No Results</div>
+      <div style="font-size:12px">Try a different filter or search term.</div>
     </div>`;
     return;
   }
 
-  let html = '';
-  historyStore.slice(0, 40).forEach(entry => {
-    const doneExes = entry.exercises.filter(e => e.done);
-    html += `<div class="history-entry">
-      <div class="he-top">
-        <div>
-          <div class="he-date">${formatDate(entry.date)}</div>
-          <div class="he-type">${entry.emoji} ${entry.title}</div>
-          <span class="he-badge bg-${entry.type} c-${entry.type}">${doneExes.length} exercises</span>
-          ${entry.body_weight ? `<span style="font-size:9px;color:var(--dim2);margin-top:2px;display:block">⚖️ ${entry.body_weight} lbs · ${entry.location || 'home'}</span>` : ''}
-        </div>
-        ${entry.duration ? `<div style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--dim2)">${entry.duration}</div>` : ''}
-      </div>`;
-
-    if (entry.watch?.avgHr || entry.watch?.calories) {
-      html += `<div class="he-watch">`;
-      if (entry.watch.avgHr) html += `<span class="he-watch-stat">❤️ <strong>${entry.watch.avgHr}</strong> bpm</span>`;
-      if (entry.watch.maxHr) html += `<span class="he-watch-stat">⚡ <strong>${entry.watch.maxHr}</strong> max</span>`;
-      if (entry.watch.calories) html += `<span class="he-watch-stat">🔥 <strong>${entry.watch.calories}</strong> kcal</span>`;
-      html += `</div>`;
-    }
-
-    html += `<div class="he-exes">`;
-    doneExes.slice(0,4).forEach(ex => {
-      const topWt = Math.max(...ex.sets.map(s => parseFloat(s.weight)||0));
-      html += `<div class="he-ex-row">
-        <span class="he-ex-name">${ex.name}</span>
-        <span class="he-ex-wt">${topWt > 0 ? topWt + ' lbs' : ex.sets[0]?.reps || '—'}</span>
-      </div>`;
-    });
-    if (doneExes.length > 4) {
-      html += `<div class="he-ex-row"><span class="he-ex-name" style="font-style:italic">+${doneExes.length-4} more</span><span></span></div>`;
-    }
-    html += `</div>`;
-
-    if (entry.newPRs?.length > 0) {
-      html += `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:7px">`;
-      entry.newPRs.forEach(pr => html += `<span style="font-size:9px;background:var(--gold-dim);color:var(--gold);padding:2px 8px;border-radius:7px;font-weight:700">🏆 ${pr.exName}: ${pr.weight}lbs</span>`);
-      html += `</div>`;
-    }
-
-    if (entry.notes) html += `<div class="he-notes">"${entry.notes}"</div>`;
-    html += `</div>`;
+  // Group by month
+  const byMonth = {};
+  filtered.forEach(w => {
+    const d = new Date(w.workout_date + 'T12:00:00');
+    const key = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    if (!byMonth[key]) byMonth[key] = [];
+    byMonth[key].push(w);
   });
 
-  scroll.innerHTML = html;
-  scroll.scrollTop = 0;
+  let html = `<div class="hist-meta">${filtered.length} SESSION${filtered.length!==1?'S':''} ${term ? `· matching "${term}"` : ''}</div>`;
+
+  Object.entries(byMonth).forEach(([month, workouts]) => {
+    html += `<div class="hist-month">${month}</div>`;
+    workouts.forEach(w => {
+      html += buildHistoryCard(w, term);
+    });
+  });
+
+  content.innerHTML = html;
+}
+
+function buildHistoryCard(w, searchTerm) {
+  const type = w.workout_type || 'workout';
+  const emoji = WORKOUT_EMOJIS[type] || '🏋️';
+  const label = WORKOUT_LABELS_H[type] || type.toUpperCase();
+  const d = new Date(w.workout_date + 'T12:00:00');
+  const dateStr = d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+
+  const exercises = Array.isArray(w.exercises) ? w.exercises : [];
+  const hasPR = w.session_notes && w.session_notes.toLowerCase().includes('pr');
+
+  let statsHtml = '';
+  if (w.avg_heart_rate) statsHtml += `<span class="he-stat">❤️ <strong>${w.avg_heart_rate}</strong> bpm avg</span>`;
+  if (w.max_heart_rate) statsHtml += `<span class="he-stat">⚡ <strong>${w.max_heart_rate}</strong> max</span>`;
+  if (w.calories_burned) statsHtml += `<span class="he-stat">🔥 <strong>${w.calories_burned}</strong> kcal</span>`;
+  if (w.body_weight) statsHtml += `<span class="he-stat">⚖️ <strong>${w.body_weight}</strong> lbs</span>`;
+
+  let exHtml = '';
+  const displayExes = exercises.slice(0, 5);
+  displayExes.forEach(ex => {
+    if (!ex || !ex.name) return;
+    const isMatch = searchTerm && ex.name.toLowerCase().includes(searchTerm);
+    // Get top weight: handle straight sets, hassan, ladder
+    let topWt = 0;
+    if (Array.isArray(ex.sets)) {
+      topWt = ex.sets.reduce((m, s) => Math.max(m, parseFloat(s?.weight)||0), 0);
+    } else if (ex.failureWeight) {
+      topWt = parseFloat(ex.failureWeight) || 0;
+    } else if (Array.isArray(ex.ladderSets)) {
+      topWt = ex.ladderSets.reduce((m, s) => Math.max(m, parseFloat(s?.weight)||0), 0);
+    } else if (ex.weight) {
+      topWt = parseFloat(ex.weight) || 0;
+    }
+    const hassan = ex.type === 'hassan' ? ' <span style="font-size:8px;color:var(--purple)">⚡H</span>' : '';
+    exHtml += `<div class="he-ex-row">
+      <span class="he-ex-name ${isMatch?'matched':''}">${ex.name}${hassan}</span>
+      <span class="he-ex-wt">${topWt > 0 ? topWt + ' lbs' : '—'}</span>
+    </div>`;
+  });
+  if (exercises.length > 5) {
+    exHtml += `<div class="he-ex-row"><span class="he-ex-name" style="font-style:italic;color:var(--dim)">+${exercises.length-5} more</span><span class="he-ex-wt"></span></div>`;
+  }
+
+  const notesHtml = w.session_notes
+    ? `<div class="he-notes-text">${w.session_notes.slice(0, 120)}${w.session_notes.length > 120 ? '…' : ''}</div>`
+    : '';
+
+  return `<div class="history-entry ${hasPR?'has-pr':''}">
+    <div class="he-top">
+      <div class="he-left">
+        <div class="he-date">${dateStr}</div>
+        <div class="he-type c-${type}">${emoji} ${label}</div>
+        <div class="he-loc">📍 ${w.location || 'Home Gym'}</div>
+      </div>
+      <div class="he-right">
+        ${w.duration_minutes ? `<div class="he-duration">${w.duration_minutes}<span style="font-size:11px">m</span></div>` : ''}
+        ${w.calories_burned ? `<div class="he-cals">${w.calories_burned} kcal</div>` : ''}
+      </div>
+    </div>
+    ${statsHtml ? `<div class="he-stats">${statsHtml}</div>` : ''}
+    <div class="he-exercises">${exHtml}</div>
+    ${notesHtml}
+  </div>`;
+}
+
+function setHistoryFilter(f) {
+  historyFilter = f;
+  // Update button states
+  document.querySelectorAll('.hf-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.textContent.toLowerCase() === (f === 'all' ? 'all' : (WORKOUT_LABELS_H[f]||f).toLowerCase()));
+  });
+  if (historyCache) renderHistoryContent(historyCache);
+}
+
+function onHistorySearch(val) {
+  historySearch = val;
+  const clearBtn = document.getElementById('histClear');
+  if (clearBtn) clearBtn.classList.toggle('visible', val.length > 0);
+  if (historyCache) renderHistoryContent(historyCache);
+}
+
+function clearHistorySearch() {
+  historySearch = '';
+  const input = document.getElementById('histSearch');
+  if (input) input.value = '';
+  const clearBtn = document.getElementById('histClear');
+  if (clearBtn) clearBtn.classList.remove('visible');
+  if (historyCache) renderHistoryContent(historyCache);
+}
+
+// Invalidate cache when a new workout is saved so History refreshes
+function invalidateHistoryCache() {
+  historyCache = null;
+  // Re-fetch completed dates so day pills update immediately after saving
+  fetch('https://fnjjfnsdxibjbzldfgit.supabase.co/functions/v1/workout-history?limit=200')
+    .then(r => r.json())
+    .then(json => {
+      if (json.ok && Array.isArray(json.workouts)) {
+        completedDates = new Set(json.workouts.map(w => w.workout_date));
+        buildDayPills();
+      }
+    })
+    .catch(() => {});
 }
 
 // ============================================================
@@ -1801,7 +1920,7 @@ function renderRestDay(dayKey) {
 // ============================================================
 // REST TIMER
 // ============================================================
-function startTimer(exName, nextName, restSeconds, setInfo, nextInfoOverride) {
+function startTimer(exName, nextName, restSeconds, setInfo, nextInfoOverride, nextTargetText) {
   clearInterval(timerInterval);
   timerSec = restSeconds || 90;
   timerMax = timerSec;
@@ -1820,6 +1939,18 @@ function startTimer(exName, nextName, restSeconds, setInfo, nextInfoOverride) {
     badgeEl.className = 't-type-badge ' + typeInfo.cls;
     badgeEl.style.display = 'inline-flex';
   }
+
+  // Next set target block
+  const targetEl = document.getElementById('tNextTarget');
+  const targetValEl = document.getElementById('tNextTargetVal');
+  if (targetEl && targetValEl) {
+    if (nextTargetText) {
+      targetValEl.textContent = nextTargetText;
+      targetEl.classList.add('visible');
+    } else {
+      targetEl.classList.remove('visible');
+    }
+  }
   
   // Next info
   const nextEl = document.getElementById('tNext');
@@ -1836,14 +1967,10 @@ function startTimer(exName, nextName, restSeconds, setInfo, nextInfoOverride) {
   timerInterval = setInterval(() => {
     timerSec--;
     updateTimerDisplay();
-    // Countdown ticks at 5 seconds remaining
-    if (timerSec > 0 && timerSec <= 5) {
-      playCountdownTick(timerSec === 1);
-    }
     if (timerSec <= 0) {
       clearInterval(timerInterval);
       playBeep();
-      setTimeout(() => closeTimer(), 1200);
+      setTimeout(() => closeTimer(), 700);
     }
   }, 1000);
 }
@@ -1876,43 +2003,16 @@ function closeTimer() {
 function playBeep() {
   try {
     const ctx = new (window.AudioContext||window.webkitAudioContext)();
-    // 3-note ascending fanfare — punchy and clear
-    const notes = [
-      [0, 523, 0.4],     // C5
-      [180, 659, 0.4],   // E5
-      [360, 784, 0.5],   // G5
-      [560, 1047, 0.6],  // C6 — high and clear
-    ];
-    notes.forEach(([delay, freq, gain]) => {
+    [[0,660],[150,660],[300,880]].forEach(([d,f]) => {
       const o = ctx.createOscillator();
       const g = ctx.createGain();
-      const t = ctx.currentTime + delay / 1000;
-      o.type = 'sine';
-      o.frequency.value = freq;
-      o.connect(g);
-      g.connect(ctx.destination);
-      g.gain.setValueAtTime(0, t);
-      g.gain.linearRampToValueAtTime(gain, t + 0.02);
-      g.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
-      o.start(t);
-      o.stop(t + 0.4);
+      o.connect(g); g.connect(ctx.destination);
+      o.frequency.value = f;
+      g.gain.setValueAtTime(0.3, ctx.currentTime + d/1000);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + d/1000 + 0.25);
+      o.start(ctx.currentTime + d/1000);
+      o.stop(ctx.currentTime + d/1000 + 0.3);
     });
-  } catch(e) {}
-}
-
-function playCountdownTick(isLast) {
-  try {
-    const ctx = new (window.AudioContext||window.webkitAudioContext)();
-    const o = ctx.createOscillator();
-    const g = ctx.createGain();
-    o.type = 'sine';
-    o.frequency.value = isLast ? 880 : 660;
-    o.connect(g);
-    g.connect(ctx.destination);
-    g.gain.setValueAtTime(isLast ? 0.25 : 0.12, ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
-    o.start(ctx.currentTime);
-    o.stop(ctx.currentTime + 0.15);
   } catch(e) {}
 }
 
