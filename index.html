@@ -373,7 +373,21 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 /* TIMER OVERLAY */
 .timer-overlay{position:fixed;inset:0;background:rgba(8,8,8,0.93);backdrop-filter:blur(10px);z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.3s;}
 .timer-overlay.visible{opacity:1;pointer-events:all;}
+.timer-overlay.minimized{inset:auto;bottom:70px;left:50%;transform:translateX(-50%);background:none;backdrop-filter:none;align-items:flex-end;justify-content:center;}
 .timer-box{text-align:center;padding:32px 24px;background:var(--card);border:1px solid var(--border2);border-radius:22px;min-width:270px;max-width:310px;width:86%;}
+.timer-overlay.minimized .timer-box{display:none;}
+/* Minimized pill */
+.timer-pill{display:none;align-items:center;gap:10px;background:var(--card);border:1px solid var(--accent);border-radius:50px;padding:8px 16px;box-shadow:0 4px 20px rgba(232,255,71,0.15);}
+.timer-overlay.minimized .timer-pill{display:flex;}
+.tp-ring{width:28px;height:28px;position:relative;flex-shrink:0;}
+.tp-ring svg{width:28px;height:28px;transform:rotate(-90deg);}
+.tp-ring-bg{fill:none;stroke:var(--border2);stroke-width:3;}
+.tp-ring-fill{fill:none;stroke:var(--accent);stroke-width:3;stroke-linecap:round;stroke-dasharray:75.4;stroke-dashoffset:0;transition:stroke-dashoffset 1s linear,stroke 0.3s;}
+.tp-ring-fill.urgent{stroke:var(--red);}
+.tp-secs{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px;color:var(--accent);line-height:1;min-width:28px;text-align:center;}
+.tp-label{font-size:10px;color:var(--dim2);letter-spacing:1px;flex:1;}
+.tp-expand{background:none;border:none;color:var(--dim2);font-size:16px;cursor:pointer;padding:2px 4px;}
+.tp-skip{background:none;border:none;color:var(--dim);font-size:10px;font-weight:700;letter-spacing:1px;cursor:pointer;font-family:'DM Sans',sans-serif;text-transform:uppercase;}
 .t-label{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--dim2);margin-bottom:5px;}
 .t-exname{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;color:var(--accent);margin-bottom:20px;line-height:1.1;}
 .t-ring-wrap{position:relative;width:140px;height:140px;margin:0 auto 17px;}
@@ -449,7 +463,7 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 <!-- TIMER -->
 <div class="timer-overlay" id="timerOverlay">
   <div class="timer-box">
-    <div class="t-label">REST TIMER</div>
+    <div class="t-label">REST TIMER <button onclick="minimizeTimer()" style="background:none;border:none;color:var(--dim2);font-size:11px;cursor:pointer;float:right;font-family:'DM Sans',sans-serif;letter-spacing:1px;text-transform:uppercase;font-weight:700;">− MIN</button></div>
     <div class="t-set-info" id="tSetInfo"></div>
     <div class="t-exname" id="tExName"></div>
     <div class="t-type-badge" id="tTypeBadge" style="display:none"></div>
@@ -477,6 +491,19 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
       <button class="t-btn t-skip" onclick="closeTimer()">SKIP</button>
       <button class="t-btn t-go" onclick="closeTimer()">LET'S GO ›</button>
     </div>
+  </div>
+  <!-- Minimized pill -->
+  <div class="timer-pill" id="timerPill">
+    <div class="tp-ring">
+      <svg viewBox="0 0 28 28">
+        <circle class="tp-ring-bg" cx="14" cy="14" r="12"/>
+        <circle class="tp-ring-fill" id="pillRingFill" cx="14" cy="14" r="12"/>
+      </svg>
+    </div>
+    <span class="tp-secs" id="pillDisplay">90</span>
+    <span class="tp-label" id="pillLabel">Resting…</span>
+    <button class="tp-expand" onclick="expandTimer()" title="Expand">⬆</button>
+    <button class="tp-skip" onclick="closeTimer()">Done</button>
   </div>
 </div>
 
@@ -849,30 +876,27 @@ async function init() {
 }
 
 async function loadAll() {
-  try {
-    const r1 = await window.storage.get('workout-history');
-    if (r1?.value) historyStore = JSON.parse(r1.value);
-  } catch(e) { historyStore = []; }
+  // Helper: try window.storage first, fall back to localStorage
+  async function getStored(key) {
+    try {
+      const r = await window.storage.get(key);
+      if (r?.value) return r.value;
+    } catch(e) {}
+    // fallback to localStorage (used by Vercel deployment)
+    try { return localStorage.getItem(key); } catch(e) {}
+    return null;
+  }
 
-  try {
-    const r2 = await window.storage.get('pr-store');
-    if (r2?.value) prStore = JSON.parse(r2.value);
-  } catch(e) { prStore = {}; }
-
-  try {
-    const r3 = await window.storage.get('exercise-freq');
-    if (r3?.value) exerciseFreq = JSON.parse(r3.value);
-  } catch(e) { exerciseFreq = {}; }
-
-  try {
-    const r5 = await window.storage.get('rest-overrides');
-    if (r5?.value) restOverrides = JSON.parse(r5.value);
-  } catch(e) { restOverrides = {}; }
+  try { const v = await getStored('workout-history'); if (v) historyStore = JSON.parse(v); } catch(e) { historyStore = []; }
+  try { const v = await getStored('pr-store'); if (v) prStore = JSON.parse(v); } catch(e) { prStore = {}; }
+  try { const v = await getStored('exercise-freq'); if (v) exerciseFreq = JSON.parse(v); } catch(e) { exerciseFreq = {}; }
+  try { const v = await getStored('rest-overrides'); if (v) restOverrides = JSON.parse(v); } catch(e) { restOverrides = {}; }
 
   // Restore fort-cancelled flag for today
   try {
-    const fc = await window.storage.get(`fort-cancelled-${getDateStr()}`);
-    fortCancelled = !!(fc?.value);
+    const key = `fort-cancelled-${getDateStr()}`;
+    const v = await getStored(key);
+    fortCancelled = !!(v);
   } catch(e) { fortCancelled = false; }
 
   // Fetch completed workout dates from Supabase (populates green dots on day pills)
@@ -1461,11 +1485,21 @@ function startTimerForEx(exId, type) {
   const workout = WORKOUTS[type];
   if (!workout) return;
   const allExes = workout.sections.flatMap(s => s.exercises);
-  let exName = '', nextName = null, found = false;
-  let ex = null;
+  let exName = '', nextName = null, ex = null;
   for (const e of allExes) {
-    if (e.id === exId) { exName = e.name; found = true; ex = e; }
-    else if (found && !nextName) nextName = e.name;
+    if (e.id === exId) { exName = e.name; ex = e; }
+  }
+  // Find next INCOMPLETE exercise
+  let foundCurrent = false;
+  for (const e of allExes) {
+    if (e.id === exId) { foundCurrent = true; continue; }
+    if (foundCurrent && !sessionState[e.id]?.done) { nextName = e.name; break; }
+  }
+  // If none after, check before
+  if (!nextName) {
+    for (const e of allExes) {
+      if (e.id !== exId && !sessionState[e.id]?.done) { nextName = e.name; break; }
+    }
   }
   const protocol = ex?.hassan ? 'Hassan Protocol' : 'Straight Sets';
   const totalSets = ex?.sets?.length || 0;
@@ -1520,16 +1554,26 @@ function completeSet(exId, setIdx, type) {
     const burnoutTag = (nextSet.note === 'Burnout' || String(nextReps).toLowerCase().includes('burn')) ? ' · Burnout' : '';
     nextTargetText = `${nextWeight} lbs · ${nextReps} reps · ${protocolTag}${burnoutTag}`;
   } else {
-    // Find next exercise
+    // Find next INCOMPLETE exercise (respects out-of-order completion)
     const workout = WORKOUTS[type];
     if (workout) {
       const allExes = workout.sections.flatMap(s => s.exercises);
       let foundCurrent = false;
+      // First pass: look for next incomplete exercise AFTER current
       for (const e of allExes) {
         if (e.id === exId) { foundCurrent = true; continue; }
-        if (foundCurrent) {
+        if (foundCurrent && !sessionState[e.id]?.done) {
           nextInfo = `Up next: <strong>${e.name}</strong>`;
           break;
+        }
+      }
+      // If all remaining are done, look for ANY incomplete exercise
+      if (!nextInfo) {
+        for (const e of allExes) {
+          if (e.id !== exId && !sessionState[e.id]?.done) {
+            nextInfo = `Up next: <strong>${e.name}</strong>`;
+            break;
+          }
         }
       }
       if (!nextInfo) nextInfo = `<strong>Last set — finish strong!</strong>`;
@@ -1631,7 +1675,14 @@ async function saveWorkout(type, dayKey) {
   const exercises = [];
   let newPRs = [];
 
-  for (const section of workout.sections) {
+  // Use sections that are currently rendered (respects fort cancelled state)
+  const sectionsToSave = (type === 'fort' && fortCancelled)
+    ? workout.sections.filter(s => s.label !== 'If At FORT')
+    : (type === 'fort' && !fortCancelled)
+      ? workout.sections.filter(s => s.label === 'If At FORT' || s.label.includes('Ab'))
+      : workout.sections;
+
+  for (const section of sectionsToSave) {
     for (const ex of section.exercises) {
       const state = sessionState[ex.id] || {};
       const weights = state.weights || ex.sets.map(s => s.wt);
@@ -1639,7 +1690,6 @@ async function saveWorkout(type, dayKey) {
       if (isNewPR) {
         newPRs.push({ exId: ex.id, exName: ex.name, weight: Math.max(...weights) });
       }
-      // Update exercise frequency
       if (state.done) {
         exerciseFreq[ex.id] = (exerciseFreq[ex.id] || 0) + 1;
       }
@@ -1651,13 +1701,11 @@ async function saveWorkout(type, dayKey) {
     }
   }
 
-  // Save exercise frequency
-  try { await window.storage.set('exercise-freq', JSON.stringify(exerciseFreq)); } catch(e){}
-
   const watch = sessionState['__watch__'] || {};
   const entry = {
     id: Date.now(), date: getDateStr(), dayKey,
-    type, title: workout.title, emoji: workout.emoji,
+    type, title: (type === 'fort' && fortCancelled) ? 'HOME LOWER DAY' : workout.title,
+    emoji: workout.emoji,
     exercises, newPRs,
     notes: (sessionState['__notes__']||{}).notes || '',
     watch: { avgHr: watch.avgHr||null, maxHr: watch.maxHr||null, calories: watch.calories||null },
@@ -1668,8 +1716,26 @@ async function saveWorkout(type, dayKey) {
   historyStore.unshift(entry);
   if (historyStore.length > 100) historyStore = historyStore.slice(0, 100);
 
+  // Try all storage layers — at least one must succeed
+  let saved = false;
+
+  // Layer 1: localStorage (always available on Vercel)
+  try {
+    localStorage.setItem('workout-history', JSON.stringify(historyStore));
+    localStorage.setItem('pr-store', JSON.stringify(prStore));
+    localStorage.setItem('exercise-freq', JSON.stringify(exerciseFreq));
+    saved = true;
+  } catch(e) { console.warn('localStorage save failed', e); }
+
+  // Layer 2: window.storage (works inside Claude artifact iframe)
   try {
     await window.storage.set('workout-history', JSON.stringify(historyStore));
+    await window.storage.set('pr-store', JSON.stringify(prStore));
+    await window.storage.set('exercise-freq', JSON.stringify(exerciseFreq));
+    saved = true;
+  } catch(e) { /* silent — not in Claude context */ }
+
+  if (saved) {
     if (newPRs.length > 0) {
       showPRFlash();
       showToast(`🏆 ${newPRs.length} NEW PR${newPRs.length>1?'s':''}!`, true);
@@ -1677,11 +1743,13 @@ async function saveWorkout(type, dayKey) {
       showToast('✓ WORKOUT SAVED');
     }
     const btn = document.getElementById('saveBtn');
-    if (btn) { btn.textContent = '✓ SAVED TO HISTORY'; btn.classList.add('saved-state'); }
+    if (btn) { btn.textContent = '✓ SAVED'; btn.style.background = '#2a3d00'; btn.style.color = 'var(--accent)'; }
     invalidateHistoryCache();
     invalidateProgressCache();
     buildDayPills();
-  } catch(e) { alert('Save failed.'); }
+  } else {
+    alert('Save failed — storage unavailable.');
+  }
 }
 
 async function saveSession() {
@@ -2476,10 +2544,34 @@ function formatTimerLabel(sec) {
 }
 
 function updateTimerDisplay() {
-  document.getElementById('tDisplay').textContent = Math.max(0, timerSec);
+  const s = Math.max(0, timerSec);
+  document.getElementById('tDisplay').textContent = s;
+  // Sync pill
+  const pd = document.getElementById('pillDisplay');
+  if (pd) pd.textContent = s < 60 ? s : Math.floor(s/60) + ':' + String(s%60).padStart(2,'0');
+  // Main ring
   const ring = document.getElementById('ringFill');
   ring.style.strokeDashoffset = CIRC * (1 - timerSec / timerMax);
   ring.classList.toggle('urgent', timerSec <= 10);
+  // Pill ring (dasharray=75.4 for r=12)
+  const pillRing = document.getElementById('pillRingFill');
+  if (pillRing) {
+    const PILL_CIRC = 2 * Math.PI * 12;
+    pillRing.style.strokeDashoffset = PILL_CIRC * (1 - timerSec / timerMax);
+    pillRing.classList.toggle('urgent', timerSec <= 10);
+  }
+}
+
+function minimizeTimer() {
+  document.getElementById('timerOverlay').classList.add('minimized');
+  // Set pill label to current exercise name
+  const exName = document.getElementById('tExName').textContent.replace('✓ ','');
+  const pill = document.getElementById('pillLabel');
+  if (pill) pill.textContent = exName || 'Resting…';
+}
+
+function expandTimer() {
+  document.getElementById('timerOverlay').classList.remove('minimized');
 }
 
 function adjTimer(d) {
