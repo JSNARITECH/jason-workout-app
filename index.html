@@ -100,6 +100,19 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .rotation-ex:hover,.rotation-ex:active{background:rgba(192,132,252,0.2);}
 .rotation-dismiss{font-size:10px;color:var(--dim);margin-top:8px;cursor:pointer;text-decoration:underline;}
 
+/* FORT CANCELLED BANNER */
+.fort-cancel-banner{background:rgba(255,77,77,0.08);border:1px solid rgba(255,77,77,0.25);border-radius:14px;padding:14px 15px;margin-bottom:14px;}
+.fort-cancel-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.fort-cancel-title{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1px;color:var(--red);}
+.fort-cancel-sub{font-size:11px;color:var(--dim2);line-height:1.4;margin-bottom:10px;}
+.fort-cancel-btns{display:flex;gap:8px;}
+.fort-btn{flex:1;padding:9px 10px;border-radius:10px;border:none;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all 0.2s;}
+.fort-btn-go{background:var(--green);color:#000;}
+.fort-btn-go:active{background:#3ddda0;}
+.fort-btn-fort{background:var(--border2);color:var(--dim2);}
+.fort-btn-fort:active{background:var(--border);}
+.fort-mode-indicator{display:flex;align-items:center;gap:7px;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:5px 10px;border-radius:8px;background:rgba(77,255,170,0.1);color:var(--green);border:1px solid rgba(77,255,170,0.2);}
+
 /* SECTION LABEL */
 .sec-label{font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:3px;color:var(--dim);margin:16px 0 7px;display:flex;align-items:center;gap:8px;}
 .sec-label::after{content:'';flex:1;height:1px;background:var(--border);}
@@ -753,6 +766,7 @@ let timerInterval = null;
 let timerSec = 90;
 let timerMax = 90;
 let restOverrides = {}; // { exId: seconds } — user-customized rest per exercise
+let fortCancelled = false; // true = show home lower body sub instead of FORT class
 const CIRC = 2 * Math.PI * 60; // 377
 
 // ============================================================
@@ -854,6 +868,12 @@ async function loadAll() {
     const r5 = await window.storage.get('rest-overrides');
     if (r5?.value) restOverrides = JSON.parse(r5.value);
   } catch(e) { restOverrides = {}; }
+
+  // Restore fort-cancelled flag for today
+  try {
+    const fc = await window.storage.get(`fort-cancelled-${getDateStr()}`);
+    fortCancelled = !!(fc?.value);
+  } catch(e) { fortCancelled = false; }
 
   // Fetch completed workout dates from Supabase (populates green dots on day pills)
   try {
@@ -999,18 +1019,50 @@ function renderWorkoutView() {
   const workout = WORKOUTS[day.type];
   if (!workout) { scroll.innerHTML = '<div class="empty-state">No workout data for this day.</div>'; return; }
 
+  const sectionsForProgress = (day.type === 'fort' && fortCancelled)
+    ? workout.sections.filter(s => s.label !== 'If At FORT')
+    : (day.type === 'fort' && !fortCancelled)
+      ? workout.sections.filter(s => s.label === 'If At FORT' || s.label.includes('Ab'))
+      : workout.sections;
+
   const allExIds = [];
-  workout.sections.forEach(s => s.exercises.forEach(e => allExIds.push(e.id)));
+  sectionsForProgress.forEach(s => s.exercises.forEach(e => allExIds.push(e.id)));
 
   // Check rotation alerts
   const rotationAlerts = getRotationAlerts(day.type);
 
   let html = '';
 
+  // FORT cancelled banner (Tuesday only)
+  if (day.type === 'fort') {
+    if (fortCancelled) {
+      html += `<div class="fort-cancel-banner">
+        <div class="fort-cancel-top">
+          <div class="fort-cancel-title">🏠 HOME LOWER DAY</div>
+          <div class="fort-mode-indicator">✓ FORT CANCELLED</div>
+        </div>
+        <div class="fort-cancel-sub">Swapped to your full home gym lower body protocol. All the gains, none of the commute.</div>
+        <div class="fort-cancel-btns">
+          <button class="fort-btn fort-btn-fort" onclick="toggleFortCancelled()">↩ FORT Was On After All</button>
+        </div>
+      </div>`;
+    } else {
+      html += `<div class="fort-cancel-banner">
+        <div class="fort-cancel-top">
+          <div class="fort-cancel-title">📍 FORT / LOWER DAY</div>
+        </div>
+        <div class="fort-cancel-sub">Heading to FORT? Go get it. Class got cancelled? Hit the home gym lower body sub below.</div>
+        <div class="fort-cancel-btns">
+          <button class="fort-btn fort-btn-go" onclick="toggleFortCancelled()">🏠 FORT Cancelled — Home Lower Day</button>
+        </div>
+      </div>`;
+    }
+  }
+
   // Workout header
   html += `<div class="w-header">
-    <div class="w-title"><span>${workout.emoji}</span>${workout.title}</div>
-    <div class="w-chips">${workout.chips.map(c => `<span class="wchip bg-${day.type} c-${day.type}">${c}</span>`).join('')}</div>
+    <div class="w-title"><span>${workout.emoji}</span>${fortCancelled && day.type==='fort' ? 'HOME LOWER DAY' : workout.title}</div>
+    <div class="w-chips">${(fortCancelled && day.type==='fort' ? ['Home Gym Lower Body','Hassan Protocol'] : workout.chips).map(c => `<span class="wchip bg-${day.type} c-${day.type}">${c}</span>`).join('')}</div>
     <div class="prog-row">
       <span class="prog-label">Progress</span>
       <div class="mini-bar"><div class="mini-bar-fill bar-${day.type}" id="dayProg" style="width:0%"></div></div>
@@ -1019,9 +1071,10 @@ function renderWorkoutView() {
   </div>`;
 
   // Done banner
+  const doneBannerTitle = (fortCancelled && day.type==='fort') ? 'HOME LOWER DAY COMPLETE' : `${workout.title} COMPLETE`;
   html += `<div class="done-banner" id="doneBanner">
     <div class="done-emoji">${workout.emoji}</div>
-    <div class="done-title">${workout.title} COMPLETE</div>
+    <div class="done-title">${doneBannerTitle}</div>
     <div class="done-sub">Steam room time. You earned it. 🔥</div>
   </div>`;
 
@@ -1073,8 +1126,14 @@ function renderWorkoutView() {
     </div>
   </div>`;
 
-  // Exercises
-  workout.sections.forEach(section => {
+  // Exercises — if FORT day and cancelled, skip "If At FORT" section, show only sub + abs
+  const sectionsToRender = (day.type === 'fort' && fortCancelled)
+    ? workout.sections.filter(s => s.label !== 'If At FORT')
+    : (day.type === 'fort' && !fortCancelled)
+      ? workout.sections.filter(s => s.label === 'If At FORT' || s.label.includes('Ab'))
+      : workout.sections;
+
+  sectionsToRender.forEach(section => {
     html += `<div class="sec-label">${section.label}</div>`;
     section.exercises.forEach(ex => {
       const state = sessionState[ex.id] || {};
@@ -1283,6 +1342,18 @@ function getRotationAlerts(workoutType) {
 function dismissAlert(id) {
   const el = document.getElementById(id);
   if (el) el.classList.remove('visible');
+}
+
+function toggleFortCancelled() {
+  fortCancelled = !fortCancelled;
+  // Persist choice for today so page reload remembers
+  const key = `fort-cancelled-${getDateStr()}`;
+  if (fortCancelled) {
+    window.storage.set(key, '1').catch(()=>{});
+  } else {
+    window.storage.delete(key).catch(()=>{});
+  }
+  renderWorkoutView();
 }
 
 function swapExercise(exId, newName, type) {
