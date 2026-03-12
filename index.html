@@ -601,34 +601,40 @@ const WORKOUTS = {
     chips:['Chest · Shoulders · Triceps','Hassan Protocol'],
     sections:[
       { label:'Pre-Exhaust', exercises:[
-        { id:'p-fly', name:'Cable Low-to-High Fly', muscle:'chest',
-          sets:[{wt:20,reps:'Warm'},{wt:30,reps:'FAIL'}],
-          chips:{sets:'2 Sets',reps:'15-20 reps',pr:'PR: 30 lbs',tag:'Hassan'},
-          hassan:true, ladder:['20×warm','30×FAIL'], burnout:'Drop 20%, 20 reps',
-          cue:'Start externally rotated. Pull elbows up and in.' }
+        { id:'p-pecdeck', name:'Pec Deck / Machine Fly', muscle:'chest',
+          sets:[{wt:70,reps:'Warm'},{wt:90,reps:'FAIL'}],
+          chips:{sets:'2 Sets',reps:'15-20 reps',pr:'PR: 90 lbs',tag:'Hassan'},
+          hassan:true, ladder:['70×warm','90×FAIL'], burnout:'Drop 20%, 20 reps',
+          cue:'Lead with elbows not hands. Feel the deep stretch at the bottom. Squeeze hard at peak — chest only, no shoulder creep. This is your chest activation, not a shoulder warm-up.' }
       ]},
       { label:'Main Movement', exercises:[
         { id:'p-chest', name:'Machine Chest Press', muscle:'chest',
           sets:[{wt:121,reps:'6'},{wt:143,reps:'FAIL'},{wt:121,reps:'20',note:'Burnout'}],
           chips:{sets:'2 Sets',reps:'8-12 reps',pr:'PR: 137×12',target:'Target: 143 lbs',tag:'Hassan'},
           hassan:true, ladder:['121×6','132×4','143×FAIL'], burnout:'121 lbs × 20 reps',
-          cue:'Scapulae retracted and depressed. Drive through chest, not shoulders.' },
+          cue:'Scapulae retracted and depressed. Drive through chest, not shoulders. Chest should be pre-fatigued from Pec Deck — good.' },
         { id:'p-shoulder', name:'Seated Shoulder Press', muscle:'shoulders',
           sets:[{wt:121,reps:'4'},{wt:143,reps:'FAIL'},{wt:121,reps:'20',note:'Burnout'}],
           chips:{sets:'2 Sets',reps:'8-10 reps',pr:'PR: 143×10',target:'Target: 143×11',tag:'Hassan'},
           hassan:true, ladder:['121×4','132×2','143×FAIL'], burnout:'121 lbs × 20 reps',
-          cue:'Torso upright. Full ROM to shoulder level every rep.' }
+          cue:'Torso upright. Full ROM to shoulder level every rep. This is your main shoulder strength builder — different emphasis from Upper Day.' }
+      ]},
+      { label:'Chest Accessory', exercises:[
+        { id:'p-cablefly', name:'Cable Low-to-High Fly', muscle:'chest',
+          sets:[{wt:20,reps:'15'},{wt:30,reps:'12'}],
+          chips:{sets:'2 Sets',reps:'12-15 reps',pr:'PR: 30×15'},
+          cue:'Cable fly as accessory — not the opener. Focus on the stretch at the bottom. Pull elbows up and in. Slight internal rotation at top. Chase the pump here, not the weight.' }
       ]},
       { label:'Isolation', exercises:[
         { id:'p-lat-raise', name:'Cable Lateral Raise', muscle:'shoulders',
           sets:[{wt:15,reps:'15'},{wt:15,reps:'15'}],
           chips:{sets:'2 Sets',reps:'12-15 reps',pr:'PR: 15×15'},
           cue:'Lean away from cable. Pinky up first. Lead with elbows not wrists.' },
-        { id:'p-tricep', name:'Tricep Rope Pushdown', muscle:'triceps',
-          sets:[{wt:55,reps:'FAIL'},{wt:55,reps:'FAIL'}],
-          chips:{sets:'2 Sets',reps:'12-15 reps',pr:'PR: 55×15',tag:'Hassan'},
+        { id:'p-tricep-oh', name:'Overhead Rope Extension', muscle:'triceps',
+          sets:[{wt:40,reps:'FAIL'},{wt:40,reps:'FAIL'}],
+          chips:{sets:'2 Sets',reps:'12-15 reps',pr:'PR: 40×12',tag:'Hassan'},
           hassan:true,
-          cue:'Elbows locked at sides. Spread rope at bottom. 1-sec squeeze.' }
+          cue:'Elbows point to ceiling — do NOT let them flare out. Drive hands apart at full extension. You\'re targeting the long head here, which the pushdown on Upper Day misses. Feel the stretch overhead.' }
       ]},
       { label:'Ab Finisher 🎯', exercises:[
         { id:'p-bicycle', name:'Bicycle Crunch', muscle:'abs',
