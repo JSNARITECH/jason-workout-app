@@ -728,7 +728,7 @@ const WORKOUTS = {
       ]},
       { label:'Main Movement', exercises:[
         { id:'pull-lat', name:'Lat Pulldown (Wide Grip)', muscle:'back',
-          sets:[{wt:121,reps:'6'},{wt:143,reps:'FAIL'},{wt:110,reps:'20',note:'Burnout'}],
+          sets:[{wt:121,reps:'6'},{wt:143,reps:'FAIL'}],
           chips:{sets:'2 Sets',reps:'8-12 reps',pr:'PR: 143×10',target:'Target: 154 lbs',tag:'Hassan'},
           hassan:true, ladder:['121×6','132×4','143×FAIL'], burnout:'110 lbs × 20 reps',
           cue:'Pull elbows down and in. Chest tall. No shoulder shrug.' },
@@ -1748,8 +1748,11 @@ async function setRestOverride(exId, seconds) {
 // ============================================================
 function startSessionTimer() {
   if (!sessionStart) {
-    sessionStart = sessionState['__sessionStart__'];
-    if (!sessionStart) {
+    const stored = sessionState['__sessionStart__'];
+    // Discard if older than 24 hours — stale from a previous day
+    if (stored && (Date.now() - stored) < 86400000) {
+      sessionStart = stored;
+    } else {
       sessionStart = Date.now();
       sessionState['__sessionStart__'] = sessionStart;
       saveSession();
