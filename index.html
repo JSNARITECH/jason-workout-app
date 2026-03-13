@@ -476,6 +476,27 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .bg-upper{background:var(--purple-dim);}.bg-lower{background:var(--green-dim);}.bg-fort{background:var(--red-dim);}
 .bar-push{background:var(--orange);}.bar-pull{background:var(--blue);}.bar-legs{background:var(--accent);}
 .bar-upper{background:var(--purple);}.bar-lower{background:var(--green);}.bar-fort{background:var(--red);}
+
+/* BPM IMPORT + ZONE BARS */
+.bpm-import-btn{width:100%;margin-top:10px;padding:8px 12px;border-radius:9px;border:1px dashed rgba(192,132,252,0.4);background:var(--purple-dim);color:var(--purple);font-size:10px;font-weight:700;letter-spacing:1.5px;cursor:pointer;font-family:'DM Sans',sans-serif;text-transform:uppercase;transition:all 0.2s;}
+.bpm-import-btn:active{opacity:0.7;}
+.bpm-import-area{display:none;margin-top:8px;}
+.bpm-import-area.visible{display:block;}
+.bpm-paste{width:100%;background:var(--card2);border:1px solid var(--border2);border-radius:8px;color:var(--white);padding:8px;font-size:11px;font-family:monospace;resize:none;height:82px;line-height:1.4;}
+.bpm-paste:focus{outline:none;border-color:var(--purple);}
+.bpm-parse-btn{width:100%;margin-top:6px;padding:9px;border-radius:8px;border:none;background:var(--purple);color:var(--black);font-weight:700;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:1px;}
+.bpm-parse-btn:active{opacity:0.8;}
+.bpm-import-hint{font-size:9px;color:var(--dim2);margin-top:5px;line-height:1.4;letter-spacing:0.5px;}
+.zone-bars{margin-top:12px;display:flex;flex-direction:column;gap:5px;}
+.zone-bars-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--dim2);font-weight:700;margin-bottom:3px;}
+.zone-bar-row{display:flex;align-items:center;gap:7px;}
+.zone-bar-name{width:64px;color:var(--dim2);flex-shrink:0;font-size:9px;letter-spacing:0.5px;font-weight:600;}
+.zone-bar-track{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden;}
+.zone-bar-fill{height:100%;border-radius:3px;transition:width 0.5s ease;width:0%;}
+.zone-bar-pct{width:28px;text-align:right;color:var(--dim2);flex-shrink:0;font-size:9px;font-weight:700;}
+.z1-fill{background:var(--dim2);}.z2-fill{background:var(--green);}.z3-fill{background:var(--accent);}.z4-fill{background:var(--orange);}.z5-fill{background:var(--red);}
+.bpm-insight{margin-top:10px;font-size:11px;color:var(--dim2);background:var(--card2);border-radius:9px;padding:9px 11px;line-height:1.5;border-left:3px solid var(--purple);}
+.bpm-insight strong{color:var(--white);}
 </style>
 </head>
 <body>
@@ -1209,6 +1230,18 @@ function renderWorkoutView() {
         <div class="session-timer-label">ELAPSED</div>
       </div>
     </div>
+    ${ws.zones ? `<div class="zone-bars">
+      <div class="zone-bars-title">Heart Rate Zones</div>
+      ${[['Zone 5 Max','z5','z5-fill'],['Zone 4 Hard','z4','z4-fill'],['Zone 3 Aerobic','z3','z3-fill'],['Zone 2 Fat Burn','z2','z2-fill'],['Zone 1 Easy','z1','z1-fill']].map(([n,k,cls]) =>
+        `<div class="zone-bar-row"><span class="zone-bar-name">${n}</span><div class="zone-bar-track"><div class="zone-bar-fill ${cls}" style="width:${ws.zones[k]||0}%"></div></div><span class="zone-bar-pct">${ws.zones[k]||0}%</span></div>`
+      ).join('')}
+    </div>` : ''}
+    <button class="bpm-import-btn" onclick="toggleBpmImport()">📥 Import BPM from Claude</button>
+    <div class="bpm-import-area" id="bpmImportArea">
+      <textarea class="bpm-paste" id="bpmPasteField" placeholder='Paste JSON from Claude chat here...'></textarea>
+      <button class="bpm-parse-btn" onclick="importWatchData()">Parse &amp; Apply</button>
+      <div class="bpm-import-hint">In Claude chat: send your Samsung Health screenshot and ask<br>"Extract as JSON for my workout app" — then paste the result here.</div>
+    </div>
   </div>`;
 
   // Exercises — if FORT day and cancelled, skip "If At FORT" section, show only sub + abs
@@ -1467,7 +1500,7 @@ function toggleDone(e, exId, type) {
   } else {
     card.classList.add('done');
     card.classList.remove('expanded');
-    sessionState[exId] = { ...(sessionState[exId]||{}), done: true };
+    sessionState[exId] = { ...(sessionState[exId]||{}), done: true, doneAt: Date.now() };
     startTimerForEx(exId, type);
   }
   saveSession();
@@ -1479,7 +1512,7 @@ function completeExBtn(exId, type) {
   if (!card.classList.contains('done')) {
     card.classList.add('done');
     card.classList.remove('expanded');
-    sessionState[exId] = { ...(sessionState[exId]||{}), done: true };
+    sessionState[exId] = { ...(sessionState[exId]||{}), done: true, doneAt: Date.now() };
     const btn = document.getElementById(`btn-${exId}`);
     if (btn) { btn.textContent = '✓ COMPLETED'; btn.classList.add('done-state'); }
     saveSession();
@@ -1496,6 +1529,40 @@ function updateWeight(exId, setIdx, val) {
   }
   sessionState[exId].weights[setIdx] = parseFloat(val) || 0;
   saveSession();
+}
+
+function toggleBpmImport() {
+  const area = document.getElementById('bpmImportArea');
+  area.classList.toggle('visible');
+  if (area.classList.contains('visible')) document.getElementById('bpmPasteField').focus();
+}
+
+function importWatchData() {
+  const raw = (document.getElementById('bpmPasteField').value || '').trim();
+  if (!raw) return;
+  let data;
+  try {
+    // Extract JSON from Claude's response even if wrapped in text
+    const match = raw.match(/\{[\s\S]*\}/);
+    data = JSON.parse(match ? match[0] : raw);
+  } catch(e) {
+    showToast('❌ Invalid JSON');
+    return;
+  }
+  if (!sessionState['__watch__']) sessionState['__watch__'] = {};
+  const w = sessionState['__watch__'];
+  if (data.avgBPM) w.avgHr = data.avgBPM;
+  if (data.maxBPM) w.maxHr = data.maxBPM;
+  if (data.calories) w.calories = data.calories;
+  if (data.duration) w.duration = data.duration;
+  if (data.zones) w.zones = data.zones;
+  if (data.peakTiming) w.peakTiming = data.peakTiming;
+  if (data.pattern) w.pattern = data.pattern;
+  saveSession();
+  showToast('✓ BPM IMPORTED');
+  // Re-render the workout view to show updated widget
+  const type = WEEK[currentDayIdx].type;
+  renderWorkoutView();
 }
 
 function saveWatch(field, val) {
@@ -1769,7 +1836,7 @@ async function saveWorkout(type, dayKey) {
     emoji: workout.emoji,
     exercises, newPRs,
     notes: (sessionState['__notes__']||{}).notes || '',
-    watch: { avgHr: watch.avgHr||null, maxHr: watch.maxHr||null, calories: watch.calories||null },
+    watch: { avgHr: watch.avgHr||null, maxHr: watch.maxHr||null, calories: watch.calories||null, zones: watch.zones||null, peakTiming: watch.peakTiming||null, pattern: watch.pattern||null },
     duration: getSessionDuration(),
     savedAt: new Date().toISOString()
   };
@@ -1904,6 +1971,37 @@ function renderSummaryView() {
       if (cur.watch.calories) html += `<span style="font-size:10px;background:var(--border2);padding:2px 8px;border-radius:7px;color:var(--dim2)">🔥 <strong style="color:var(--white)">${cur.watch.calories}</strong> kcal</span>`;
       if (cur.duration) html += `<span style="font-size:10px;background:var(--border2);padding:2px 8px;border-radius:7px;color:var(--dim2)">⏱️ <strong style="color:var(--white)">${cur.duration}</strong></span>`;
       html += `</div>`;
+
+      // Zone distribution bars
+      if (cur.watch.zones) {
+        const z = cur.watch.zones;
+        html += `<div class="zone-bars" style="margin-bottom:10px;">
+          <div class="zone-bars-title">Heart Rate Zones</div>
+          ${[['Zone 5 Max','z5','z5-fill'],['Zone 4 Hard','z4','z4-fill'],['Zone 3 Aerobic','z3','z3-fill'],['Zone 2 Fat Burn','z2','z2-fill'],['Zone 1 Easy','z1','z1-fill']].map(([n,k,cls]) =>
+            `<div class="zone-bar-row"><span class="zone-bar-name">${n}</span><div class="zone-bar-track"><div class="zone-bar-fill ${cls}" style="width:${z[k]||0}%"></div></div><span class="zone-bar-pct">${z[k]||0}%</span></div>`
+          ).join('')}
+        </div>`;
+      }
+
+      // BPM intensity insight
+      if (cur.watch.avgHr) {
+        const avg = cur.watch.avgHr;
+        const max = cur.watch.maxHr || 0;
+        const prevSame = prev?.watch?.avgHr;
+        let insight = '';
+        if (avg < 108) insight = 'Very light session — BPM stayed low. Consider pushing the intensity or weights.';
+        else if (avg < 120) insight = `Solid fat-burn zone — avg ${avg} bpm keeps you in Zone 2 for visceral fat oxidation.`;
+        else if (avg < 130) insight = `Good aerobic effort — avg ${avg} bpm. Mix of Zone 2–3 is great for body composition.`;
+        else if (avg < 140) insight = `High intensity session — avg ${avg} bpm. Excellent metabolic stimulus.`;
+        else insight = `Max effort — avg ${avg} bpm. This contributes directly to your 90-min/week HIIT threshold.`;
+        if (max >= 155) insight += ` Peak hit Zone 4-5 (${max} bpm) — visceral fat protocol activated.`;
+        if (prevSame) {
+          const delta = avg - prevSame;
+          if (delta > 5) insight += ` <strong>↑${delta} bpm harder than last ${cur.title.toLowerCase()}.</strong>`;
+          else if (delta < -5) insight += ` <strong>↓${Math.abs(delta)} bpm easier than last ${cur.title.toLowerCase()} — weights may need adjusting.</strong>`;
+        }
+        html += `<div class="bpm-insight">${insight}</div>`;
+      }
     }
 
     const doneExes = cur.exercises.filter(e => e.done);
