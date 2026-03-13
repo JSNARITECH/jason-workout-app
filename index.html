@@ -517,7 +517,7 @@ const WEEK = [
   { key:'wed', name:'Wed', type:'rest',   emoji:'⚡', label:'SPRINT' },
   { key:'thu', name:'Thu', type:'push',   emoji:'🔥', label:'PUSH' },
   { key:'fri', name:'Fri', type:'pull',   emoji:'💙', label:'PULL' },
-  { key:'sat', name:'Sat', type:'rest',   emoji:'🌤️', label:'RECOVERY' },
+  { key:'sat', name:'Sat', type:'rest',   emoji:'⚡', label:'SPRINT' },
   { key:'sun', name:'Sun', type:'legs',   emoji:'🦵', label:'LEGS' },
 ];
 
@@ -649,12 +649,6 @@ const WORKOUTS = {
     title:'PULL DAY', emoji:'💙',
     chips:['Back · Biceps · Rear Delts','Hassan Protocol'],
     sections:[
-      { label:'🌅 AM Sprint Protocol (Before Eating Window)', exercises:[
-        { id:'pull-sprint', name:'Fasted Sprint Session', muscle:'full',
-          sets:[{wt:0,reps:'6 rounds'},{wt:0,reps:'25 min total'}],
-          chips:{sets:'6 × 30-sec sprints',reps:'Zone 4–5 · 140-165+ bpm',tag:'HIIT'},
-          cue:'Do this FASTED before 2pm eating window. Manual treadmill. 5-min warm-up walk → 6 × 30-sec MAX effort sprints → 90-sec walking recovery between each → 5-min cool-down. This is your second weekly HIIT session — completes your 90-min/week visceral fat threshold alongside Wednesday. Log HR avg + max from Galaxy Watch. Progress: add 1 round every 2 weeks (target 8 rounds by Week 8).' }
-      ]},
       { label:'Pre-Exhaust', exercises:[
         { id:'pull-sa', name:'Straight-Arm Cable Pulldown', muscle:'back',
           sets:[{wt:30,reps:'20'},{wt:40,reps:'15-20'}],
@@ -783,12 +777,14 @@ const REST_CONTENT = {
     {icon:'💧',text:'Electrolytes are critical today. Keto + fasted sprints = high sodium/potassium/magnesium demand. Replenish immediately post-sprint.'},
     {icon:'😴',text:'Sleep is visceral fat medicine. Two weeks of poor sleep = 11% more visceral fat with zero weight change (RCT). Protect tonight\'s window. Magnesium before bed.'}
   ]},
-  sat:{ title:'ACTIVE RECOVERY', icon:'🌤️', sub:'Recharge. Legs are tomorrow.', tips:[
-    {icon:'♨️',text:'Sauna: 20–30 min @ 175°F. 4–7x/week use = 66% lower dementia risk (longitudinal data). Post-exercise use = superior anabolic signaling. Do not exceed 200°F.'},
-    {icon:'🚶',text:'Optional Zone 1–2 walk or swim only (under 128 bpm). No HIIT, no sprints — legs are tomorrow.'},
-    {icon:'🥗',text:'Flexible eating window. Hit 175–200g protein. Keep carbs under 30g net. Fat to satiety.'},
-    {icon:'💊',text:'Omega-3s with meal: 3–4 capsules Sports Research Triple Strength = ~3–4g EPA+DHA. Blunts inflammation, reduces muscle atrophy risk by up to 50%.'},
-    {icon:'🔋',text:'Legs tomorrow — sleep fueled and recovered. Quality Saturday sleep directly impacts Sunday strength output and visceral fat regulation.'}
+  sat:{ title:'SPRINT + RECOVERY', icon:'⚡', sub:'Second HIIT session. Then full recharge.', tips:[
+    {icon:'⚡',text:'SPRINT PROTOCOL (2nd weekly HIIT session): 5-min warm-up walk → 6 × 30-sec MAX effort sprints (manual treadmill, lean hard) → 90-sec walking recovery between each → 5-min cool-down. Total: ~25 min. Zone 4–5 target: 140–165+ bpm. Wed + Sat sprints = ~50 min pure HIIT. Add Tuesday class and you clear the 90-min/week visceral fat threshold.'},
+    {icon:'📈',text:'Progressive overload: Start at 4 rounds. Add 1 round every 2 weeks alongside Wednesday. Both days progress together. Goal = 8 rounds each by Week 8.'},
+    {icon:'♨️',text:'POST-SPRINT SAUNA: 20–30 min @ 175°F. No rush today — weekend. This is the best day to extend the session. Do not exceed 200°F. Amplifies VO2 max and anabolic signaling beyond exercise alone.'},
+    {icon:'🚶',text:'After sauna: done. No more cardio. Zone 1–2 walking only if you feel like moving. Legs are tomorrow — protect recovery.'},
+    {icon:'🥗',text:'Flexible eating window. Hit 175–200g protein. Keto macros maintained. Weekend = social flexibility, not a reason to break keto.'},
+    {icon:'💊',text:'Omega-3s with meal: 3–4 capsules Sports Research Triple Strength = ~3–4g EPA+DHA. Blunts inflammation from sprints.'},
+    {icon:'🔋',text:'Legs tomorrow — quality Saturday sleep directly impacts Sunday strength output AND visceral fat regulation.'}
   ]}
 };
 
