@@ -513,8 +513,8 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 // ============================================================
 const WEEK = [
   { key:'mon', name:'Mon', type:'upper',  emoji:'💪', label:'UPPER' },
-  { key:'tue', name:'Tue', type:'fort',   emoji:'🏙️', label:'FORT/LOWER' },
-  { key:'wed', name:'Wed', type:'rest',   emoji:'🧘', label:'RECOVERY' },
+  { key:'tue', name:'Tue', type:'fort',   emoji:'🥊', label:'FLEX/HIIT' },
+  { key:'wed', name:'Wed', type:'rest',   emoji:'⚡', label:'SPRINT' },
   { key:'thu', name:'Thu', type:'push',   emoji:'🔥', label:'PUSH' },
   { key:'fri', name:'Fri', type:'pull',   emoji:'💙', label:'PULL' },
   { key:'sat', name:'Sat', type:'rest',   emoji:'🌤️', label:'RECOVERY' },
@@ -621,18 +621,18 @@ const WORKOUTS = {
       ]},
       { label:'Chest Accessory', exercises:[
         { id:'p-cablefly', name:'Cable Low-to-High Fly', muscle:'chest',
-          sets:[{wt:20,reps:'15'},{wt:30,reps:'12'}],
-          chips:{sets:'2 Sets',reps:'12-15 reps',pr:'PR: 30×15'},
+          sets:[{wt:30,reps:'15'},{wt:50,reps:'15'}],
+          chips:{sets:'2 Sets',reps:'12-15 reps',pr:'PR: 50×15'},
           cue:'Cable fly as accessory — not the opener. Focus on the stretch at the bottom. Pull elbows up and in. Slight internal rotation at top. Chase the pump here, not the weight.' }
       ]},
       { label:'Isolation', exercises:[
         { id:'p-lat-raise', name:'Cable Lateral Raise', muscle:'shoulders',
-          sets:[{wt:15,reps:'15'},{wt:15,reps:'15'}],
-          chips:{sets:'2 Sets',reps:'12-15 reps',pr:'PR: 15×15'},
+          sets:[{wt:40,reps:'20'},{wt:50,reps:'20'}],
+          chips:{sets:'2 Sets',reps:'15-20 reps',pr:'PR: 50×20'},
           cue:'Lean away from cable. Pinky up first. Lead with elbows not wrists.' },
         { id:'p-tricep-oh', name:'Overhead Rope Extension', muscle:'triceps',
-          sets:[{wt:40,reps:'FAIL'},{wt:40,reps:'FAIL'}],
-          chips:{sets:'2 Sets',reps:'12-15 reps',pr:'PR: 40×12',tag:'Hassan'},
+          sets:[{wt:100,reps:'FAIL'},{wt:110,reps:'20',note:'Burnout'}],
+          chips:{sets:'2 Sets',reps:'12-15 reps',pr:'PR: 100×FAIL / 110×20',tag:'Hassan'},
           hassan:true,
           cue:'Elbows point to ceiling — do NOT let them flare out. Drive hands apart at full extension. You\'re targeting the long head here, which the pushdown on Upper Day misses. Feel the stretch overhead.' }
       ]},
@@ -649,6 +649,12 @@ const WORKOUTS = {
     title:'PULL DAY', emoji:'💙',
     chips:['Back · Biceps · Rear Delts','Hassan Protocol'],
     sections:[
+      { label:'🌅 AM Sprint Protocol (Before Eating Window)', exercises:[
+        { id:'pull-sprint', name:'Fasted Sprint Session', muscle:'full',
+          sets:[{wt:0,reps:'6 rounds'},{wt:0,reps:'25 min total'}],
+          chips:{sets:'6 × 30-sec sprints',reps:'Zone 4–5 · 140-165+ bpm',tag:'HIIT'},
+          cue:'Do this FASTED before 2pm eating window. Manual treadmill. 5-min warm-up walk → 6 × 30-sec MAX effort sprints → 90-sec walking recovery between each → 5-min cool-down. This is your second weekly HIIT session — completes your 90-min/week visceral fat threshold alongside Wednesday. Log HR avg + max from Galaxy Watch. Progress: add 1 round every 2 weeks (target 8 rounds by Week 8).' }
+      ]},
       { label:'Pre-Exhaust', exercises:[
         { id:'pull-sa', name:'Straight-Arm Cable Pulldown', muscle:'back',
           sets:[{wt:30,reps:'20'},{wt:40,reps:'15-20'}],
@@ -725,16 +731,16 @@ const WORKOUTS = {
     ]
   },
   fort:{
-    title:'FORT / LOWER DAY', emoji:'🏙️',
-    chips:['FORT NYC or Lower Body','Coached Session'],
+    title:'TUESDAY FLEX DAY', emoji:'🥊',
+    chips:['Boxing · HIIT Class · Lower Body','Counts toward 90-min/wk HIIT target'],
     sections:[
-      { label:'If At FORT', exercises:[
-        { id:'f-class', name:'FORT NYC Class', muscle:'full',
+      { label:'If At A Class (Boxing / HIIT)', exercises:[
+        { id:'f-class', name:'Boxing / HIIT Class', muscle:'full',
           sets:[{wt:0,reps:'Full session'}],
-          chips:{sets:'Full Class',reps:'Coach-led'},
-          cue:'Trust the programming. Log post-class: total sets, intensity 1-10, lower back status. Report back for integration assessment.' }
+          chips:{sets:'Full Class',reps:'Zone 4 — 140-155 bpm'},
+          cue:'Target HR: 140–155 bpm throughout. This session = ~35-40 min toward your 90-min/week visceral fat HIIT threshold (Dr. Rhonda Patrick protocol). Log HR avg + max from Galaxy Watch after.' }
       ]},
-      { label:'If Lower Day (Sub)', exercises:[
+      { label:'If Lower Day (Home Sub)', exercises:[
         { id:'f-ext', name:'Leg Extension', muscle:'quads',
           sets:[{wt:99,reps:'15'},{wt:121,reps:'FAIL'}],
           chips:{sets:'2 Sets',reps:'To Failure',pr:'PR: 121 lbs',tag:'Hassan'},
@@ -768,18 +774,21 @@ const WORKOUTS = {
 };
 
 const REST_CONTENT = {
-  wed:{ title:'ACTIVE RECOVERY', icon:'🧘', sub:'No weights. Recover. Grow.', tips:[
-    {icon:'🚶',text:'Fasted incline walk: 6% grade, 3.0 mph, 30-45 min. Zone 2 fat burn.'},
-    {icon:'🏃',text:'Optional sprints: 4 × 30 sec, 1-2 min walking rest. VO2 max stimulus.'},
-    {icon:'🧘',text:'Hip mobility + thoracic spine work: 15-20 min.'},
-    {icon:'💧',text:'Extra hydration + electrolytes on keto.'},
-    {icon:'😴',text:'Magnesium before bed. 7-8 hour sleep target.'}
+  wed:{ title:'SPRINT DAY ⚡', icon:'⚡', sub:'Visceral fat weapon. 90-min/wk HIIT target.', tips:[
+    {icon:'🚶',text:'AM fasted incline walk FIRST: 6% grade, 3.0 mph, 30–45 min. Zone 2 (108–128 bpm). Fasted keto state = maximum fat oxidation.'},
+    {icon:'⚡',text:'SPRINT PROTOCOL — counts toward your 90-min/week HIIT threshold: 5-min warm-up walk → 6 × 30-sec MAX effort sprints (manual treadmill, lean hard) → 90-sec walking recovery between each → 5-min cool-down. Total: ~25 min. Zone 4–5 target: 140–165+ bpm. Dr. O\'Mara data: short maximal sprints eliminate visceral fat faster than any other cardio modality.'},
+    {icon:'📈',text:'PROGRESSIVE OVERLOAD: Week 1–2 = 4 rounds. Add 1 round every 2 weeks. Goal = 8 rounds by Week 8. Intensity rule: if it doesn\'t feel hard, lean harder into the belt.'},
+    {icon:'♨️',text:'POST-SPRINT SAUNA (non-optional): 20 min @ 175°F traditional sauna. Using sauna post-exercise amplifies VO2 max gains and anabolic signaling beyond exercise alone. Do not exceed 200°F. Dr. Rhonda Patrick protocol.'},
+    {icon:'🧘',text:'Hip mobility + thoracic spine work: 15–20 min. Counteracts desk compression from sitting.'},
+    {icon:'💧',text:'Electrolytes are critical today. Keto + fasted sprints = high sodium/potassium/magnesium demand. Replenish immediately post-sprint.'},
+    {icon:'😴',text:'Sleep is visceral fat medicine. Two weeks of poor sleep = 11% more visceral fat with zero weight change (RCT). Protect tonight\'s window. Magnesium before bed.'}
   ]},
   sat:{ title:'ACTIVE RECOVERY', icon:'🌤️', sub:'Recharge. Legs are tomorrow.', tips:[
-    {icon:'♨️',text:'Steam room / sauna: 20-30 min. No rush today.'},
-    {icon:'🚶',text:'Optional light walk or swimming. Zone 1-2 only.'},
-    {icon:'🥗',text:'Flexible eating window. Hit 175-190g protein target.'},
-    {icon:'🔋',text:'Legs tomorrow — go to bed fueled and recovered.'}
+    {icon:'♨️',text:'Sauna: 20–30 min @ 175°F. 4–7x/week use = 66% lower dementia risk (longitudinal data). Post-exercise use = superior anabolic signaling. Do not exceed 200°F.'},
+    {icon:'🚶',text:'Optional Zone 1–2 walk or swim only (under 128 bpm). No HIIT, no sprints — legs are tomorrow.'},
+    {icon:'🥗',text:'Flexible eating window. Hit 175–200g protein. Keep carbs under 30g net. Fat to satiety.'},
+    {icon:'💊',text:'Omega-3s with meal: 3–4 capsules Sports Research Triple Strength = ~3–4g EPA+DHA. Blunts inflammation, reduces muscle atrophy risk by up to 50%.'},
+    {icon:'🔋',text:'Legs tomorrow — sleep fueled and recovered. Quality Saturday sleep directly impacts Sunday strength output and visceral fat regulation.'}
   ]}
 };
 
