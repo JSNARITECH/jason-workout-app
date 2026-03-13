@@ -2559,6 +2559,23 @@ let sprintState = {
   hrMax: ''
 };
 
+// Wake Lock — keeps screen alive during active sprint timer
+let sprintWakeLock = null;
+async function acquireWakeLock() {
+  if (!('wakeLock' in navigator)) return;
+  try {
+    sprintWakeLock = await navigator.wakeLock.request('screen');
+    sprintWakeLock.addEventListener('release', () => { sprintWakeLock = null; });
+  } catch(e) {}
+}
+function releaseWakeLock() {
+  if (sprintWakeLock) { try { sprintWakeLock.release(); } catch(e) {} sprintWakeLock = null; }
+}
+// Re-acquire if page becomes visible again (e.g. user switches apps and back)
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && sprintState.running) acquireWakeLock();
+});
+
 const SPRINT_PHASES = {
   warmup:   { label: 'WARM-UP WALK',  secs: 300, cue: 'Easy incline walk. Get the blood moving. Deep breaths.' },
   sprint:   { label: 'SPRINT — MAX EFFORT', secs: 30,  cue: 'LEAN HARD INTO THE BELT. Maximum effort. Drive your legs. Zone 5.' },
@@ -2671,8 +2688,10 @@ function toggleSprint() {
   const btn = document.getElementById('spMainBtn');
   if (btn) { btn.textContent = sprintState.running ? 'PAUSE' : 'RESUME'; btn.className = sprintState.running ? 'sprint-btn sprint-btn-main running' : 'sprint-btn sprint-btn-main'; }
   if (sprintState.running) {
+    acquireWakeLock();
     sprintState.interval = setInterval(tickSprint, 1000);
   } else {
+    releaseWakeLock();
     clearInterval(sprintState.interval);
   }
   updateSprintDisplay();
@@ -2712,6 +2731,7 @@ function advanceSprintPhase() {
     sprintState.phase = 'done';
     clearInterval(sprintState.interval);
     sprintState.running = false;
+    releaseWakeLock();
     completeSprint();
     return;
   }
@@ -2774,6 +2794,7 @@ function completeSprint() {
 
 function resetSprint() {
   clearInterval(sprintState.interval);
+  releaseWakeLock();
   sprintState = { running: false, phase: 'idle', round: 0, totalRounds: sprintState.totalRounds, elapsed: 0, phaseDuration: 0, interval: null };
   const btn = document.getElementById('spMainBtn');
   if (btn) { btn.textContent = 'START'; btn.className = 'sprint-btn sprint-btn-main'; }
