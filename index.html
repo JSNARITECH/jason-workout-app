@@ -229,6 +229,55 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .rest-tip{background:var(--card2);border:1px solid var(--border2);border-radius:9px;padding:9px 12px;font-size:11px;color:var(--dim2);text-align:left;display:flex;align-items:flex-start;gap:7px;}
 .rt-icon{font-size:14px;flex-shrink:0;}
 
+/* SPRINT TIMER */
+.sprint-card{background:var(--card);border:1px solid var(--border);border-radius:15px;padding:18px;margin:6px 0;}
+.sprint-header{text-align:center;margin-bottom:16px;}
+.sprint-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;margin-bottom:4px;}
+.sprint-subtitle{font-size:11px;color:var(--dim2);}
+.sprint-rounds-row{display:flex;gap:6px;justify-content:center;margin-bottom:18px;flex-wrap:wrap;}
+.sprint-round-dot{width:32px;height:32px;border-radius:50%;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--dim2);transition:all 0.3s;cursor:default;}
+.sprint-round-dot.done{background:var(--green);border-color:var(--green);color:var(--black);}
+.sprint-round-dot.active{border-color:var(--accent);color:var(--accent);animation:pulse-dot 1s infinite;}
+@keyframes pulse-dot{0%,100%{box-shadow:0 0 0 0 rgba(232,255,71,0.4);}50%{box-shadow:0 0 0 6px rgba(232,255,71,0);}}
+.sprint-clock{text-align:center;margin-bottom:16px;}
+.sprint-phase-label{font-size:10px;letter-spacing:3px;text-transform:uppercase;font-weight:700;margin-bottom:6px;}
+.sprint-phase-label.phase-sprint{color:var(--red);}
+.sprint-phase-label.phase-rest{color:var(--green);}
+.sprint-phase-label.phase-warmup{color:var(--orange);}
+.sprint-phase-label.phase-cooldown{color:var(--blue);}
+.sprint-phase-label.phase-done{color:var(--accent);}
+.sprint-time{font-family:'Bebas Neue',sans-serif;font-size:72px;letter-spacing:2px;line-height:1;}
+.sprint-time.phase-sprint{color:var(--red);}
+.sprint-time.phase-rest{color:var(--green);}
+.sprint-time.phase-warmup{color:var(--orange);}
+.sprint-time.phase-cooldown{color:var(--blue);}
+.sprint-progress-bar{height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin-bottom:16px;}
+.sprint-progress-fill{height:100%;border-radius:3px;transition:width 0.9s linear;}
+.fill-sprint{background:var(--red);}
+.fill-rest{background:var(--green);}
+.fill-warmup{background:var(--orange);}
+.fill-cooldown{background:var(--blue);}
+.sprint-cue{background:var(--card2);border:1px solid var(--border2);border-radius:9px;padding:10px 13px;font-size:11px;color:var(--dim2);text-align:center;margin-bottom:14px;min-height:36px;line-height:1.5;}
+.sprint-btn-row{display:flex;gap:8px;}
+.sprint-btn{flex:1;padding:13px;border-radius:11px;border:none;font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1px;cursor:pointer;transition:all 0.15s;}
+.sprint-btn:active{transform:scale(0.97);}
+.sprint-btn-main{background:var(--accent);color:var(--black);}
+.sprint-btn-main.running{background:var(--red);color:var(--white);}
+.sprint-btn-reset{background:var(--card2);color:var(--dim2);border:1px solid var(--border2);flex:0 0 56px;}
+.sprint-hr-row{display:flex;gap:8px;margin-bottom:14px;}
+.sprint-hr-field{flex:1;display:flex;flex-direction:column;gap:4px;}
+.sprint-hr-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--dim2);font-weight:700;}
+.sprint-hr-input{background:var(--card2);border:1px solid var(--border2);border-radius:9px;color:var(--white);padding:9px 11px;font-size:15px;font-weight:700;font-family:'DM Sans',sans-serif;width:100%;text-align:center;}
+.sprint-hr-input:focus{outline:none;border-color:var(--accent);}
+.sprint-done-banner{background:rgba(77,255,170,0.1);border:1px solid var(--green);border-radius:11px;padding:14px;text-align:center;margin-bottom:14px;}
+.sprint-done-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px;color:var(--green);margin-bottom:4px;}
+.sprint-done-sub{font-size:11px;color:var(--dim2);}
+.sprint-rounds-adj{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:14px;}
+.sprint-rounds-adj-btn{width:30px;height:30px;border-radius:50%;border:1px solid var(--border2);background:none;color:var(--white);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.sprint-rounds-adj-label{font-size:12px;color:var(--dim2);}
+.sprint-rounds-adj-val{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--white);}
+.sprint-section-divider{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--dim2);font-weight:700;margin:14px 0 8px;}
+
 /* SUMMARY VIEW */
 .summary-section{padding:4px 0;}
 .summary-card{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:14px;margin-bottom:8px;}
@@ -2477,16 +2526,270 @@ function invalidateHistoryCache() {
 // ============================================================
 function renderRestDay(dayKey) {
   const content = REST_CONTENT[dayKey] || REST_CONTENT.wed;
+  const isSprint = (dayKey === 'wed' || dayKey === 'sat');
+
+  if (isSprint) {
+    renderSprintDay(dayKey, content);
+  } else {
+    document.getElementById('mainScroll').innerHTML = `
+    <div class="rest-card">
+      <div class="rest-icon">${content.icon}</div>
+      <div class="rest-title">${content.title}</div>
+      <div class="rest-sub">${content.sub}</div>
+      <div class="rest-tips">
+        ${content.tips.map(t => `<div class="rest-tip"><span class="rt-icon">${t.icon}</span><span>${t.text}</span></div>`).join('')}
+      </div>
+    </div>`;
+  }
+  document.getElementById('mainScroll').scrollTop = 0;
+}
+
+// ============================================================
+// SPRINT TIMER ENGINE
+// ============================================================
+let sprintState = {
+  running: false,
+  phase: 'idle',   // idle | warmup | sprint | rest | cooldown | done
+  round: 0,
+  totalRounds: 6,
+  elapsed: 0,
+  phaseDuration: 0,
+  interval: null,
+  hrAvg: '',
+  hrMax: ''
+};
+
+const SPRINT_PHASES = {
+  warmup:   { label: 'WARM-UP WALK',  secs: 300, cue: 'Easy incline walk. Get the blood moving. Deep breaths.' },
+  sprint:   { label: 'SPRINT — MAX EFFORT', secs: 30,  cue: 'LEAN HARD INTO THE BELT. Maximum effort. Drive your legs. Zone 5.' },
+  rest:     { label: 'WALKING RECOVERY', secs: 90,  cue: 'Slow it down. Walk it out. Heart rate coming down to Zone 2 before next round.' },
+  cooldown: { label: 'COOL-DOWN WALK', secs: 300, cue: 'Easy walk. Let heart rate drop below 120. Great work.' },
+  done:     { label: 'SESSION COMPLETE', secs: 0,   cue: 'Head straight to the sauna. 20 min @ 175°F. Non-optional.' }
+};
+
+function renderSprintDay(dayKey, content) {
+  sprintState = { running: false, phase: 'idle', round: 0, totalRounds: 6, elapsed: 0, phaseDuration: 0, interval: null, hrAvg: '', hrMax: '' };
+
+  const tipsHtml = content.tips.slice(2).map(t =>
+    `<div class="rest-tip"><span class="rt-icon">${t.icon}</span><span>${t.text}</span></div>`
+  ).join('');
+
   document.getElementById('mainScroll').innerHTML = `
-  <div class="rest-card">
-    <div class="rest-icon">${content.icon}</div>
-    <div class="rest-title">${content.title}</div>
-    <div class="rest-sub">${content.sub}</div>
-    <div class="rest-tips">
-      ${content.tips.map(t => `<div class="rest-tip"><span class="rt-icon">${t.icon}</span><span>${t.text}</span></div>`).join('')}
+  <div class="sprint-card">
+    <div class="sprint-header">
+      <div class="sprint-title">⚡ SPRINT SESSION</div>
+      <div class="sprint-subtitle">Visceral fat protocol · Wed & Sat</div>
+    </div>
+
+    <div class="sprint-rounds-adj">
+      <button class="sprint-rounds-adj-btn" onclick="adjustRounds(-1)">−</button>
+      <div style="text-align:center">
+        <div class="sprint-rounds-adj-val" id="spRoundsVal">6</div>
+        <div class="sprint-rounds-adj-label">rounds</div>
+      </div>
+      <button class="sprint-rounds-adj-btn" onclick="adjustRounds(1)">+</button>
+    </div>
+
+    <div class="sprint-rounds-row" id="spRoundDots"></div>
+
+    <div class="sprint-clock">
+      <div class="sprint-phase-label phase-warmup" id="spPhaseLabel">READY TO START</div>
+      <div class="sprint-time phase-warmup" id="spTime">5:00</div>
+    </div>
+
+    <div class="sprint-progress-bar">
+      <div class="sprint-progress-fill fill-warmup" id="spProgressFill" style="width:100%"></div>
+    </div>
+
+    <div class="sprint-cue" id="spCue">5-min warm-up → ${sprintState.totalRounds} × 30-sec sprints → 90-sec rest between → 5-min cool-down. Hit START when on the treadmill.</div>
+
+    <div class="sprint-btn-row">
+      <button class="sprint-btn sprint-btn-main" id="spMainBtn" onclick="toggleSprint()">START</button>
+      <button class="sprint-btn sprint-btn-reset" onclick="resetSprint()" title="Reset">↺</button>
+    </div>
+  </div>
+
+  <div id="spDoneBanner" style="display:none" class="sprint-done-banner">
+    <div class="sprint-done-title">⚡ SESSION COMPLETE</div>
+    <div class="sprint-done-sub" id="spDoneSub">Straight to sauna — 20 min @ 175°F</div>
+  </div>
+
+  <div class="sprint-card" id="spHrCard" style="display:none">
+    <div class="sprint-section-divider">📊 Log Galaxy Watch Data</div>
+    <div class="sprint-hr-row">
+      <div class="sprint-hr-field">
+        <div class="sprint-hr-label">Avg HR (bpm)</div>
+        <input class="sprint-hr-input" id="spHrAvg" type="number" placeholder="—" inputmode="numeric">
+      </div>
+      <div class="sprint-hr-field">
+        <div class="sprint-hr-label">Max HR (bpm)</div>
+        <input class="sprint-hr-input" id="spHrMax" type="number" placeholder="—" inputmode="numeric">
+      </div>
+    </div>
+    <div style="font-size:10px;color:var(--dim2);text-align:center">Zone 4–5 target: 140–165+ bpm max</div>
+  </div>
+
+  <div class="rest-card" style="padding:14px 14px 18px">
+    <div class="rest-tips" style="margin-top:0">
+      ${tipsHtml}
     </div>
   </div>`;
-  document.getElementById('mainScroll').scrollTop = 0;
+
+  buildRoundDots();
+}
+
+function buildRoundDots() {
+  const container = document.getElementById('spRoundDots');
+  if (!container) return;
+  let html = '';
+  for (let i = 1; i <= sprintState.totalRounds; i++) {
+    const cls = i < sprintState.round ? 'done' : i === sprintState.round && sprintState.phase === 'sprint' ? 'active' : '';
+    html += `<div class="sprint-round-dot ${cls}">${i}</div>`;
+  }
+  container.innerHTML = html;
+}
+
+function adjustRounds(delta) {
+  if (sprintState.running) return;
+  sprintState.totalRounds = Math.max(4, Math.min(10, sprintState.totalRounds + delta));
+  const el = document.getElementById('spRoundsVal');
+  if (el) el.textContent = sprintState.totalRounds;
+  const cueEl = document.getElementById('spCue');
+  if (cueEl) cueEl.textContent = `5-min warm-up → ${sprintState.totalRounds} × 30-sec sprints → 90-sec rest between → 5-min cool-down. Hit START when on the treadmill.`;
+  buildRoundDots();
+}
+
+function toggleSprint() {
+  if (sprintState.phase === 'done') { resetSprint(); return; }
+  if (sprintState.phase === 'idle') {
+    sprintState.phase = 'warmup';
+    sprintState.elapsed = 0;
+    sprintState.phaseDuration = SPRINT_PHASES.warmup.secs;
+    sprintState.round = 0;
+  }
+  sprintState.running = !sprintState.running;
+  const btn = document.getElementById('spMainBtn');
+  if (btn) { btn.textContent = sprintState.running ? 'PAUSE' : 'RESUME'; btn.className = sprintState.running ? 'sprint-btn sprint-btn-main running' : 'sprint-btn sprint-btn-main'; }
+  if (sprintState.running) {
+    sprintState.interval = setInterval(tickSprint, 1000);
+  } else {
+    clearInterval(sprintState.interval);
+  }
+  updateSprintDisplay();
+}
+
+function tickSprint() {
+  sprintState.elapsed++;
+  if (sprintState.elapsed >= sprintState.phaseDuration) {
+    advanceSprintPhase();
+  }
+  updateSprintDisplay();
+}
+
+function advanceSprintPhase() {
+  sprintState.elapsed = 0;
+  if (sprintState.phase === 'warmup') {
+    sprintState.phase = 'sprint';
+    sprintState.round = 1;
+    sprintState.phaseDuration = SPRINT_PHASES.sprint.secs;
+    vibrateDevice([200, 100, 200]);
+  } else if (sprintState.phase === 'sprint') {
+    if (sprintState.round >= sprintState.totalRounds) {
+      sprintState.phase = 'cooldown';
+      sprintState.phaseDuration = SPRINT_PHASES.cooldown.secs;
+      vibrateDevice([100, 50, 100, 50, 100]);
+    } else {
+      sprintState.phase = 'rest';
+      sprintState.phaseDuration = SPRINT_PHASES.rest.secs;
+      vibrateDevice([300]);
+    }
+  } else if (sprintState.phase === 'rest') {
+    sprintState.phase = 'sprint';
+    sprintState.round++;
+    sprintState.phaseDuration = SPRINT_PHASES.sprint.secs;
+    vibrateDevice([200, 100, 200, 100, 200]);
+  } else if (sprintState.phase === 'cooldown') {
+    sprintState.phase = 'done';
+    clearInterval(sprintState.interval);
+    sprintState.running = false;
+    completeSprint();
+    return;
+  }
+}
+
+function vibrateDevice(pattern) {
+  try { if (navigator.vibrate) navigator.vibrate(pattern); } catch(e) {}
+}
+
+function updateSprintDisplay() {
+  const phase = sprintState.phase;
+  if (phase === 'idle' || phase === 'done') return;
+  const info = SPRINT_PHASES[phase];
+  const remaining = Math.max(0, info.secs - sprintState.elapsed);
+  const mins = Math.floor(remaining / 60);
+  const secs = remaining % 60;
+  const timeStr = `${mins}:${secs.toString().padStart(2,'0')}`;
+  const progress = ((info.secs - remaining) / info.secs) * 100;
+
+  const phaseClass = `phase-${phase === 'rest' ? 'rest' : phase === 'sprint' ? 'sprint' : phase === 'warmup' ? 'warmup' : 'cooldown'}`;
+  const fillClass = `fill-${phase === 'rest' ? 'rest' : phase === 'sprint' ? 'sprint' : phase === 'warmup' ? 'warmup' : 'cooldown'}`;
+
+  const timeEl = document.getElementById('spTime');
+  const labelEl = document.getElementById('spPhaseLabel');
+  const cueEl = document.getElementById('spCue');
+  const fillEl = document.getElementById('spProgressFill');
+
+  if (timeEl) { timeEl.textContent = timeStr; timeEl.className = `sprint-time ${phaseClass}`; }
+  if (labelEl) {
+    let lbl = info.label;
+    if (phase === 'sprint') lbl += ` — Round ${sprintState.round}/${sprintState.totalRounds}`;
+    if (phase === 'rest') lbl += ` — Next: Round ${sprintState.round + 1}`;
+    labelEl.textContent = lbl;
+    labelEl.className = `sprint-phase-label ${phaseClass}`;
+  }
+  if (cueEl) cueEl.textContent = info.cue;
+  if (fillEl) { fillEl.style.width = (100 - progress) + '%'; fillEl.className = `sprint-progress-fill ${fillClass}`; }
+  buildRoundDots();
+}
+
+function completeSprint() {
+  const timeEl = document.getElementById('spTime');
+  const labelEl = document.getElementById('spPhaseLabel');
+  const cueEl = document.getElementById('spCue');
+  const fillEl = document.getElementById('spProgressFill');
+  const btn = document.getElementById('spMainBtn');
+  const doneBanner = document.getElementById('spDoneBanner');
+  const hrCard = document.getElementById('spHrCard');
+
+  if (timeEl) { timeEl.textContent = '0:00'; timeEl.className = 'sprint-time phase-done'; }
+  if (labelEl) { labelEl.textContent = 'SESSION COMPLETE ✓'; labelEl.className = 'sprint-phase-label phase-done'; }
+  if (cueEl) cueEl.textContent = 'Head straight to the sauna. 20 min @ 175°F. Non-optional.';
+  if (fillEl) { fillEl.style.width = '100%'; fillEl.className = 'sprint-progress-fill fill-rest'; }
+  if (btn) { btn.textContent = 'RESET'; btn.className = 'sprint-btn sprint-btn-main'; }
+  if (doneBanner) doneBanner.style.display = 'block';
+  if (hrCard) hrCard.style.display = 'block';
+  buildRoundDots();
+  vibrateDevice([300, 100, 300, 100, 300]);
+}
+
+function resetSprint() {
+  clearInterval(sprintState.interval);
+  sprintState = { running: false, phase: 'idle', round: 0, totalRounds: sprintState.totalRounds, elapsed: 0, phaseDuration: 0, interval: null };
+  const btn = document.getElementById('spMainBtn');
+  if (btn) { btn.textContent = 'START'; btn.className = 'sprint-btn sprint-btn-main'; }
+  const doneBanner = document.getElementById('spDoneBanner');
+  if (doneBanner) doneBanner.style.display = 'none';
+  const hrCard = document.getElementById('spHrCard');
+  if (hrCard) hrCard.style.display = 'none';
+  const timeEl = document.getElementById('spTime');
+  if (timeEl) { timeEl.textContent = '5:00'; timeEl.className = 'sprint-time phase-warmup'; }
+  const labelEl = document.getElementById('spPhaseLabel');
+  if (labelEl) { labelEl.textContent = 'READY TO START'; labelEl.className = 'sprint-phase-label phase-warmup'; }
+  const cueEl = document.getElementById('spCue');
+  if (cueEl) cueEl.textContent = `5-min warm-up → ${sprintState.totalRounds} × 30-sec sprints → 90-sec rest between → 5-min cool-down. Hit START when on the treadmill.`;
+  const fillEl = document.getElementById('spProgressFill');
+  if (fillEl) { fillEl.style.width = '100%'; fillEl.className = 'sprint-progress-fill fill-warmup'; }
+  buildRoundDots();
 }
 
 // ============================================================
