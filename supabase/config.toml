@@ -1,0 +1,5 @@
+[functions.serve-app]
+verify_jwt = false
+
+[functions.analyze-bpm]
+verify_jwt = false

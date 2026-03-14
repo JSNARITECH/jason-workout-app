@@ -487,6 +487,12 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .bpm-parse-btn{width:100%;margin-top:6px;padding:9px;border-radius:8px;border:none;background:var(--purple);color:var(--black);font-weight:700;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:1px;}
 .bpm-parse-btn:active{opacity:0.8;}
 .bpm-import-hint{font-size:9px;color:var(--dim2);margin-top:5px;line-height:1.4;letter-spacing:0.5px;}
+.bpm-scan-btn{width:100%;margin-bottom:8px;padding:11px;border-radius:9px;border:none;background:var(--purple);color:var(--black);font-weight:700;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:1px;display:flex;align-items:center;justify-content:center;gap:6px;}
+.bpm-scan-btn:active{opacity:0.8;}
+.bpm-scan-btn:disabled{opacity:0.5;cursor:default;}
+.bpm-divider{display:flex;align-items:center;gap:8px;margin:8px 0;color:var(--dim2);font-size:9px;letter-spacing:1px;text-transform:uppercase;}
+.bpm-divider::before,.bpm-divider::after{content:'';flex:1;height:1px;background:var(--border);}
+.bpm-scan-status{font-size:10px;color:var(--purple);margin-top:6px;text-align:center;min-height:16px;letter-spacing:0.5px;}
 .zone-bars{margin-top:12px;display:flex;flex-direction:column;gap:5px;}
 .zone-bars-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--dim2);font-weight:700;margin-bottom:3px;}
 .zone-bar-row{display:flex;align-items:center;gap:7px;}
@@ -1347,11 +1353,14 @@ function renderWorkoutView() {
         `<div class="zone-bar-row"><span class="zone-bar-name">${n}</span><div class="zone-bar-track"><div class="zone-bar-fill ${cls}" style="width:${ws.zones[k]||0}%"></div></div><span class="zone-bar-pct">${ws.zones[k]||0}%</span></div>`
       ).join('')}
     </div>` : ''}
-    <button class="bpm-import-btn" onclick="toggleBpmImport()">📥 Import BPM from Claude</button>
+    <button class="bpm-import-btn" onclick="toggleBpmImport()">📥 Import BPM from Screenshot</button>
     <div class="bpm-import-area" id="bpmImportArea">
+      <input type="file" id="bpmImageInput" accept="image/*" style="display:none" onchange="scanBpmScreenshot(this)">
+      <button class="bpm-scan-btn" id="bpmScanBtn" onclick="document.getElementById('bpmImageInput').click()">📸 Scan Samsung Health Screenshot</button>
+      <div class="bpm-scan-status" id="bpmScanStatus"></div>
+      <div class="bpm-divider">or paste JSON manually</div>
       <textarea class="bpm-paste" id="bpmPasteField" placeholder='Paste JSON from Claude chat here...'></textarea>
       <button class="bpm-parse-btn" onclick="importWatchData()">Parse &amp; Apply</button>
-      <div class="bpm-import-hint">In Claude chat: send your Samsung Health screenshot and ask<br>"Extract as JSON for my workout app" — then paste the result here.</div>
     </div>
   </div>`;
 
@@ -1736,10 +1745,70 @@ function updateWeight(exId, setIdx, val) {
   saveSession();
 }
 
+const ANALYZE_BPM_URL = 'https://fnjjfnsdxibjbzldfgit.supabase.co/functions/v1/analyze-bpm';
+
 function toggleBpmImport() {
   const area = document.getElementById('bpmImportArea');
   area.classList.toggle('visible');
-  if (area.classList.contains('visible')) document.getElementById('bpmPasteField').focus();
+}
+
+async function scanBpmScreenshot(input) {
+  const file = input.files?.[0];
+  if (!file) return;
+
+  const btn = document.getElementById('bpmScanBtn');
+  const status = document.getElementById('bpmScanStatus');
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Analyzing…';
+  status.textContent = 'Reading screenshot…';
+
+  try {
+    // Convert image to base64
+    const base64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+    status.textContent = 'Sending to Claude…';
+
+    const res = await fetch(ANALYZE_BPM_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image: base64, mediaType: file.type || 'image/jpeg' }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || data.error) {
+      throw new Error(data.error || `HTTP ${res.status}`);
+    }
+
+    // Apply the extracted data directly (reuse importWatchData logic)
+    if (!sessionState['__watch__']) sessionState['__watch__'] = {};
+    const w = sessionState['__watch__'];
+    if (data.avgBPM)   w.avgHr      = data.avgBPM;
+    if (data.maxBPM)   w.maxHr      = data.maxBPM;
+    if (data.calories) w.calories   = data.calories;
+    if (data.duration) w.duration   = data.duration;
+    if (data.zones)    w.zones      = data.zones;
+    if (data.peakTiming) w.peakTiming = data.peakTiming;
+    if (data.pattern)  w.pattern    = data.pattern;
+    saveSession();
+    showToast('✓ BPM SCANNED');
+    status.textContent = '';
+    renderWorkoutView();
+
+  } catch (e) {
+    status.textContent = `❌ ${e.message}`;
+    showToast('❌ Scan failed');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '📸 Scan Samsung Health Screenshot';
+    input.value = ''; // reset so same file can be re-selected
+  }
 }
 
 function importWatchData() {
