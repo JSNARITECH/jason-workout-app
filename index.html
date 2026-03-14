@@ -3423,6 +3423,27 @@ function formatDate(dateStr) {
 init();
 </script>
 
+<!-- VERSION BADGE -->
+<div id="versionBadge" style="position:fixed;bottom:10px;left:12px;font-size:9px;letter-spacing:1.5px;color:var(--dim);font-family:'DM Sans',sans-serif;text-transform:uppercase;z-index:9999;pointer-events:none;">v—</div>
+<script>
+(function(){
+  fetch('https://fnjjfnsdxibjbzldfgit.supabase.co/rest/v1/app_versions?select=version,commit_sha,pushed_at&order=pushed_at.desc&limit=1',{
+    headers:{
+      'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZuampmbnNkeGliamJ6bGRmZ2l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY1MDM2MjAsImV4cCI6MjA4MjA3OTYyMH0.oZYn5OXKZH2h1wGfIj_R1L8Hlk3ytGFBgDCyGqUcatk',
+      'Accept':'application/json'
+    }
+  })
+  .then(r=>r.json())
+  .then(d=>{
+    if(d&&d[0]){
+      const v=d[0];
+      document.getElementById('versionBadge').textContent=v.version+' · '+v.commit_sha;
+    }
+  })
+  .catch(()=>{});
+})();
+</script>
+
 <!-- SWAP SHEET OVERLAY -->
 <div class="swap-overlay" id="swapOverlay" onclick="closeSwapSheet(event)">
   <div class="swap-sheet">

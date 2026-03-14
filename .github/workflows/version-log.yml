@@ -1,0 +1,38 @@
+name: Log App Version
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  log-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get version info
+        id: version
+        run: |
+          VERSION=$(git describe --tags --always --abbrev=7 2>/dev/null || echo "untagged")
+          SHA=$(git rev-parse --short=7 HEAD)
+          MESSAGE=$(git log -1 --pretty=%s)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "sha=$SHA" >> $GITHUB_OUTPUT
+          echo "message=$MESSAGE" >> $GITHUB_OUTPUT
+
+      - name: Write to Supabase app_versions
+        run: |
+          curl -s -X POST "${{ secrets.SUPABASE_URL }}/rest/v1/app_versions" \
+            -H "apikey: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+            -H "Content-Type: application/json" \
+            -H "Prefer: return=minimal" \
+            -d '{
+              "version": "${{ steps.version.outputs.version }}",
+              "commit_sha": "${{ steps.version.outputs.sha }}",
+              "commit_message": "${{ steps.version.outputs.message }}"
+            }'
