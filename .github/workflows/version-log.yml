@@ -1,38 +1,48 @@
-name: Log App Version
+name: Log Version to Supabase
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   log-version:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v4
 
-      - name: Get version info
-        id: version
+      - name: Log version to Supabase
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          COMMIT_SHA: ${{ github.sha }}
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
         run: |
-          VERSION=$(git describe --tags --always --abbrev=7 2>/dev/null || echo "untagged")
-          SHA=$(git rev-parse --short=7 HEAD)
-          MESSAGE=$(git log -1 --pretty=%s)
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "sha=$SHA" >> $GITHUB_OUTPUT
-          echo "message=$MESSAGE" >> $GITHUB_OUTPUT
+          python3 << 'PYEOF'
+          import os, json, urllib.request, subprocess
 
-      - name: Write to Supabase app_versions
-        run: |
-          curl -s -X POST "${{ secrets.SUPABASE_URL }}/rest/v1/app_versions" \
-            -H "apikey: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
-            -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
-            -H "Content-Type: application/json" \
-            -H "Prefer: return=minimal" \
-            -d '{
-              "version": "${{ steps.version.outputs.version }}",
-              "commit_sha": "${{ steps.version.outputs.sha }}",
-              "commit_message": "${{ steps.version.outputs.message }}"
-            }'
+          # Extract APP_VERSION from index.html
+          result = subprocess.run(
+            ["grep", "-oP", r"APP_VERSION\s*=\s*['\"]?\Kv\d+", "index.html"],
+            capture_output=True, text=True
+          )
+          version = result.stdout.strip().split("\n")[0] or "unknown"
+
+          url    = os.environ["SUPABASE_URL"] + "/rest/v1/app_versions"
+          apikey = os.environ["SUPABASE_ANON_KEY"]
+
+          payload = json.dumps({
+            "version":        version,
+            "commit_sha":     os.environ["COMMIT_SHA"][:12],
+            "commit_message": os.environ["COMMIT_MSG"],
+            "deployed_by":    "github-actions",
+          }).encode()
+
+          req = urllib.request.Request(url, data=payload, method="POST")
+          req.add_header("Content-Type", "application/json")
+          req.add_header("apikey", apikey)
+          req.add_header("Authorization", f"Bearer {apikey}")
+          req.add_header("Prefer", "return=minimal")
+
+          with urllib.request.urlopen(req) as r:
+            print(f"✓ Logged {version} @ {os.environ['COMMIT_SHA'][:8]} — HTTP {r.status}")
+          PYEOF

@@ -525,6 +525,13 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .swap-option:active{opacity:0.7;}
 .swap-option-name{font-size:12px;font-weight:600;color:var(--white);}
 .swap-option-tag{font-size:9px;color:var(--accent);font-weight:700;letter-spacing:0.5px;}
+/* APP VERSION BADGE */
+.app-version-badge{position:fixed;bottom:58px;right:8px;font-size:8px;color:var(--dim);letter-spacing:1px;font-weight:700;text-transform:uppercase;opacity:0.5;z-index:99;pointer-events:none;}
+
+/* SHARE TO CLAUDE BUTTON */
+.share-claude-btn{width:100%;margin-top:10px;padding:12px;border-radius:10px;border:none;background:rgba(232,255,71,0.12);color:var(--accent);font-weight:700;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:1px;display:flex;align-items:center;justify-content:center;gap:7px;border:1px solid rgba(232,255,71,0.25);}
+.share-claude-btn:active{opacity:0.7;}
+
 /* EXERCISE NOTES */
 .ex-note-section{margin-top:13px;padding-top:12px;border-top:1px solid var(--border);}
 .ex-note-last-week{padding:8px 11px;border-radius:8px;background:var(--card2);border-left:3px solid var(--accent);font-size:11px;color:var(--dim2);margin-bottom:8px;line-height:1.5;}
@@ -570,6 +577,7 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
   <button class="nav-btn" id="navHistory" onclick="switchView('history')"><span class="nav-icon">📅</span>HISTORY</button>
   <button class="nav-btn" id="navProgress" onclick="switchView('progress')"><span class="nav-icon">📈</span>GAINS</button>
 </div>
+<div class="app-version-badge" id="appVersionBadge"></div>
 
 <!-- TIMER -->
 <div class="timer-overlay" id="timerOverlay">
@@ -619,6 +627,11 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 </div>
 
 <script>
+// ============================================================
+// APP VERSION — update this on every release
+// ============================================================
+const APP_VERSION = 'v10';
+
 // ============================================================
 // WEEKLY SCHEDULE
 // ============================================================
@@ -1183,6 +1196,8 @@ function buildUI() {
   buildDayPills();
   updateHeader();
   renderCurrentView();
+  const badge = document.getElementById('appVersionBadge');
+  if (badge) badge.textContent = `Jason's Workout App ${APP_VERSION}`;
 }
 
 function getDateStr(offset = 0) {
@@ -1430,6 +1445,7 @@ function renderWorkoutView() {
     <div class="notes-label">Session Notes</div>
     <textarea class="notes-input" id="sessionNotes" placeholder="How did it feel? Any PRs? Energy? Pain?" oninput="saveNotes(this.value)">${savedNotes}</textarea>
     <button class="save-btn" id="saveBtn" onclick="saveWorkout('${day.type}','${day.key}')">💾 SAVE WORKOUT TO HISTORY</button>
+    <button class="share-claude-btn" onclick="shareToClaudeChat('${day.type}')">📤 Send to Claude Chat</button>
   </div>
   <button class="reset-btn" onclick="resetDay()">↺ Reset ${workout.title}</button>`;
 
@@ -2200,9 +2216,9 @@ async function saveWorkout(type, dayKey) {
   if (saved) {
     if (newPRs.length > 0) {
       showPRFlash();
-      showToast(`🏆 ${newPRs.length} NEW PR${newPRs.length>1?'s':''}!`, true);
+      showToast(`🏆 ${newPRs.length} NEW PR${newPRs.length>1?'s':''}! Saved — ready for Claude Chat`);
     } else {
-      showToast('✓ WORKOUT SAVED');
+      showToast(`✅ ${entry.title} saved · ${getDateStr()} · ready for Claude Chat`);
     }
     const btn = document.getElementById('saveBtn');
     if (btn) { btn.textContent = '✓ SAVED'; btn.style.background = '#2a3d00'; btn.style.color = 'var(--accent)'; }
@@ -2211,6 +2227,67 @@ async function saveWorkout(type, dayKey) {
     buildDayPills();
   } else {
     alert('Save failed — storage unavailable.');
+  }
+}
+
+// ── SESSION SUMMARY SHARE (Build 4) ─────────────────────────
+function generateSessionSummary(type) {
+  const workout = WORKOUTS[type];
+  if (!workout) return '';
+  const watch = sessionState['__watch__'] || {};
+  const date  = new Date().toLocaleDateString('en-US', { weekday:'long', month:'short', day:'numeric', year:'numeric' });
+  const dur   = getSessionDuration ? getSessionDuration() : '';
+
+  let lines = [];
+  lines.push(`🏋🏾 WORKOUT COMPLETE — ${APP_VERSION}`);
+  lines.push(`${workout.title} · ${date}${dur ? ' · ' + dur : ''}`);
+  lines.push('');
+  lines.push('💪 EXERCISES');
+
+  const sections = (type === 'fort' && fortCancelled)
+    ? workout.sections.filter(s => s.label !== 'If At FORT')
+    : workout.sections;
+
+  sections.forEach(section => {
+    section.exercises.forEach(ex => {
+      const state   = sessionState[ex.id] || {};
+      const weights = state.weights || ex.sets.map(s => s.wt);
+      const displayName = swapOverrides[ex.id] || ex.name;
+      const setStr  = ex.sets.map((s, i) => `${weights[i] || s.wt}×${s.reps}`).join(', ');
+      const done    = state.done ? '✓' : '–';
+      const note    = notesStore[ex.id]?.todayNote ? ` [${notesStore[ex.id].todayNote}]` : '';
+      lines.push(`${done} ${displayName}: ${setStr}${note}`);
+    });
+  });
+
+  if (watch.avgHr || watch.calories) {
+    lines.push('');
+    lines.push('⌚ GALAXY WATCH');
+    const w = [];
+    if (watch.avgHr)   w.push(`Avg HR: ${watch.avgHr} bpm`);
+    if (watch.maxHr)   w.push(`Max: ${watch.maxHr} bpm`);
+    if (watch.calories) w.push(`Calories: ${watch.calories}`);
+    lines.push(w.join(' · '));
+  }
+
+  const sessionNotes = (sessionState['__notes__'] || {}).notes;
+  if (sessionNotes) {
+    lines.push('');
+    lines.push(`📝 Notes: ${sessionNotes}`);
+  }
+
+  lines.push('');
+  lines.push('---');
+  lines.push('Paste into Claude Chat → "Analyze this workout"');
+  return lines.join('\n');
+}
+
+function shareToClaudeChat(type) {
+  const text = generateSessionSummary(type);
+  if (navigator.share) {
+    navigator.share({ title: `Workout Summary ${APP_VERSION}`, text }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(text).then(() => showToast('📋 Copied — paste into Claude Chat'));
   }
 }
 
