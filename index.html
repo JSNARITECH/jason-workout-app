@@ -615,18 +615,99 @@ const WEEK = [
   { key:'sun', name:'Sun', type:'legs',   emoji:'🦵', label:'LEGS' },
 ];
 
-// Exercise rotation pools — alternatives when PRs plateau
+// Exercise rotation pools — S+ and A tier alternatives (sourced from Push/Pull NotebookLM notebooks)
+// Each entry: { name, tier } — tier = 'S+' | 'S' | 'A'
 const ROTATION_POOLS = {
-  chest:     ['Machine Chest Press','Incline DB Press','Cable Chest Press','Smith Machine Close-Grip Press','Dumbbell Floor Press'],
-  back:      ['Lat Pulldown Wide Grip','Single-Arm Cable Pulldown','Neutral-Grip Pulldown','Chest-Supported Row','Seal Row'],
-  shoulders: ['Seated Machine Press','Arnold Press','DB Seated Press','Egyptian Lateral Raise','Cable Upright Row'],
-  triceps:   ['Rope Pushdown','Overhead Rope Extension','Single-Arm Kickback','Close-Grip Smith Press','Machine Dip'],
-  biceps:    ['Cable Curl Supinated','Hammer Curl','Face-Away Cable Curl','High Cable Curl','Preacher Curl'],
-  quads:     ['Smith Machine Squat','Leg Extension','Hack Squat','Belt Squat','Bulgarian Split Squat'],
-  hams:      ['Lying Leg Curl','Smith Machine RDL','Seated Leg Curl','Good Mornings','Nordic Curl'],
-  glutes:    ['Hip Abduction Machine','Hip Thrust (Smith)','Glute Kickback Cable','Cable Pull-Through'],
-  calves:    ['Smith Calf Raise','Seated Calf Raise','Single-Leg Calf Raise (DB)'],
-  back_fly:  ['Straight-Arm Pulldown','Rope Face Pull','Reverse Pec Deck','Low-to-High Reverse Fly'],
+  chest: [
+    { name:'Machine Chest Press',         tier:'S+' },
+    { name:'Seated Cable Pec Fly',        tier:'S'  },
+    { name:'Cable Low-to-High Fly',       tier:'S'  },
+    { name:'Incline Bench Press',         tier:'S'  },
+    { name:'Pec Deck / Machine Fly',      tier:'A'  },
+    { name:'Incline DB Press',            tier:'A'  },
+    { name:'Barbell Bench Press',         tier:'A'  },
+    { name:'Cable Chest Press',           tier:'A'  },
+    { name:'Smith Machine Incline Press', tier:'A'  },
+  ],
+  shoulders: [
+    { name:'Cable Lateral Raise',         tier:'S+' },
+    { name:'Machine Shoulder Press',      tier:'S'  },
+    { name:'Seated Shoulder Press',       tier:'S'  },
+    { name:'Reverse Cable Crossover',     tier:'S'  },
+    { name:'Rope Face Pull',              tier:'S'  },
+    { name:'Overhead Press (Barbell)',    tier:'A'  },
+    { name:'Arnold Press',               tier:'A'  },
+    { name:'DB Seated Press',            tier:'A'  },
+    { name:'Egyptian Lateral Raise',     tier:'A'  },
+    { name:'Cable Upright Row',          tier:'A'  },
+  ],
+  triceps: [
+    { name:'Overhead Cable Triceps Extension', tier:'S+' },
+    { name:'Skull Crushers',             tier:'S'  },
+    { name:'Weighted Dips',              tier:'S'  },
+    { name:'Overhead Rope Extension',    tier:'S'  },
+    { name:'Rope Pushdown',              tier:'A'  },
+    { name:'Close-Grip Smith Press',     tier:'A'  },
+    { name:'Machine Dip',               tier:'A'  },
+    { name:'Single-Arm Cable Extension', tier:'A'  },
+  ],
+  back: [
+    { name:'Chest-Supported Row',        tier:'S'  },
+    { name:'Seal Row',                   tier:'S'  },
+    { name:'Lat Pulldown (Wide Grip)',   tier:'A'  },
+    { name:'Seated Cable Row',           tier:'A'  },
+    { name:'Straight-Arm Cable Pulldown',tier:'A'  },
+    { name:'Neutral-Grip Pulldown',      tier:'A'  },
+    { name:'Single-Arm Cable Pulldown',  tier:'A'  },
+    { name:'T-Bar Row',                  tier:'A'  },
+    { name:'Assisted Pull-Up',           tier:'A'  },
+    { name:'Pendlay Row',               tier:'A'  },
+  ],
+  biceps: [
+    { name:'Face-Away Cable Curl',       tier:'S+' },
+    { name:'Incline DB Curl',            tier:'S'  },
+    { name:'Preacher Curl',              tier:'S'  },
+    { name:'High Cable Curl',            tier:'A'  },
+    { name:'Cable Curl Supinated',       tier:'A'  },
+    { name:'Cable Bicep Curl',           tier:'A'  },
+    { name:'Hammer Curl',               tier:'A'  },
+    { name:'Spider Curl',               tier:'A'  },
+  ],
+  quads: [
+    { name:'Hack Squat',                 tier:'S'  },
+    { name:'Bulgarian Split Squat',      tier:'S'  },
+    { name:'Leg Extension',              tier:'S'  },
+    { name:'Barbell Squat',              tier:'S'  },
+    { name:'Smith Machine Squat',        tier:'A'  },
+    { name:'Leg Press',                  tier:'A'  },
+    { name:'Belt Squat',                tier:'A'  },
+  ],
+  hams: [
+    { name:'Seated Leg Curl',            tier:'S'  },
+    { name:'Nordic Curl',                tier:'S'  },
+    { name:'Lying Leg Curl',             tier:'A'  },
+    { name:'Smith Machine RDL',          tier:'A'  },
+    { name:'Stiff-Leg Deadlift',         tier:'A'  },
+    { name:'Single-Leg Curl',            tier:'A'  },
+  ],
+  glutes: [
+    { name:'Hip Thrust (Smith)',          tier:'S'  },
+    { name:'Hip Abduction Machine',       tier:'A'  },
+    { name:'Glute Kickback Cable',        tier:'A'  },
+    { name:'Cable Pull-Through',          tier:'A'  },
+  ],
+  calves: [
+    { name:'Seated Calf Raise',           tier:'S'  },
+    { name:'Smith Calf Raise',            tier:'A'  },
+    { name:'Single-Leg Calf Raise (DB)',  tier:'A'  },
+    { name:'Leg Press Calf Press',        tier:'A'  },
+  ],
+  back_fly: [
+    { name:'Reverse Cable Crossover',     tier:'S'  },
+    { name:'Rope Face Pull',              tier:'S'  },
+    { name:'Reverse Pec Deck',            tier:'A'  },
+    { name:'Low-to-High Reverse Fly',     tier:'A'  },
+  ],
 };
 
 // ============================================================
@@ -1491,7 +1572,7 @@ function getRotationAlerts(workoutType) {
       const freq = exerciseFreq[ex.id] || 0;
       if (freq >= 3) {
         const pool = ROTATION_POOLS[ex.muscle] || [];
-        const alternatives = pool.filter(a => a !== ex.name).slice(0, 3);
+        const alternatives = pool.filter(a => a.name !== ex.name).slice(0, 3).map(a => a.name);
         if (alternatives.length > 0) {
           alerts.push({ exId: ex.id, exName: ex.name, count: freq, alternatives });
         }
@@ -1539,12 +1620,25 @@ function showSwapSheet(exId, muscle, type, originalName) {
   const currentName = swapOverrides[exId] || originalName;
   current.innerHTML = `<strong>${currentName}</strong>`;
 
-  const pool = ROTATION_POOLS[muscle] || [];
-  const alts = pool.filter(n => n !== currentName).slice(0, 5);
+  // Collect all display names already in use for this workout day (to exclude)
+  const w = WORKOUTS[type];
+  const inUse = new Set([currentName]);
+  if (w) w.sections.forEach(s => s.exercises.forEach(e => inUse.add(swapOverrides[e.id] || e.name)));
 
+  const pool = ROTATION_POOLS[muscle] || [];
+  const alts = pool.filter(e => !inUse.has(e.name));
+
+  const tierColor = { 'S+': 'var(--accent)', 'S': '#22c55e', 'A': 'var(--purple)' };
   opts.innerHTML = alts.length
-    ? alts.map(alt => `<div class="swap-option" onclick="applySwap('${exId}','${alt.replace(/'/g,"\\'")}','${type}')"><span class="swap-option-name">${alt}</span><span class="swap-option-tag">SWAP →</span></div>`).join('')
-    : `<div style="font-size:11px;color:var(--dim2);padding:8px 0">No alternatives in pool for this muscle group.</div>`;
+    ? alts.map(alt => {
+        const safeN = alt.name.replace(/'/g,"\\'");
+        const color = tierColor[alt.tier] || 'var(--dim2)';
+        return `<div class="swap-option" onclick="applySwap('${exId}','${safeN}','${type}')">
+          <span class="swap-option-name">${alt.name}</span>
+          <span class="swap-option-tag" style="color:${color}">${alt.tier} · SWAP →</span>
+        </div>`;
+      }).join('')
+    : `<div style="font-size:11px;color:var(--dim2);padding:8px 0">All alternatives for this muscle are already in today's workout.</div>`;
 
   undoBtn.style.display = swapOverrides[exId] ? 'block' : 'none';
   overlay.classList.add('open');
@@ -2140,7 +2234,7 @@ function renderSummaryView() {
       if (!ex) return;
       const muscle = ex.muscle || 'unknown';
       const pool = ROTATION_POOLS[muscle] || [];
-      const alt = pool.find(a => a !== ex.name) || '';
+      const alt = pool.find(a => a.name !== ex.name)?.name || '';
       html += `<div class="sc-ex-row">
         <span class="sc-ex-name">${ex.name} <span style="color:var(--dim);font-size:10px">(${count} sessions)</span></span>
         <span style="font-size:10px;color:var(--purple)">Try: ${alt || 'See rotation pool'}</span>
