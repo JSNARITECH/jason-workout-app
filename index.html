@@ -497,6 +497,29 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .z1-fill{background:var(--dim2);}.z2-fill{background:var(--green);}.z3-fill{background:var(--accent);}.z4-fill{background:var(--orange);}.z5-fill{background:var(--red);}
 .bpm-insight{margin-top:10px;font-size:11px;color:var(--dim2);background:var(--card2);border-radius:9px;padding:9px 11px;line-height:1.5;border-left:3px solid var(--purple);}
 .bpm-insight strong{color:var(--white);}
+
+/* EXERCISE SWAP BUTTON */
+.swap-btn{margin-left:6px;padding:2px 8px;border-radius:6px;border:1px solid rgba(192,132,252,0.35);background:transparent;color:var(--purple);font-size:9px;font-weight:700;letter-spacing:1px;cursor:pointer;font-family:'DM Sans',sans-serif;text-transform:uppercase;transition:all 0.15s;flex-shrink:0;line-height:1.6;}
+.swap-btn:active{opacity:0.6;}
+.swap-btn.swapped{border-color:rgba(34,197,94,0.4);color:#22c55e;}
+.level-up-badge{display:inline-flex;align-items:center;margin-left:6px;padding:2px 7px;border-radius:6px;background:rgba(34,197,94,0.15);color:#22c55e;font-size:9px;font-weight:700;letter-spacing:0.8px;cursor:pointer;border:1px solid rgba(34,197,94,0.3);}
+
+/* SWAP SHEET */
+.swap-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:200;display:none;align-items:flex-end;justify-content:center;}
+.swap-overlay.open{display:flex;}
+.swap-sheet{width:100%;max-width:430px;background:var(--card);border-radius:20px 20px 0 0;padding:20px 16px 36px;max-height:72vh;overflow-y:auto;}
+.swap-sheet-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.swap-sheet-title{font-size:13px;font-weight:700;color:var(--white);letter-spacing:0.5px;}
+.swap-close-btn{background:transparent;border:none;color:var(--dim2);font-size:20px;cursor:pointer;padding:0 4px;line-height:1;}
+.swap-section-label{font-size:9px;color:var(--dim2);letter-spacing:1px;font-weight:700;text-transform:uppercase;margin-bottom:7px;}
+.swap-current{padding:10px 12px;border-radius:9px;background:var(--card2);border-left:3px solid var(--purple);font-size:12px;color:var(--dim2);margin-bottom:14px;}
+.swap-current strong{color:var(--white);}
+.swap-options{display:flex;flex-direction:column;gap:7px;}
+.swap-option{padding:12px 14px;border-radius:10px;background:var(--card2);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:border-color 0.15s;}
+.swap-option:active{opacity:0.7;}
+.swap-option-name{font-size:12px;font-weight:600;color:var(--white);}
+.swap-option-tag{font-size:9px;color:var(--accent);font-weight:700;letter-spacing:0.5px;}
+.swap-undo-btn{width:100%;margin-top:12px;padding:11px;border-radius:9px;border:1px dashed var(--border);background:transparent;color:var(--dim2);font-size:10px;font-weight:700;letter-spacing:1px;cursor:pointer;font-family:'DM Sans',sans-serif;text-transform:uppercase;}
 </style>
 </head>
 <body>
@@ -875,6 +898,8 @@ let timerInterval = null;
 let timerSec = 90;
 let timerMax = 90;
 let restOverrides = {}; // { exId: seconds } — user-customized rest per exercise
+let swapOverrides = {}; // { exId: altName } — user-selected exercise swaps
+let prStreaks = {};     // { exId: count } — consecutive sessions with new PRs
 let fortCancelled = false; // true = show home lower body sub instead of FORT class
 const CIRC = 2 * Math.PI * 60; // 377
 
@@ -973,6 +998,8 @@ async function loadAll() {
   try { const v = await getStored('pr-store'); if (v) prStore = JSON.parse(v); } catch(e) { prStore = {}; }
   try { const v = await getStored('exercise-freq'); if (v) exerciseFreq = JSON.parse(v); } catch(e) { exerciseFreq = {}; }
   try { const v = await getStored('rest-overrides'); if (v) restOverrides = JSON.parse(v); } catch(e) { restOverrides = {}; }
+  try { const v = await getStored('swap-overrides'); if (v) swapOverrides = JSON.parse(v); } catch(e) { swapOverrides = {}; }
+  try { const v = await getStored('pr-streaks'); if (v) prStreaks = JSON.parse(v); } catch(e) { prStreaks = {}; }
 
   // Restore fort-cancelled flag for today
   try {
@@ -1306,6 +1333,20 @@ function buildExCard(ex, isDone, savedWeights, hasPR, type) {
   const isRotation = exerciseFreq[ex.id] >= 3;
   const rotFlagHtml = isRotation ? `<span class="rotation-flag">🔄 Vary soon</span>` : '';
 
+  // Swap override: use alternate name if set
+  const isSwapped = !!swapOverrides[ex.id];
+  const displayName = isSwapped ? swapOverrides[ex.id] : ex.name;
+  const swapBtnClass = isSwapped ? 'swap-btn swapped' : 'swap-btn';
+  const swapBtnHtml = ex.muscle && ROTATION_POOLS[ex.muscle]
+    ? `<button class="swap-btn ${isSwapped ? 'swapped' : ''}" onclick="event.stopPropagation();showSwapSheet('${ex.id}','${ex.muscle}','${type}','${ex.name.replace(/'/g,"\\'")}')">⟳ ${isSwapped ? 'Swapped' : 'Swap'}</button>`
+    : '';
+
+  // Auto-progression badge (Feature C): 3+ consecutive PR sessions
+  const streak = prStreaks[ex.id] || 0;
+  const levelUpHtml = streak >= 3
+    ? `<span class="level-up-badge" onclick="event.stopPropagation();showSwapSheet('${ex.id}','${ex.muscle || ''}','${type}','${ex.name.replace(/'/g,"\\'")}')">🚀 Level Up (${streak}x PR)</span>`
+    : '';
+
   let detail = '';
   if (ex.hassan) detail += `<div class="hassan-tag">⚡ Hassan Protocol — To Failure</div>`;
   if (ex.ladder?.length) {
@@ -1362,11 +1403,12 @@ function buildExCard(ex, isDone, savedWeights, hasPR, type) {
       <button class="check-btn" onclick="toggleDone(event,'${ex.id}','${type}')">✓</button>
       <div class="ex-info">
         <div class="ex-name-row">
-          <span class="ex-name">${ex.name}</span>
-          ${prBadgeHtml}${rotFlagHtml}
+          <span class="ex-name">${displayName}</span>
+          ${prBadgeHtml}${rotFlagHtml}${levelUpHtml}
         </div>
         <div class="ex-chips">${chipsHtml}</div>
       </div>
+      ${swapBtnHtml}
       <span class="ex-arrow">›</span>
     </div>
     <div class="ex-detail">${detail}</div>
@@ -1403,10 +1445,12 @@ async function updatePRStore(exId, weights) {
   
   const stored = prStore[exId];
   if (!stored || maxWeight > parseFloat(stored.weight)) {
-    const wasNewPR = !stored || maxWeight > parseFloat(stored.weight);
     prStore[exId] = { weight: maxWeight, date: getDateStr() };
     try { await window.storage.set('pr-store', JSON.stringify(prStore)); } catch(e){}
-    return wasNewPR;
+    // Track consecutive PR sessions for auto-progression
+    prStreaks[exId] = (prStreaks[exId] || 0) + 1;
+    try { await window.storage.set('pr-streaks', JSON.stringify(prStreaks)); } catch(e){}
+    return true;
   }
   return false;
 }
@@ -1480,6 +1524,53 @@ function swapExercise(exId, newName, type) {
   exerciseFreq[exId] = 0;
   window.storage.set('exercise-freq', JSON.stringify(exerciseFreq)).catch(()=>{});
   dismissAlert(`rot-${exId}`);
+}
+
+// ── EXERCISE SWAP (Feature B) ────────────────────────────────
+let _swapTarget = null; // { exId, muscle, type, originalName }
+
+function showSwapSheet(exId, muscle, type, originalName) {
+  _swapTarget = { exId, muscle, type, originalName };
+  const overlay = document.getElementById('swapOverlay');
+  const opts = document.getElementById('swapOptionsList');
+  const current = document.getElementById('swapCurrentName');
+  const undoBtn = document.getElementById('swapUndoBtn');
+
+  const currentName = swapOverrides[exId] || originalName;
+  current.innerHTML = `<strong>${currentName}</strong>`;
+
+  const pool = ROTATION_POOLS[muscle] || [];
+  const alts = pool.filter(n => n !== currentName).slice(0, 5);
+
+  opts.innerHTML = alts.length
+    ? alts.map(alt => `<div class="swap-option" onclick="applySwap('${exId}','${alt.replace(/'/g,"\\'")}','${type}')"><span class="swap-option-name">${alt}</span><span class="swap-option-tag">SWAP →</span></div>`).join('')
+    : `<div style="font-size:11px;color:var(--dim2);padding:8px 0">No alternatives in pool for this muscle group.</div>`;
+
+  undoBtn.style.display = swapOverrides[exId] ? 'block' : 'none';
+  overlay.classList.add('open');
+}
+
+async function applySwap(exId, newName, type) {
+  swapOverrides[exId] = newName;
+  try { await window.storage.set('swap-overrides', JSON.stringify(swapOverrides)); } catch(e){}
+  closeSwapSheet();
+  showToast(`⟳ Swapped → ${newName}`);
+  renderWorkoutView();
+}
+
+async function undoSwap() {
+  if (!_swapTarget) return;
+  delete swapOverrides[_swapTarget.exId];
+  try { await window.storage.set('swap-overrides', JSON.stringify(swapOverrides)); } catch(e){}
+  closeSwapSheet();
+  showToast('↩ Restored original');
+  renderWorkoutView();
+}
+
+function closeSwapSheet(e) {
+  if (e && e.target !== document.getElementById('swapOverlay')) return;
+  document.getElementById('swapOverlay').classList.remove('open');
+  _swapTarget = null;
 }
 
 // ============================================================
@@ -3060,5 +3151,20 @@ function formatDate(dateStr) {
 // ============================================================
 init();
 </script>
+
+<!-- SWAP SHEET OVERLAY -->
+<div class="swap-overlay" id="swapOverlay" onclick="closeSwapSheet(event)">
+  <div class="swap-sheet">
+    <div class="swap-sheet-hdr">
+      <span class="swap-sheet-title">⟳ SWAP EXERCISE</span>
+      <button class="swap-close-btn" onclick="closeSwapSheet()">✕</button>
+    </div>
+    <div class="swap-section-label">Currently doing</div>
+    <div class="swap-current" id="swapCurrentName"><strong>—</strong></div>
+    <div class="swap-section-label">Alternatives</div>
+    <div class="swap-options" id="swapOptionsList"></div>
+    <button class="swap-undo-btn" id="swapUndoBtn" onclick="undoSwap()" style="display:none">↩ Restore Original</button>
+  </div>
+</div>
 </body>
 </html>
