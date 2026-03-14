@@ -525,6 +525,15 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .swap-option:active{opacity:0.7;}
 .swap-option-name{font-size:12px;font-weight:600;color:var(--white);}
 .swap-option-tag{font-size:9px;color:var(--accent);font-weight:700;letter-spacing:0.5px;}
+/* EXERCISE NOTES */
+.ex-note-section{margin-top:13px;padding-top:12px;border-top:1px solid var(--border);}
+.ex-note-last-week{padding:8px 11px;border-radius:8px;background:var(--card2);border-left:3px solid var(--accent);font-size:11px;color:var(--dim2);margin-bottom:8px;line-height:1.5;}
+.ex-note-lw-label{display:block;color:var(--accent);font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:3px;}
+.ex-note-pattern{font-size:9px;color:var(--orange);font-weight:700;letter-spacing:0.5px;margin-bottom:7px;}
+.ex-note-input{width:100%;background:var(--card2);border:1px solid var(--border2);border-radius:9px;color:var(--white);padding:9px 11px;font-size:12px;font-family:'DM Sans',sans-serif;resize:none;height:68px;line-height:1.5;transition:border-color 0.15s;}
+.ex-note-input::placeholder{color:var(--dim);}
+.ex-note-input:focus{outline:none;border-color:rgba(232,255,71,0.5);}
+
 .swap-equip-group{margin-bottom:12px;}
 .swap-equip-label{font-size:9px;color:var(--dim2);letter-spacing:1px;font-weight:700;text-transform:uppercase;margin-bottom:5px;padding-left:2px;}
 .swap-undo-btn{width:100%;margin-top:12px;padding:11px;border-radius:9px;border:1px dashed var(--border);background:transparent;color:var(--dim2);font-size:10px;font-weight:700;letter-spacing:1px;cursor:pointer;font-family:'DM Sans',sans-serif;text-transform:uppercase;}
@@ -990,7 +999,11 @@ let timerMax = 90;
 let restOverrides = {}; // { exId: seconds } — user-customized rest per exercise
 let swapOverrides = {}; // { exId: altName } — user-selected exercise swaps
 let prStreaks = {};     // { exId: count } — consecutive sessions with new PRs
-let fortCancelled = false; // true = show home lower body sub instead of FORT class
+let notesStore = {};   // { exId: { todayNote, lastWeekNote, weekCount } }
+let fortCancelled = false;
+
+const SUPABASE_URL  = 'https://fnjjfnsdxibjbzldfgit.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZuampmbnNkeGliamJ6bGRmZ2l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY1MDM2MjAsImV4cCI6MjA4MjA3OTYyMH0.oZYn5OXKZH2h1wGfIj_R1L8Hlk3ytGFBgDCyGqUcatk'; // true = show home lower body sub instead of FORT class
 const CIRC = 2 * Math.PI * 60; // 377
 
 // ============================================================
@@ -1107,6 +1120,35 @@ async function loadAll() {
       completedDates = new Set(json.workouts.map(w => w.workout_date));
     }
   } catch(e) { /* non-fatal — dots just won't show */ }
+
+  // Load exercise notes from last 4 weeks
+  try {
+    const since = new Date(Date.now() - 28 * 86400000).toISOString().split('T')[0];
+    const nRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/exercise_notes?note_date=gte.${since}&select=exercise_id,note_date,note&order=note_date.desc`,
+      { headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` } }
+    );
+    if (nRes.ok) {
+      const rows = await nRes.json();
+      const today = getDateStr();
+      const grouped = {};
+      rows.forEach(r => { (grouped[r.exercise_id] = grouped[r.exercise_id] || []).push(r); });
+      Object.keys(grouped).forEach(exId => {
+        const list = grouped[exId]; // sorted desc already
+        const todayRow    = list.find(r => r.note_date === today);
+        const lastWeekRow = list.find(r => {
+          const daysAgo = (Date.now() - new Date(r.note_date).getTime()) / 86400000;
+          return daysAgo >= 5 && daysAgo <= 10;
+        });
+        const distinctWeeks = new Set(list.map(r => Math.floor(new Date(r.note_date).getTime() / (7 * 86400000)))).size;
+        notesStore[exId] = {
+          todayNote:    todayRow?.note    || '',
+          lastWeekNote: lastWeekRow?.note || '',
+          weekCount:    distinctWeeks,
+        };
+      });
+    }
+  } catch(e) { /* non-fatal */ }
 
   // Load today's session — try window.storage first, fall back to localStorage crash save
   try {
@@ -1486,6 +1528,21 @@ function buildExCard(ex, isDone, savedWeights, hasPR, type) {
   </div>`;
 
   if (ex.cue) detail += `<div class="form-cue">${ex.cue}</div>`;
+
+  // ── EXERCISE NOTES ──────────────────────────────────────────
+  const nStore = notesStore[ex.id] || {};
+  const todayNote    = nStore.todayNote    || '';
+  const lastWeekNote = nStore.lastWeekNote || '';
+  const weekCount    = nStore.weekCount    || 0;
+  const safeExName   = ex.name.replace(/'/g,"\\'");
+  detail += `<div class="ex-note-section">
+    ${lastWeekNote ? `<div class="ex-note-last-week"><span class="ex-note-lw-label">Last week</span>${lastWeekNote}</div>` : ''}
+    ${weekCount >= 3 ? `<div class="ex-note-pattern">📋 You've left notes ${weekCount} weeks in a row on this exercise</div>` : ''}
+    <textarea class="ex-note-input" id="note-${ex.id}"
+      placeholder="How did this feel? Anything to flag for next week…"
+      onblur="saveExerciseNote('${ex.id}','${safeExName}','${type}')"
+    >${todayNote}</textarea>
+  </div>`;
 
   const btnState = isDone ? 'done-state' : '';
   const btnText = isDone ? '✓ COMPLETED' : 'MARK COMPLETE + START REST TIMER';
@@ -2155,6 +2212,37 @@ async function saveWorkout(type, dayKey) {
   } else {
     alert('Save failed — storage unavailable.');
   }
+}
+
+async function saveExerciseNote(exId, exName, type) {
+  const textarea = document.getElementById(`note-${exId}`);
+  if (!textarea) return;
+  const note = textarea.value.trim();
+  if (!notesStore[exId]) notesStore[exId] = { todayNote:'', lastWeekNote:'', weekCount:0 };
+  notesStore[exId].todayNote = note;
+  if (!note) return; // don't write empty rows
+  try {
+    await fetch(
+      `${SUPABASE_URL}/rest/v1/exercise_notes?on_conflict=exercise_id,note_date`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          apikey: SUPABASE_ANON,
+          Authorization: `Bearer ${SUPABASE_ANON}`,
+          Prefer: 'resolution=merge-duplicates',
+        },
+        body: JSON.stringify({
+          exercise_id:   exId,
+          exercise_name: exName,
+          workout_type:  type,
+          note_date:     getDateStr(),
+          note:          note,
+          updated_at:    new Date().toISOString(),
+        }),
+      }
+    );
+  } catch(e) { /* non-fatal — note saved in notesStore in-memory */ }
 }
 
 async function saveSession() {
