@@ -519,6 +519,8 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .swap-option:active{opacity:0.7;}
 .swap-option-name{font-size:12px;font-weight:600;color:var(--white);}
 .swap-option-tag{font-size:9px;color:var(--accent);font-weight:700;letter-spacing:0.5px;}
+.swap-equip-group{margin-bottom:12px;}
+.swap-equip-label{font-size:9px;color:var(--dim2);letter-spacing:1px;font-weight:700;text-transform:uppercase;margin-bottom:5px;padding-left:2px;}
 .swap-undo-btn{width:100%;margin-top:12px;padding:11px;border-radius:9px;border:1px dashed var(--border);background:transparent;color:var(--dim2);font-size:10px;font-weight:700;letter-spacing:1px;cursor:pointer;font-family:'DM Sans',sans-serif;text-transform:uppercase;}
 </style>
 </head>
@@ -615,98 +617,99 @@ const WEEK = [
   { key:'sun', name:'Sun', type:'legs',   emoji:'🦵', label:'LEGS' },
 ];
 
-// Exercise rotation pools — S+ and A tier alternatives (sourced from Push/Pull NotebookLM notebooks)
-// Each entry: { name, tier } — tier = 'S+' | 'S' | 'A'
+// Exercise rotation pools — S+ and A tier (sourced from Push/Pull/Legs NotebookLM notebooks)
+// Each entry: { name, tier, equip } — equip = 'machine'|'smith'|'cable'|'free'
+// PRs are isolated per equipment type — swapping machine→smith won't pollute your PR records
 const ROTATION_POOLS = {
   chest: [
-    { name:'Machine Chest Press',         tier:'S+' },
-    { name:'Seated Cable Pec Fly',        tier:'S'  },
-    { name:'Cable Low-to-High Fly',       tier:'S'  },
-    { name:'Incline Bench Press',         tier:'S'  },
-    { name:'Pec Deck / Machine Fly',      tier:'A'  },
-    { name:'Incline DB Press',            tier:'A'  },
-    { name:'Barbell Bench Press',         tier:'A'  },
-    { name:'Cable Chest Press',           tier:'A'  },
-    { name:'Smith Machine Incline Press', tier:'A'  },
+    { name:'Machine Chest Press',         tier:'S+', equip:'machine' },
+    { name:'Pec Deck / Machine Fly',      tier:'A',  equip:'machine' },
+    { name:'Smith Machine Incline Press', tier:'A',  equip:'smith'   },
+    { name:'Seated Cable Pec Fly',        tier:'S',  equip:'cable'   },
+    { name:'Cable Low-to-High Fly',       tier:'S',  equip:'cable'   },
+    { name:'Cable Chest Press',           tier:'A',  equip:'cable'   },
+    { name:'Incline Bench Press',         tier:'S',  equip:'free'    },
+    { name:'Barbell Bench Press',         tier:'A',  equip:'free'    },
+    { name:'Incline DB Press',            tier:'A',  equip:'free'    },
   ],
   shoulders: [
-    { name:'Cable Lateral Raise',         tier:'S+' },
-    { name:'Machine Shoulder Press',      tier:'S'  },
-    { name:'Seated Shoulder Press',       tier:'S'  },
-    { name:'Reverse Cable Crossover',     tier:'S'  },
-    { name:'Rope Face Pull',              tier:'S'  },
-    { name:'Overhead Press (Barbell)',    tier:'A'  },
-    { name:'Arnold Press',               tier:'A'  },
-    { name:'DB Seated Press',            tier:'A'  },
-    { name:'Egyptian Lateral Raise',     tier:'A'  },
-    { name:'Cable Upright Row',          tier:'A'  },
+    { name:'Machine Shoulder Press',      tier:'S',  equip:'machine' },
+    { name:'Seated Shoulder Press',       tier:'S',  equip:'machine' },
+    { name:'Cable Lateral Raise',         tier:'S+', equip:'cable'   },
+    { name:'Reverse Cable Crossover',     tier:'S',  equip:'cable'   },
+    { name:'Rope Face Pull',              tier:'S',  equip:'cable'   },
+    { name:'Cable Upright Row',           tier:'A',  equip:'cable'   },
+    { name:'Overhead Press (Barbell)',    tier:'A',  equip:'free'    },
+    { name:'Arnold Press',               tier:'A',  equip:'free'    },
+    { name:'DB Seated Press',            tier:'A',  equip:'free'    },
+    { name:'Egyptian Lateral Raise',     tier:'A',  equip:'free'    },
   ],
   triceps: [
-    { name:'Overhead Cable Triceps Extension', tier:'S+' },
-    { name:'Skull Crushers',             tier:'S'  },
-    { name:'Weighted Dips',              tier:'S'  },
-    { name:'Overhead Rope Extension',    tier:'S'  },
-    { name:'Rope Pushdown',              tier:'A'  },
-    { name:'Close-Grip Smith Press',     tier:'A'  },
-    { name:'Machine Dip',               tier:'A'  },
-    { name:'Single-Arm Cable Extension', tier:'A'  },
+    { name:'Machine Dip',                tier:'A',  equip:'machine' },
+    { name:'Close-Grip Smith Press',     tier:'A',  equip:'smith'   },
+    { name:'Overhead Cable Triceps Extension', tier:'S+', equip:'cable' },
+    { name:'Overhead Rope Extension',    tier:'S',  equip:'cable'   },
+    { name:'Rope Pushdown',              tier:'A',  equip:'cable'   },
+    { name:'Single-Arm Cable Extension', tier:'A',  equip:'cable'   },
+    { name:'Skull Crushers',             tier:'S',  equip:'free'    },
+    { name:'Weighted Dips',              tier:'S',  equip:'free'    },
   ],
   back: [
-    { name:'Chest-Supported Row',        tier:'S'  },
-    { name:'Seal Row',                   tier:'S'  },
-    { name:'Lat Pulldown (Wide Grip)',   tier:'A'  },
-    { name:'Seated Cable Row',           tier:'A'  },
-    { name:'Straight-Arm Cable Pulldown',tier:'A'  },
-    { name:'Neutral-Grip Pulldown',      tier:'A'  },
-    { name:'Single-Arm Cable Pulldown',  tier:'A'  },
-    { name:'T-Bar Row',                  tier:'A'  },
-    { name:'Assisted Pull-Up',           tier:'A'  },
-    { name:'Pendlay Row',               tier:'A'  },
+    { name:'Chest-Supported Row',        tier:'S',  equip:'machine' },
+    { name:'Seal Row',                   tier:'S',  equip:'machine' },
+    { name:'Lat Pulldown (Wide Grip)',   tier:'A',  equip:'machine' },
+    { name:'Neutral-Grip Pulldown',      tier:'A',  equip:'machine' },
+    { name:'Seated Cable Row',           tier:'A',  equip:'cable'   },
+    { name:'Straight-Arm Cable Pulldown',tier:'A',  equip:'cable'   },
+    { name:'Single-Arm Cable Pulldown',  tier:'A',  equip:'cable'   },
+    { name:'T-Bar Row',                  tier:'A',  equip:'free'    },
+    { name:'Pendlay Row',               tier:'A',  equip:'free'    },
+    { name:'Assisted Pull-Up',           tier:'A',  equip:'free'    },
   ],
   biceps: [
-    { name:'Face-Away Cable Curl',       tier:'S+' },
-    { name:'Incline DB Curl',            tier:'S'  },
-    { name:'Preacher Curl',              tier:'S'  },
-    { name:'High Cable Curl',            tier:'A'  },
-    { name:'Cable Curl Supinated',       tier:'A'  },
-    { name:'Cable Bicep Curl',           tier:'A'  },
-    { name:'Hammer Curl',               tier:'A'  },
-    { name:'Spider Curl',               tier:'A'  },
+    { name:'Face-Away Cable Curl',       tier:'S+', equip:'cable'   },
+    { name:'High Cable Curl',            tier:'A',  equip:'cable'   },
+    { name:'Cable Curl Supinated',       tier:'A',  equip:'cable'   },
+    { name:'Cable Bicep Curl',           tier:'A',  equip:'cable'   },
+    { name:'Incline DB Curl',            tier:'S',  equip:'free'    },
+    { name:'Preacher Curl',              tier:'S',  equip:'free'    },
+    { name:'Hammer Curl',               tier:'A',  equip:'free'    },
+    { name:'Spider Curl',               tier:'A',  equip:'free'    },
   ],
   quads: [
-    { name:'Hack Squat',                 tier:'S'  },
-    { name:'Bulgarian Split Squat',      tier:'S'  },
-    { name:'Leg Extension',              tier:'S'  },
-    { name:'Barbell Squat',              tier:'S'  },
-    { name:'Smith Machine Squat',        tier:'A'  },
-    { name:'Leg Press',                  tier:'A'  },
-    { name:'Belt Squat',                tier:'A'  },
+    { name:'Leg Extension',              tier:'S',  equip:'machine' },
+    { name:'Hack Squat',                 tier:'S',  equip:'machine' },
+    { name:'Leg Press',                  tier:'A',  equip:'machine' },
+    { name:'Smith Machine Squat',        tier:'A',  equip:'smith'   },
+    { name:'Bulgarian Split Squat',      tier:'S',  equip:'free'    },
+    { name:'Barbell Squat',              tier:'S',  equip:'free'    },
+    { name:'Belt Squat',                tier:'A',  equip:'free'    },
   ],
   hams: [
-    { name:'Seated Leg Curl',            tier:'S'  },
-    { name:'Nordic Curl',                tier:'S'  },
-    { name:'Lying Leg Curl',             tier:'A'  },
-    { name:'Smith Machine RDL',          tier:'A'  },
-    { name:'Stiff-Leg Deadlift',         tier:'A'  },
-    { name:'Single-Leg Curl',            tier:'A'  },
+    { name:'Lying Leg Curl',             tier:'A',  equip:'machine' },
+    { name:'Seated Leg Curl',            tier:'S',  equip:'machine' },
+    { name:'Single-Leg Curl',            tier:'A',  equip:'machine' },
+    { name:'Smith Machine RDL',          tier:'A',  equip:'smith'   },
+    { name:'Nordic Curl',                tier:'S',  equip:'free'    },
+    { name:'Stiff-Leg Deadlift',         tier:'A',  equip:'free'    },
   ],
   glutes: [
-    { name:'Hip Thrust (Smith)',          tier:'S'  },
-    { name:'Hip Abduction Machine',       tier:'A'  },
-    { name:'Glute Kickback Cable',        tier:'A'  },
-    { name:'Cable Pull-Through',          tier:'A'  },
+    { name:'Hip Abduction Machine',       tier:'A',  equip:'machine' },
+    { name:'Hip Thrust (Smith)',          tier:'S',  equip:'smith'   },
+    { name:'Glute Kickback Cable',        tier:'A',  equip:'cable'   },
+    { name:'Cable Pull-Through',          tier:'A',  equip:'cable'   },
   ],
   calves: [
-    { name:'Seated Calf Raise',           tier:'S'  },
-    { name:'Smith Calf Raise',            tier:'A'  },
-    { name:'Single-Leg Calf Raise (DB)',  tier:'A'  },
-    { name:'Leg Press Calf Press',        tier:'A'  },
+    { name:'Leg Press Calf Press',        tier:'A',  equip:'machine' },
+    { name:'Smith Calf Raise',            tier:'A',  equip:'smith'   },
+    { name:'Seated Calf Raise',           tier:'S',  equip:'free'    },
+    { name:'Single-Leg Calf Raise (DB)',  tier:'A',  equip:'free'    },
   ],
   back_fly: [
-    { name:'Reverse Cable Crossover',     tier:'S'  },
-    { name:'Rope Face Pull',              tier:'S'  },
-    { name:'Reverse Pec Deck',            tier:'A'  },
-    { name:'Low-to-High Reverse Fly',     tier:'A'  },
+    { name:'Reverse Pec Deck',            tier:'A',  equip:'machine' },
+    { name:'Reverse Cable Crossover',     tier:'S',  equip:'cable'   },
+    { name:'Rope Face Pull',              tier:'S',  equip:'cable'   },
+    { name:'Low-to-High Reverse Fly',     tier:'A',  equip:'free'    },
   ],
 };
 
@@ -1439,7 +1442,7 @@ function buildExCard(ex, isDone, savedWeights, hasPR, type) {
     <tr><th>Set</th><th>Weight (lbs)</th><th>Target</th><th></th><th></th></tr>`;
   ex.sets.forEach((set, i) => {
     const w = savedWeights[i] !== undefined ? savedWeights[i] : set.wt;
-    const storedPR = prStore[ex.id];
+    const storedPR = prStore[getPRKey(ex.id)];
     const isSetPR = storedPR && parseFloat(w) > parseFloat(storedPR.weight);
     const prClass = isSetPR ? 'pr' : '';
     const starHtml = `<span class="pr-star ${isSetPR?'visible':''}">🏆</span>`;
@@ -1499,15 +1502,20 @@ function buildExCard(ex, isDone, savedWeights, hasPR, type) {
 // ============================================================
 // PR LOGIC
 // ============================================================
+// PRs are keyed by "exId:exerciseName" when swapped, so machine vs Smith vs DB PRs stay isolated
+function getPRKey(exId) {
+  return swapOverrides[exId] ? `${exId}:${swapOverrides[exId]}` : exId;
+}
+
 function checkIfPR(exId, weights) {
-  const stored = prStore[exId];
+  const stored = prStore[getPRKey(exId)];
   if (!stored) return false;
   return weights.some(w => parseFloat(w) > parseFloat(stored.weight));
 }
 
 function onWeightInput(input, exId, setIdx) {
   const val = parseFloat(input.value) || 0;
-  const stored = prStore[exId];
+  const stored = prStore[getPRKey(exId)];
   const isNewPR = stored && val > parseFloat(stored.weight);
   input.classList.toggle('pr', isNewPR);
   const star = document.getElementById(`wi-${exId}-${setIdx}`)?.parentElement?.parentElement?.querySelector('.pr-star');
@@ -1524,9 +1532,10 @@ async function updatePRStore(exId, weights) {
   const maxWeight = Math.max(...weights.map(w => parseFloat(w) || 0));
   if (maxWeight === 0) return false;
   
-  const stored = prStore[exId];
+  const prKey = getPRKey(exId);
+  const stored = prStore[prKey];
   if (!stored || maxWeight > parseFloat(stored.weight)) {
-    prStore[exId] = { weight: maxWeight, date: getDateStr() };
+    prStore[prKey] = { weight: maxWeight, date: getDateStr() };
     try { await window.storage.set('pr-store', JSON.stringify(prStore)); } catch(e){}
     // Track consecutive PR sessions for auto-progression
     prStreaks[exId] = (prStreaks[exId] || 0) + 1;
@@ -1629,16 +1638,27 @@ function showSwapSheet(exId, muscle, type, originalName) {
   const alts = pool.filter(e => !inUse.has(e.name));
 
   const tierColor = { 'S+': 'var(--accent)', 'S': '#22c55e', 'A': 'var(--purple)' };
-  opts.innerHTML = alts.length
-    ? alts.map(alt => {
+  const equipLabel = { machine:'📱 Machine', smith:'🏗 Smith', cable:'🔗 Cable', free:'🏋 Free Weight' };
+  if (alts.length) {
+    // Group by equipment type
+    const groups = {};
+    alts.forEach(e => { (groups[e.equip] = groups[e.equip] || []).push(e); });
+    const equipOrder = ['machine','smith','cable','free'];
+    opts.innerHTML = equipOrder.filter(eq => groups[eq]).map(eq => {
+      const label = equipLabel[eq] || eq;
+      const rows = groups[eq].map(alt => {
         const safeN = alt.name.replace(/'/g,"\\'");
         const color = tierColor[alt.tier] || 'var(--dim2)';
         return `<div class="swap-option" onclick="applySwap('${exId}','${safeN}','${type}')">
           <span class="swap-option-name">${alt.name}</span>
-          <span class="swap-option-tag" style="color:${color}">${alt.tier} · SWAP →</span>
+          <span class="swap-option-tag" style="color:${color}">${alt.tier} · SWAP</span>
         </div>`;
-      }).join('')
-    : `<div style="font-size:11px;color:var(--dim2);padding:8px 0">All alternatives for this muscle are already in today's workout.</div>`;
+      }).join('');
+      return `<div class="swap-equip-group"><div class="swap-equip-label">${label}</div>${rows}</div>`;
+    }).join('');
+  } else {
+    opts.innerHTML = `<div style="font-size:11px;color:var(--dim2);padding:8px 0">All alternatives for this muscle are already in today's workout.</div>`;
+  }
 
   undoBtn.style.display = swapOverrides[exId] ? 'block' : 'none';
   overlay.classList.add('open');
