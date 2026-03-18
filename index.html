@@ -544,6 +544,18 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .swap-equip-group{margin-bottom:12px;}
 .swap-equip-label{font-size:9px;color:var(--dim2);letter-spacing:1px;font-weight:700;text-transform:uppercase;margin-bottom:5px;padding-left:2px;}
 .swap-undo-btn{width:100%;margin-top:12px;padding:11px;border-radius:9px;border:1px dashed var(--border);background:transparent;color:var(--dim2);font-size:10px;font-weight:700;letter-spacing:1px;cursor:pointer;font-family:'DM Sans',sans-serif;text-transform:uppercase;}
+
+/* BACK RECOVERY MODE */
+.rehab-mode-pill{border-top:1px solid var(--border);padding:5px 14px;display:flex;align-items:center;justify-content:space-between;background:none;min-height:30px;}
+.rehab-mode-pill.rehab-active{background:rgba(77,255,170,0.07);border-top:1px solid rgba(77,255,170,0.3);}
+.rehab-pill-label{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--green);}
+.rehab-pill-toggle{font-size:9px;color:var(--dim2);text-decoration:underline;cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif;font-weight:700;letter-spacing:0.5px;padding:0;}
+.rehab-activate-btn{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--dim2);background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;padding:0;opacity:0.6;}
+.rehab-activate-btn:active{color:var(--green);opacity:1;}
+.rehab-banner{background:rgba(77,255,170,0.08);border:1px solid rgba(77,255,170,0.25);border-radius:14px;padding:12px 15px;margin-bottom:14px;}
+.rehab-banner-title{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1px;color:var(--green);margin-bottom:4px;}
+.rehab-banner-sub{font-size:11px;color:var(--dim2);line-height:1.4;}
+.rehab-note{font-size:9px;color:var(--dim2);font-style:italic;margin-top:4px;line-height:1.4;}
 </style>
 </head>
 <body>
@@ -566,6 +578,7 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
     </div>
     <div class="day-scroll" id="dayScroll"></div>
     <div class="g-progress"><div class="g-progress-fill" id="gBar"></div></div>
+    <div id="recoveryModePill" class="rehab-mode-pill"></div>
   </div>
 
   <div class="scroll-area" id="mainScroll"></div>
@@ -630,7 +643,7 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 // ============================================================
 // APP VERSION — update this on every release
 // ============================================================
-const APP_VERSION = 'v10';
+const APP_VERSION = 'v11.1';
 
 // ============================================================
 // WEEKLY SCHEDULE
@@ -995,6 +1008,268 @@ const REST_CONTENT = {
 };
 
 // ============================================================
+// BACK RECOVERY MODE — exercises sourced from NotebookLM (2026-03-18)
+// Notebooks: "Back Recovery & Fat Loss" + "Correcting the Lateral Pelvic Tilt and Lumbar Shift"
+// Rules: Wed/Thu = gentle correctives; Fri/Sat = subacute phase; Sun = seated/machine only
+// ============================================================
+const RECOVERY_WORKOUTS = {
+  wed: {
+    title:'REHAB DAY 1', emoji:'🦴', chips:['Back Recovery','Lateral Shift · Correctives · Extensions'],
+    sections:[
+      { label:'✅ Lateral Shift Correction (Every 1–2 hrs)', exercises:[
+        { id:'r-w-selfcorrect', name:'Manual Self-Correction (Standing)', muscle:'spine',
+          sets:[{wt:0,reps:'Hold 5s'},{wt:0,reps:'Hold 5s'},{wt:0,reps:'Hold 5s'}],
+          chips:{sets:'3 Sets', reps:'Hold 5 sec', tag:'McKenzie ✅'},
+          note:'Source: Correcting Lateral Pelvic Tilt notebook. Frequency: every 1–2 hrs.',
+          cue:'If shifted LEFT: left hand on lower ribs, right hand on hip. Inhale tall; exhale — push ribs RIGHT, hips LEFT. Hold 5 sec. Repeat until fully corrected. Every 1–2 hrs.' },
+        { id:'r-w-sideglide', name:'Side Glide — Wall-Supported', muscle:'spine',
+          sets:[{wt:0,reps:'10 reps'},{wt:0,reps:'10 reps'},{wt:0,reps:'10 reps'}],
+          chips:{sets:'3 Sets', reps:'10 reps', tag:'McKenzie ✅'},
+          note:'Source: McKenzie Method / lateral shift videos. Every 1–2 hours.',
+          cue:'Stand 8–12 in from wall, NON-painful shoulder leaning on wall, elbow at 90°. Drive hips toward wall rhythmically. Do NOT let hips fully return between reps. When done: step the foot CLOSEST to wall toward the wall before stepping away (prevents re-shift).' },
+      ]},
+      { label:'✅ Extension Protocol (After Correction)', exercises:[
+        { id:'r-w-eis', name:'Extension in Standing (EIS)', muscle:'spine',
+          sets:[{wt:0,reps:'10 reps'},{wt:0,reps:'10 reps'},{wt:0,reps:'10 reps'}],
+          chips:{sets:'3 Sets', reps:'10 reps', tag:'McKenzie ✅'},
+          note:'Source: OrthoNC Lumbar Extension PDF. Do AFTER side glide. Every 2–3 hrs.',
+          cue:'Feet shoulder-width. Hands on low back. Lean backward as far as possible, hold 1–2 sec, return. ⚠️ STOP immediately if pain moves further down the leg.' },
+        { id:'r-w-pronelying', name:'Prone Lying (Decompression)', muscle:'spine',
+          sets:[{wt:0,reps:'3 min'}],
+          chips:{sets:'1 Hold', reps:'Up to 3 min', tag:'McKenzie ✅'},
+          note:'Source: McKenzie Manual (Scribd PDF). Every 2–3 hrs.',
+          cue:'Lie face down, arms at sides, head to one side. Relax completely. Allow lower back to sag into extension. If painful, pillow under abdomen — remove gradually.' },
+        { id:'r-w-eil', name:'Extension in Lying (Cobra Press-up)', muscle:'spine',
+          sets:[{wt:0,reps:'10 reps'},{wt:0,reps:'10 reps'}],
+          chips:{sets:'2 Sets', reps:'10 reps', tag:'McKenzie ✅'},
+          note:'Source: McKenzie Manual + OrthoNC PDF. Every 2–3 hrs. Address shift FIRST.',
+          cue:'Prone, hands under shoulders. Straighten elbows to lift chest. Keep HIPS AND GLUTES FULLY RELAXED — do not squeeze. Breathe out at top. Return slowly. ⚠️ Only perform after lateral shift is corrected.' },
+      ]},
+      { label:'✅ Posture Resets', exercises:[
+        { id:'r-w-slouch', name:'Slouch-Overcorrect (Posture Re-education)', muscle:'spine',
+          sets:[{wt:0,reps:'10–15 reps'},{wt:0,reps:'10–15 reps'}],
+          chips:{sets:'2 Sets', reps:'10–15 reps', tag:'McKenzie ✅'},
+          note:'Source: McKenzie Manual (Scribd). 3× daily — morning, afternoon, evening.',
+          cue:'Sit on chair edge. Fully slouch into worst posture, then rotate pelvis forward and lift chest to maximum lordosis. Hold 1–2 sec. Release last 10% of strain = correct neutral sitting posture. 3×/day.' },
+        { id:'r-w-waitersbow', name:"Waiter's Bow (Hip Hinge)", muscle:'spine',
+          sets:[{wt:0,reps:'10 reps'},{wt:0,reps:'10 reps'}],
+          chips:{sets:'2 Sets', reps:'10 reps'},
+          note:'Source: Back Recovery & Fat Loss notebook.',
+          cue:'Stand, hinge at hips maintaining natural lumbar curve (neutral spine throughout). Squeeze glutes to return. Trains spine-safe hip hinge pattern.' },
+      ]}
+    ]
+  },
+  thu: {
+    title:'REHAB DAY 2', emoji:'🦴', chips:['Back Recovery','Mobility · Gentle Standing Core'],
+    sections:[
+      { label:'✅ Morning Correction (First Thing)', exercises:[
+        { id:'r-t-sideglide', name:'Side Glide — Wall-Supported', muscle:'spine',
+          sets:[{wt:0,reps:'10 reps'},{wt:0,reps:'10 reps'}],
+          chips:{sets:'2 Sets', reps:'10 reps', tag:'McKenzie ✅'},
+          note:'Source: McKenzie Method. Repeat every 1–2 hrs throughout day.',
+          cue:'Same as Wednesday. 8–12 in from wall, drive hips toward wall rhythmically. Must be done BEFORE extension exercises.' },
+        { id:'r-t-eis', name:'Extension in Standing (EIS)', muscle:'spine',
+          sets:[{wt:0,reps:'10 reps'},{wt:0,reps:'10 reps'}],
+          chips:{sets:'2 Sets', reps:'10 reps', tag:'McKenzie ✅'},
+          note:'Source: OrthoNC Lumbar Extension PDF. After correction only.',
+          cue:'Hands on low back. Lean backward 10 reps. Stop if pain peripheralizes.' },
+      ]},
+      { label:'✅ Mobility Work', exercises:[
+        { id:'r-t-catcow', name:'Cat-Cow', muscle:'spine',
+          sets:[{wt:0,reps:'10 slow reps'},{wt:0,reps:'10 slow reps'}],
+          chips:{sets:'2 Sets', reps:'10 slow reps'},
+          note:'Source: Correcting Lateral Pelvic Tilt notebook.',
+          cue:'Hands and knees. Round back (Cat) then arch (Cow). Only round until you "kiss the pain" — do NOT push through pain. Gradually increase range each rep.' },
+        { id:'r-t-hamstring', name:'Seated Hamstring Stretch', muscle:'hamstrings',
+          sets:[{wt:0,reps:'30s L'},{wt:0,reps:'30s R'}],
+          chips:{sets:'2 Sets', reps:'30 sec/side'},
+          note:'Source: Back Recovery & Fat Loss notebook.',
+          cue:'Chair, extend one leg with heel on floor. Lean forward from HIPS (not rounding back). Keep natural lumbar curve. Feel gentle hamstring stretch without spinal flexion.' },
+        { id:'r-t-backbend', name:'Standing Backbend', muscle:'spine',
+          sets:[{wt:0,reps:'10 reps'},{wt:0,reps:'10 reps'}],
+          chips:{sets:'2 Sets', reps:'10 reps'},
+          note:'Source: Back Recovery & Fat Loss notebook.',
+          cue:'Hands on low back above buttocks. Drive hips forward, arch backward gently. Hold 1 sec. Gentle anterior disc decompression.' },
+      ]},
+      { label:'✅ Standing Core (Gentle)', exercises:[
+        { id:'r-t-kneelift', name:'Standing Knee Lift', muscle:'core',
+          sets:[{wt:0,reps:'8–10 each'},{wt:0,reps:'8–10 each'}],
+          chips:{sets:'2 Sets', reps:'8–10/side'},
+          note:'Source: Back Recovery & Fat Loss notebook (standing core sources).',
+          cue:'Stand tall. Tighten core "as if for a light punch." Lift one knee to hip height slowly. Keep pelvis level — do NOT arch lower back. Torso stays upright.' },
+        { id:'r-t-marches', name:'High Knee Marches (Standing)', muscle:'core',
+          sets:[{wt:0,reps:'30 sec'},{wt:0,reps:'30 sec'}],
+          chips:{sets:'2 Sets', reps:'30 sec'},
+          note:'Source: Back Recovery & Fat Loss notebook.',
+          cue:'March in place, knees to hip height. Core engaged with each lift. No bouncing. Upright posture throughout.' },
+        { id:'r-t-birddog', name:'Standing Bird Dog', muscle:'core',
+          sets:[{wt:0,reps:'8 each'},{wt:0,reps:'8 each'}],
+          chips:{sets:'2 Sets', reps:'8/side'},
+          note:'Source: Back Recovery & Fat Loss notebook (CoachSofia standing core).',
+          cue:'Stand. Raise one arm forward while lifting opposite knee. Alternate sides slowly. Focus on balance and neutral spine.' },
+      ]}
+    ]
+  },
+  fri: {
+    title:'SUBACUTE RECOVERY', emoji:'🦴', chips:['Back Recovery','Subacute Phase · Core Activation'],
+    sections:[
+      { label:'✅ Correction First (Before Everything)', exercises:[
+        { id:'r-f-sideglide', name:'Side Glide — Wall-Supported', muscle:'spine',
+          sets:[{wt:0,reps:'10 reps'},{wt:0,reps:'10 reps'}],
+          chips:{sets:'2 Sets', reps:'10 reps', tag:'McKenzie ✅'},
+          note:'Source: McKenzie Method. Must complete before any other exercise.',
+          cue:'Complete the correction first. 8–12 in from wall, rhythmical hip pushes toward wall. Every 1–2 hrs today.' },
+        { id:'r-f-eis', name:'Extension in Standing (EIS)', muscle:'spine',
+          sets:[{wt:0,reps:'10 reps'}],
+          chips:{sets:'1 Set', reps:'10 reps', tag:'McKenzie ✅'},
+          note:'Source: OrthoNC PDF. After correction only.',
+          cue:'Hands on low back, 10 backward leans. After correction.' },
+      ]},
+      { label:'✅ Floor Core Activation (Subacute Phase)', exercises:[
+        { id:'r-f-deadbug', name:'Dead Bug', muscle:'core',
+          sets:[{wt:0,reps:'5 each'},{wt:0,reps:'8 each'}],
+          chips:{sets:'2 Sets', reps:'5–8/side', tag:'Subacute ✅'},
+          note:'Source: Correcting Lateral Pelvic Tilt notebook. Appropriate for subacute phase per sources.',
+          cue:'Back flat on floor, arms and legs up. FLATTEN lower back against floor (posterior pelvic tilt). Slowly lower OPPOSITE arm and leg toward floor. Keep back against floor the ENTIRE time. Slow. Controlled.' },
+        { id:'r-f-singlebear', name:'Single Leg Bear (All-Fours Hover)', muscle:'core',
+          sets:[{wt:0,reps:'5 each'},{wt:0,reps:'8 each'}],
+          chips:{sets:'2 Sets', reps:'5–8/side', tag:'Subacute ✅'},
+          note:'Source: Correcting Lateral Pelvic Tilt notebook. Appropriate for subacute phase per sources.',
+          cue:'All fours, lift knees 2–3 inches off floor. Extend one leg straight back, squeeze glute, keep core absolutely still. Hold 2–3 sec. If too hard, just hold the knees-up position without the leg extension.' },
+        { id:'r-f-bridgelv1', name:'Bridge Level 1', muscle:'glutes',
+          sets:[{wt:0,reps:'10 reps'},{wt:0,reps:'10 reps'}],
+          chips:{sets:'2 Sets', reps:'10 reps', tag:'Subacute ✅'},
+          note:'Source: MS Trust Core Stability PDF. Appropriate for subacute phase.',
+          cue:'Supine, knees bent, neutral spine. Peel spine off floor BONE BY BONE from tailbone up. Hold 2 sec at top. Lower slowly. Do NOT hyperextend at the top.' },
+      ]},
+      { label:'✅ Side Plank Corrective', exercises:[
+        { id:'r-f-sideplankclam', name:'Side Plank Clamshell (Injured Side Down)', muscle:'core',
+          sets:[{wt:0,reps:'8 reps'},{wt:0,reps:'8 reps'}],
+          chips:{sets:'2 Sets', reps:'8 reps', tag:'Subacute ✅'},
+          note:'Source: Correcting Lateral Pelvic Tilt notebook. Strengthens QL + glute medius to lock in corrected shift.',
+          cue:'PARTIAL side plank on knees. INJURED SIDE DOWN. Lift hips up and forward while opening top knee (clamshell). This is the key exercise for locking in your lateral shift correction. QL and glute medius activation.' },
+      ]}
+    ]
+  },
+  sat: {
+    title:'SUBACUTE RECOVERY 2', emoji:'🦴', chips:['Back Recovery','Subacute Phase · Progressions'],
+    sections:[
+      { label:'✅ Morning Correction', exercises:[
+        { id:'r-s-sideglide', name:'Side Glide — Wall-Supported', muscle:'spine',
+          sets:[{wt:0,reps:'10 reps'},{wt:0,reps:'10 reps'}],
+          chips:{sets:'2 Sets', reps:'10 reps', tag:'McKenzie ✅'},
+          note:'Source: McKenzie Method. Every 1–2 hrs.',
+          cue:'Complete correction first. 8–12 in from wall, rhythmical hip drives toward wall.' },
+        { id:'r-s-eis', name:'Extension in Standing (EIS)', muscle:'spine',
+          sets:[{wt:0,reps:'10 reps'},{wt:0,reps:'10 reps'}],
+          chips:{sets:'2 Sets', reps:'10 reps', tag:'McKenzie ✅'},
+          note:'Source: OrthoNC Lumbar Extension PDF.',
+          cue:'Hands on low back, backward lean, 10 reps. After correction.' },
+      ]},
+      { label:'✅ Core Progressions', exercises:[
+        { id:'r-s-deadbug', name:'Dead Bug (Progression)', muscle:'core',
+          sets:[{wt:0,reps:'8 each'},{wt:0,reps:'10 each'}],
+          chips:{sets:'2 Sets', reps:'8–10/side', tag:'Subacute ✅'},
+          note:'Source: Correcting Lateral Pelvic Tilt notebook. Add 2 reps from Friday.',
+          cue:'Same as Friday — flatten back, opposite arm/leg lower, slow and controlled. Add 2 reps vs Friday.' },
+        { id:'r-s-4ptlv2', name:'4-Point Kneeling Level 2 (Leg Slide)', muscle:'core',
+          sets:[{wt:0,reps:'8 each'},{wt:0,reps:'8 each'}],
+          chips:{sets:'2 Sets', reps:'8/side', tag:'Subacute ✅'},
+          note:'Source: MS Trust Core Stability PDF. Level 2 = slide foot back along floor (not yet lifting).',
+          cue:'Hands and knees, neutral spine, core engaged. Slide one foot BACK along the floor (do not lift yet). Keep pelvis perfectly level and still. Progress to lifting if pain-free.' },
+        { id:'r-s-sideplanklegkick', name:'Partial Side Plank with Leg Kick', muscle:'core',
+          sets:[{wt:0,reps:'8 each'},{wt:0,reps:'8 each'}],
+          chips:{sets:'2 Sets', reps:'8/side', tag:'Subacute ⚠️'},
+          note:'Source: Correcting Lateral Pelvic Tilt notebook. ⚠️ Only if pain-free in Friday\'s clamshell.',
+          cue:'Partial side plank on floor. Kick top leg up to help even out the pelvis. ⚠️ Stop if any leg pain increases.' },
+      ]},
+      { label:'✅ Low-Impact Cardio', exercises:[
+        { id:'r-s-walk', name:'Low-Impact Walk (20–30 min)', muscle:'cardio',
+          sets:[{wt:0,reps:'20–30 min'}],
+          chips:{sets:'1 Session', reps:'20–30 min'},
+          note:'Source: Back Recovery & Fat Loss notebook (Welltech Best Cardio for Lower Back Pain article).',
+          cue:'Natural upright gait. Zone 2 pace. No incline initially. Explicitly appropriate for subacute phase per sources. Most days per week.' },
+      ]}
+    ]
+  },
+  sun: {
+    title:'SEATED RECOVERY', emoji:'🦴', chips:['Back Recovery','Seated · Lying · Spine-Safe Machine Only'],
+    sections:[
+      { label:'✅ Morning Correction', exercises:[
+        { id:'r-su-sideglide', name:'Side Glide — Wall-Supported', muscle:'spine',
+          sets:[{wt:0,reps:'10 reps'}],
+          chips:{sets:'1 Set', reps:'10 reps', tag:'McKenzie ✅'},
+          note:'Source: McKenzie Method.',
+          cue:'Morning correction first. 10 reps. Follow with EIS.' },
+        { id:'r-su-eis', name:'Extension in Standing (EIS)', muscle:'spine',
+          sets:[{wt:0,reps:'10 reps'}],
+          chips:{sets:'1 Set', reps:'10 reps', tag:'McKenzie ✅'},
+          note:'Source: OrthoNC PDF.',
+          cue:'After correction. 10 reps hands-on-low-back backward lean.' },
+      ]},
+      { label:'✅ Floor Core (Lying)', exercises:[
+        { id:'r-su-tabletop', name:'Table Top Hold (Core Activation)', muscle:'core',
+          sets:[{wt:0,reps:'5 breaths'},{wt:0,reps:'5 breaths'}],
+          chips:{sets:'2 Sets', reps:'5 breath holds'},
+          note:'Source: MS Trust Core Stability PDF. Base-level floor exercise.',
+          cue:'Supine, find neutral spine (NOT flat back — neutral). Pull tummy in toward spine and engage pelvic floor (as if stopping urine flow). Hold while breathing normally. This is the foundation.' },
+        { id:'r-su-deadbug', name:'Dead Bug', muscle:'core',
+          sets:[{wt:0,reps:'10 each'},{wt:0,reps:'10 each'}],
+          chips:{sets:'2 Sets', reps:'10/side'},
+          note:'Source: Correcting Lateral Pelvic Tilt notebook.',
+          cue:'Arms and legs up. Flatten back. Opposite arm and leg lower slowly. Keep back on floor the whole time.' },
+        { id:'r-su-bridge', name:'Bridge Level 1 → 2', muscle:'glutes',
+          sets:[{wt:0,reps:'10 reps'},{wt:0,reps:'8 each'}],
+          chips:{sets:'2 Sets', reps:'Level 1+2', tag:'Subacute ✅'},
+          note:'Source: MS Trust Core Stability PDF. Level 2 only if Level 1 pain-free for 2+ sessions.',
+          cue:'Set 1: Bridge Level 1 (peel spine up, hold 2 sec, lower slowly). Set 2 if pain-free: Bridge Level 2 — hold bridge, straighten one leg forward while keeping hips level.' },
+        { id:'r-su-clamshell', name:'Clamshells (Sidelying)', muscle:'glutes',
+          sets:[{wt:0,reps:'15 each'},{wt:0,reps:'15 each'}],
+          chips:{sets:'2 Sets', reps:'15/side'},
+          note:'Source: MS Trust Core Stability PDF.',
+          cue:'Sidelying, knees bent, heels together. Lift top knee while keeping heels touching. Glute medius activation. Do not roll pelvis backward.' },
+      ]},
+      { label:'✅ Seated / Machine Work (Spine-Safe — No Axial Load)', exercises:[
+        { id:'r-su-legext', name:'Leg Extension (Seated Machine)', muscle:'quads',
+          sets:[{wt:99,reps:'15'},{wt:121,reps:'FAIL'}],
+          chips:{sets:'2 Sets', reps:'To Failure', tag:'Hassan ✅'},
+          note:'Source: Existing app protocol. SEATED = zero spinal compression.',
+          cue:'Seated machine. Quad squeeze at peak. ZERO spinal load — fully spine-safe.' },
+        { id:'r-su-hipabduct', name:'Hip Abduction Machine (Seated)', muscle:'glutes',
+          sets:[{wt:55,reps:'15-20'},{wt:66,reps:'15-20'}],
+          chips:{sets:'2 Sets', reps:'15-20 reps'},
+          note:'Source: Existing app. SEATED = spine-safe. Critical for pelvic stability.',
+          cue:'LEAN FORWARD 30°. Glute medius activation. Seated position — spine-safe. Critical for maintaining pelvic correction.' },
+        { id:'r-su-legcurl', name:'Seated Leg Curl (Machine)', muscle:'hams',
+          sets:[{wt:121,reps:'15'},{wt:143,reps:'FAIL'}],
+          chips:{sets:'2 Sets', reps:'To Failure', tag:'Hassan ✅'},
+          note:'Source: Existing app. SEATED (not lying) to minimize disc pressure.',
+          cue:'SEATED curl machine — NOT lying curl. Hamstring squeeze. No hip rise. Control negative. Seated position maintains neutral spine.' },
+      ]}
+    ]
+  }
+};
+
+function toggleBackRecoveryMode() {
+  backRecoveryMode = !backRecoveryMode;
+  try { localStorage.setItem('back-recovery-mode', backRecoveryMode ? '1' : ''); } catch(e) {}
+  updateRecoveryModePill();
+  renderWorkoutView();
+}
+
+function updateRecoveryModePill() {
+  const pill = document.getElementById('recoveryModePill');
+  if (!pill) return;
+  if (backRecoveryMode) {
+    pill.className = 'rehab-mode-pill rehab-active';
+    pill.innerHTML = `<span class="rehab-pill-label">🦴 BACK RECOVERY MODE ON</span><button class="rehab-pill-toggle" onclick="toggleBackRecoveryMode()">Deactivate</button>`;
+  } else {
+    pill.className = 'rehab-mode-pill';
+    pill.innerHTML = `<button class="rehab-activate-btn" onclick="toggleBackRecoveryMode()">🦴 Back Recovery Mode</button>`;
+  }
+}
+
+// ============================================================
 // APP STATE
 // ============================================================
 let currentDayIdx = 0;
@@ -1014,6 +1289,7 @@ let swapOverrides = {}; // { exId: altName } — user-selected exercise swaps
 let prStreaks = {};     // { exId: count } — consecutive sessions with new PRs
 let notesStore = {};   // { exId: { todayNote, lastWeekNote, weekCount } }
 let fortCancelled = false;
+let backRecoveryMode = false;
 
 const SUPABASE_URL  = 'https://fnjjfnsdxibjbzldfgit.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZuampmbnNkeGliamJ6bGRmZ2l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY1MDM2MjAsImV4cCI6MjA4MjA3OTYyMH0.oZYn5OXKZH2h1wGfIj_R1L8Hlk3ytGFBgDCyGqUcatk'; // true = show home lower body sub instead of FORT class
@@ -1123,6 +1399,13 @@ async function loadAll() {
     const v = await getStored(key);
     fortCancelled = !!(v);
   } catch(e) { fortCancelled = false; }
+
+  // Restore back recovery mode
+  try {
+    const v = localStorage.getItem('back-recovery-mode');
+    backRecoveryMode = !!(v);
+  } catch(e) { backRecoveryMode = false; }
+  updateRecoveryModePill();
 
   // Fetch completed workout dates from Supabase (populates green dots on day pills)
   try {
@@ -1293,6 +1576,11 @@ function renderCurrentView() {
 function renderWorkoutView() {
   const day = WEEK[currentDayIdx];
   const scroll = document.getElementById('mainScroll');
+
+  // Back Recovery Mode override — intercept rest days (Wed/Sat) and normal workout days
+  if (backRecoveryMode && RECOVERY_WORKOUTS[day.key]) {
+    renderRecoveryDay(day.key); return;
+  }
 
   if (day.type === 'rest') { renderRestDay(day.key); return; }
 
@@ -3065,6 +3353,73 @@ function invalidateHistoryCache() {
 // ============================================================
 // REST DAY
 // ============================================================
+// ============================================================
+// BACK RECOVERY DAY RENDERER
+// ============================================================
+function renderRecoveryDay(dayKey) {
+  const scroll = document.getElementById('mainScroll');
+  const rw = RECOVERY_WORKOUTS[dayKey];
+  if (!rw) { renderRestDay(dayKey); return; }
+
+  const allExIds = [];
+  rw.sections.forEach(s => s.exercises.forEach(e => allExIds.push(e.id)));
+
+  let html = '';
+
+  // Recovery banner
+  html += `<div class="rehab-banner">
+    <div class="rehab-banner-title">${rw.emoji} ${rw.title}</div>
+    <div class="rehab-banner-sub">${rw.chips.join(' · ')}</div>
+    <div class="rehab-note">Exercises sourced from NotebookLM — "Back Recovery & Fat Loss" + "Correcting the Lateral Pelvic Tilt and Lumbar Shift" notebooks (2026-03-18). Sources include McKenzie Manual PDF, OrthoNC Lumbar Extension PDF, McKenzie JCDR Review, MS Trust Core Stability PDF, and 12 curated YouTube sources.</div>
+  </div>`;
+
+  // Done banner
+  html += `<div class="done-banner" id="doneBanner">
+    <div class="done-emoji">${rw.emoji}</div>
+    <div class="done-title">${rw.title} COMPLETE</div>
+    <div class="done-sub">Recovery is training. Your spine thanks you.</div>
+  </div>`;
+
+  // Crash recovery banner
+  html += `<div class="recovery-banner" id="recoveryBanner">
+    ⚡ <span><strong>Session restored.</strong> Your data was recovered after a page reload.</span>
+    <span class="recovery-dismiss" onclick="document.getElementById('recoveryBanner').classList.remove('visible')">Dismiss</span>
+  </div>`;
+
+  // Sections and exercises
+  rw.sections.forEach(section => {
+    html += `<div class="sec-label">${section.label}</div>`;
+    section.exercises.forEach(ex => {
+      const state = sessionState[ex.id] || {};
+      const isDone = state.done || false;
+      const savedWeights = state.weights || ex.sets.map(s => s.wt);
+      const hasPR = checkIfPR(ex.id, savedWeights);
+      html += buildExCard(ex, isDone, savedWeights, hasPR, 'recovery');
+    });
+  });
+
+  // Notes + Save
+  const savedNotes = (sessionState['__notes__'] || {}).notes || '';
+  html += `<div class="notes-section">
+    <div class="notes-label">Session Notes</div>
+    <textarea class="notes-input" id="sessionNotes" placeholder="How did it feel? Pain changes? Shift corrected?" oninput="saveNotes(this.value)">${savedNotes}</textarea>
+    <button class="save-btn" id="saveBtn" onclick="saveWorkout('recovery','${dayKey}')">💾 SAVE RECOVERY SESSION</button>
+  </div>
+  <button class="reset-btn" onclick="resetDay()">↺ Reset ${rw.title}</button>`;
+
+  scroll.innerHTML = html;
+  updateDayProgress(allExIds);
+  scroll.scrollTop = 0;
+
+  if (window._sessionRestoredFromCache) {
+    const banner = document.getElementById('recoveryBanner');
+    if (banner) banner.classList.add('visible');
+    window._sessionRestoredFromCache = false;
+  }
+
+  startSessionTimer();
+}
+
 function renderRestDay(dayKey) {
   const content = REST_CONTENT[dayKey] || REST_CONTENT.wed;
   const isSprint = (dayKey === 'wed' || dayKey === 'sat');
