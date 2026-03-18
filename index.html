@@ -2523,17 +2523,20 @@ async function saveWorkout(type, dayKey) {
 
 // ── SESSION SUMMARY SHARE (Build 4) ─────────────────────────
 function generateSessionSummary(type) {
-  const workout = WORKOUTS[type];
+  const day = WEEK[currentDayIdx];
+  const workout = (type === 'recovery' && day && RECOVERY_WORKOUTS[day.key])
+    ? RECOVERY_WORKOUTS[day.key]
+    : WORKOUTS[type];
   if (!workout) return '';
   const watch = sessionState['__watch__'] || {};
   const date  = new Date().toLocaleDateString('en-US', { weekday:'long', month:'short', day:'numeric', year:'numeric' });
   const dur   = getSessionDuration ? getSessionDuration() : '';
 
   let lines = [];
-  lines.push(`🏋🏾 WORKOUT COMPLETE — ${APP_VERSION}`);
+  lines.push(`${type === 'recovery' ? '🦴 RECOVERY SESSION' : '🏋🏾 WORKOUT COMPLETE'} — ${APP_VERSION}`);
   lines.push(`${workout.title} · ${date}${dur ? ' · ' + dur : ''}`);
   lines.push('');
-  lines.push('💪 EXERCISES');
+  lines.push(type === 'recovery' ? '🏥 REHAB EXERCISES' : '💪 EXERCISES');
 
   const sections = (type === 'fort' && fortCancelled)
     ? workout.sections.filter(s => s.label !== 'If At FORT')
