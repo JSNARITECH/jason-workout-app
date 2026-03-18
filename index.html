@@ -2435,7 +2435,10 @@ function updateDayProgress(allExIds) {
 // SAVE WORKOUT
 // ============================================================
 async function saveWorkout(type, dayKey) {
-  const workout = WORKOUTS[type];
+  // Recovery mode uses RECOVERY_WORKOUTS instead of WORKOUTS
+  const workout = (type === 'recovery' && dayKey && RECOVERY_WORKOUTS[dayKey])
+    ? RECOVERY_WORKOUTS[dayKey]
+    : WORKOUTS[type];
   if (!workout) return;
 
   const exercises = [];
