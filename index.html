@@ -3389,6 +3389,49 @@ function renderRecoveryDay(dayKey) {
     <span class="recovery-dismiss" onclick="document.getElementById('recoveryBanner').classList.remove('visible')">Dismiss</span>
   </div>`;
 
+  // Galaxy Watch widget (identical to normal workout days)
+  const ws = sessionState['__watch__'] || {};
+  const sessionDuration = getSessionDuration();
+  html += `<div class="watch-widget">
+    <div class="watch-title">GALAXY WATCH — SESSION DATA</div>
+    <div class="watch-fields">
+      <div class="watch-field">
+        <span class="wf-label">Avg HR (bpm)</span>
+        <input class="wf-input" type="number" id="w-avhr" placeholder="128" value="${ws.avgHr||''}" oninput="saveWatch('avgHr',this.value)" min="50" max="220">
+        <span class="wf-zone" id="zone-avg">${getHRZone(ws.avgHr||0)}</span>
+      </div>
+      <div class="watch-field">
+        <span class="wf-label">Max HR (bpm)</span>
+        <input class="wf-input" type="number" id="w-maxhr" placeholder="155" value="${ws.maxHr||''}" oninput="saveWatch('maxHr',this.value)" min="50" max="220">
+        <span class="wf-zone" id="zone-max">${getHRZone(ws.maxHr||0)}</span>
+      </div>
+      <div class="watch-field">
+        <span class="wf-label">Calories Burned</span>
+        <input class="wf-input" type="number" id="w-cals" placeholder="420" value="${ws.calories||''}" oninput="saveWatch('calories',this.value)" min="0">
+      </div>
+      <div class="watch-field">
+        <span class="wf-label">Session Time</span>
+        <div class="session-timer" id="sessionTimer">${sessionDuration}</div>
+        <div class="session-timer-label">ELAPSED</div>
+      </div>
+    </div>
+    ${ws.zones ? `<div class="zone-bars">
+      <div class="zone-bars-title">Heart Rate Zones</div>
+      ${[['Zone 5 Max','z5','z5-fill'],['Zone 4 Hard','z4','z4-fill'],['Zone 3 Aerobic','z3','z3-fill'],['Zone 2 Fat Burn','z2','z2-fill'],['Zone 1 Easy','z1','z1-fill']].map(([n,k,cls]) =>
+        `<div class="zone-bar-row"><span class="zone-bar-name">${n}</span><div class="zone-bar-track"><div class="zone-bar-fill ${cls}" style="width:${ws.zones[k]||0}%"></div></div><span class="zone-bar-pct">${ws.zones[k]||0}%</span></div>`
+      ).join('')}
+    </div>` : ''}
+    <button class="bpm-import-btn" onclick="toggleBpmImport()">📥 Import BPM from Screenshot</button>
+    <div class="bpm-import-area" id="bpmImportArea">
+      <input type="file" id="bpmImageInput" accept="image/*" style="display:none" onchange="scanBpmScreenshot(this)">
+      <button class="bpm-scan-btn" id="bpmScanBtn" onclick="document.getElementById('bpmImageInput').click()">📸 Scan Samsung Health Screenshot</button>
+      <div class="bpm-scan-status" id="bpmScanStatus"></div>
+      <div class="bpm-divider">or paste JSON manually</div>
+      <textarea class="bpm-paste" id="bpmPasteField" placeholder='Paste JSON from Claude chat here...'></textarea>
+      <button class="bpm-parse-btn" onclick="importWatchData()">Parse &amp; Apply</button>
+    </div>
+  </div>`;
+
   // Sections and exercises
   rw.sections.forEach(section => {
     html += `<div class="sec-label">${section.label}</div>`;
@@ -3407,6 +3450,7 @@ function renderRecoveryDay(dayKey) {
     <div class="notes-label">Session Notes</div>
     <textarea class="notes-input" id="sessionNotes" placeholder="How did it feel? Pain changes? Shift corrected?" oninput="saveNotes(this.value)">${savedNotes}</textarea>
     <button class="save-btn" id="saveBtn" onclick="saveWorkout('recovery','${dayKey}')">💾 SAVE RECOVERY SESSION</button>
+    <button class="share-claude-btn" onclick="shareToClaudeChat('recovery')">📤 Send to Claude Chat</button>
   </div>
   <button class="reset-btn" onclick="resetDay()">↺ Reset ${rw.title}</button>`;
 
@@ -3421,6 +3465,8 @@ function renderRecoveryDay(dayKey) {
   }
 
   startSessionTimer();
+  if (ws.avgHr) updateZoneLabel('zone-avg', ws.avgHr);
+  if (ws.maxHr) updateZoneLabel('zone-max', ws.maxHr);
 }
 
 function renderRestDay(dayKey) {
