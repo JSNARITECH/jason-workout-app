@@ -1,5 +1,26 @@
 # Workout App Changelog
 
+## v11 — 2026-03-18
+### Added
+- **Back Recovery Mode:** Temporary spine-safe workout override
+  - Triggered by lower back lateral shift injury (March 15, 2026)
+  - Header toggle switch (`RECOVERY`) — persists to `localStorage` key `recovery-mode-active`
+  - Defaults to **ON** on first load after this update
+  - Amber banner `⚠️ Back Recovery Mode Active — Spine-Safe Protocol` shown when active
+  - **Wednesday & Thursday:** Rehab-only days — incline treadmill walk + McKenzie press-ups, cat-cow, hip flexor stretch, glute bridge, dead bug, steam room. `🛑 No Gym Today — Rehab Only` banner.
+  - **Thursday:** Adds bending test card before bed — gate for Friday lifting clearance.
+  - **Friday:** First modified lifting day — seated pull exercises only (lat pulldown, seated cable row, Bayesian curl, rope face pull, straight-arm pulldown).
+  - **Saturday:** Modified push session — seated machine chest press, cable fly, seated cable lateral raise, overhead rope extension (⚠️ skip if pain), bicycle crunches.
+  - **Sunday:** Modified legs — seated machines only (leg extension, lying leg curl, hip abduction, seated calf raise, cable crunch ⚠️). Belt squat / hack squat / leg press / RDL marked **SUSPENDED** (greyed out, strikethrough).
+  - Per-exercise indicators: ✅ Spine-Safe (green), ⚠️ Monitor (amber), SUSPENDED (greyed strikethrough).
+  - Toggle OFF when healed to instantly restore all normal workout splits.
+
+### Preserved
+- All normal workout splits untouched (recovery overrides view only, no data modified)
+- Hassan Protocol ladder/burnout logic intact
+- PR tracking, rest timers, Supabase logging unchanged
+- FORT Tuesday toggle, exercise swap, auto-progression all intact
+
 ## v10 — 2026-03-14
 - **Build 1:** `app_versions` table in Supabase — living source of truth for app state. Claude Chat can query current version anytime.
 - **Build 2:** GitHub Action auto-logs version + commit SHA to Supabase on every push to main.
