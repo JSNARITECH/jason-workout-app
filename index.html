@@ -101,6 +101,15 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .rotation-ex:hover,.rotation-ex:active{background:rgba(192,132,252,0.2);}
 .rotation-dismiss{font-size:10px;color:var(--dim);margin-top:8px;cursor:pointer;text-decoration:underline;}
 
+/* LEG DAY RECOVERY BANNER */
+.leg-recovery-banner{background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.35);border-radius:14px;padding:13px 15px;margin-bottom:14px;}
+.leg-recovery-banner-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.leg-recovery-banner-title{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;color:#ffc107;}
+.leg-recovery-banner-body{font-size:11px;color:var(--dim2);line-height:1.5;}
+.leg-recovery-dismiss{font-size:10px;color:var(--dim);cursor:pointer;text-decoration:underline;flex-shrink:0;}
+/* SPINAL CAUTION BADGE */
+.spinal-warn-badge{display:inline-block;font-size:10px;background:rgba(255,193,7,0.15);border:1px solid rgba(255,193,7,0.4);color:#ffc107;padding:2px 7px;border-radius:8px;font-weight:700;margin-left:5px;vertical-align:middle;}
+
 /* FORT CANCELLED BANNER */
 .fort-cancel-banner{background:rgba(255,77,77,0.08);border:1px solid rgba(255,77,77,0.25);border-radius:14px;padding:14px 15px;margin-bottom:14px;}
 .fort-cancel-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
@@ -917,13 +926,20 @@ const WORKOUTS = {
       ]},
       { label:'Main Compound', exercises:[
         { id:'l-squat', name:'Smith Machine Squat', muscle:'quads',
+          warnSpinal:true,
           sets:[{wt:135,reps:'10'},{wt:155,reps:'8-10'}],
           chips:{sets:'2 Sets',reps:'8-12 reps',pr:'PR: 145×10',target:'Target: 155 lbs'},
           cue:'⚠️ LOWER BACK: Feet slightly forward. Sit back. Drive knees OUT. Chest tall.' },
-        { id:'l-rdl', name:'Smith Machine RDL', muscle:'hams',
-          sets:[{wt:245,reps:'10'},{wt:275,reps:'10-12'}],
-          chips:{sets:'2 Sets',reps:'10-12 reps',pr:'PR: 265×10',target:'Target: 275 lbs'},
-          cue:'Hip hinge — push hips BACK. Feel deep hamstring stretch. Bar stays close.' }
+        // RDL temporarily disabled - lower back injury recovery (started ~March 14, 2026)
+        // Confirmed PR: 205 lbs — restore when cleared to train posterior chain
+        // { id:'l-rdl', name:'Smith Machine RDL', muscle:'hams',
+        //   sets:[{wt:245,reps:'10'},{wt:275,reps:'10-12'}],
+        //   chips:{sets:'2 Sets',reps:'10-12 reps',pr:'PR: 265×10',target:'Target: 275 lbs'},
+        //   cue:'Hip hinge — push hips BACK. Feel deep hamstring stretch. Bar stays close.' },
+        { id:'l-seated-curl', name:'Seated Leg Curl', muscle:'hams',
+          sets:[{wt:110,reps:'10-12'},{wt:121,reps:'10-12'}],
+          chips:{sets:'2 Sets',reps:'10-12 reps',pr:'PR: –',target:'Target: 121 lbs'},
+          cue:'SEATED curl machine — spine-neutral, no disc pressure. Hamstring squeeze. Control the negative. Alternative: Cable Pull-Through if Seated Leg Curl is already in session.' }
       ]},
       { label:'Glutes + Calves', exercises:[
         { id:'l-abduct', name:'Hip Abduction Machine', muscle:'glutes',
@@ -1388,6 +1404,9 @@ async function loadAll() {
 
   try { const v = await getStored('workout-history'); if (v) historyStore = JSON.parse(v); } catch(e) { historyStore = []; }
   try { const v = await getStored('pr-store'); if (v) prStore = JSON.parse(v); } catch(e) { prStore = {}; }
+  // RDL temporarily disabled - lower back injury recovery (started ~March 14, 2026)
+  // Confirmed PR: 205 lbs — restore when cleared to train posterior chain
+  if (!prStore['l-rdl']) { prStore['l-rdl'] = { weight: 205, date: '2026-03-14' }; }
   try { const v = await getStored('exercise-freq'); if (v) exerciseFreq = JSON.parse(v); } catch(e) { exerciseFreq = {}; }
   try { const v = await getStored('rest-overrides'); if (v) restOverrides = JSON.parse(v); } catch(e) { restOverrides = {}; }
   try { const v = await getStored('swap-overrides'); if (v) swapOverrides = JSON.parse(v); } catch(e) { swapOverrides = {}; }
@@ -1666,6 +1685,20 @@ function renderWorkoutView() {
     });
   }
 
+  // Leg Day back injury recovery notice
+  if (day.type === 'legs') {
+    const legRecoveryDismissed = localStorage.getItem('leg-recovery-banner-dismissed');
+    if (!legRecoveryDismissed) {
+      html += `<div class="leg-recovery-banner" id="legRecoveryBanner">
+        <div class="leg-recovery-banner-top">
+          <div class="leg-recovery-banner-title">⚠️ Back Recovery Mode</div>
+          <span class="leg-recovery-dismiss" onclick="dismissLegRecoveryBanner()">Dismiss</span>
+        </div>
+        <div class="leg-recovery-banner-body">RDL removed. Avoid Smith Machine Squat this week. Stick to Leg Press, Leg Extension, Leg Curl, and Calf Raises.</div>
+      </div>`;
+    }
+  }
+
   // Galaxy Watch
   const ws = sessionState['__watch__'] || {};
   const sessionDuration = getSessionDuration();
@@ -1786,6 +1819,9 @@ function buildExCard(ex, isDone, savedWeights, hasPR, type) {
     ? `<span class="level-up-badge" onclick="event.stopPropagation();showSwapSheet('${ex.id}','${ex.muscle || ''}','${type}','${ex.name.replace(/'/g,"\\'")}')">🚀 Level Up (${streak}x PR)</span>`
     : '';
 
+  // Spinal caution warning (temporary — lower back injury recovery)
+  const spinalWarnHtml = ex.warnSpinal ? `<span class="spinal-warn-badge">⚠️ Spinal Caution</span>` : '';
+
   let detail = '';
   if (ex.hassan) detail += `<div class="hassan-tag">⚡ Hassan Protocol — To Failure</div>`;
   if (ex.ladder?.length) {
@@ -1858,7 +1894,7 @@ function buildExCard(ex, isDone, savedWeights, hasPR, type) {
       <div class="ex-info">
         <div class="ex-name-row">
           <span class="ex-name">${displayName}</span>
-          ${prBadgeHtml}${rotFlagHtml}${levelUpHtml}
+          ${prBadgeHtml}${rotFlagHtml}${levelUpHtml}${spinalWarnHtml}
         </div>
         <div class="ex-chips">${chipsHtml}</div>
       </div>
@@ -1964,6 +2000,12 @@ function getRotationAlerts(workoutType) {
 function dismissAlert(id) {
   const el = document.getElementById(id);
   if (el) el.classList.remove('visible');
+}
+
+function dismissLegRecoveryBanner() {
+  try { localStorage.setItem('leg-recovery-banner-dismissed', '1'); } catch(e) {}
+  const el = document.getElementById('legRecoveryBanner');
+  if (el) el.style.display = 'none';
 }
 
 function toggleFortCancelled() {
