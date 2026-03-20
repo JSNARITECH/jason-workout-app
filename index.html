@@ -890,10 +890,11 @@ const WORKOUTS = {
           hassan:true, ladder:['121×6','132×4','143×FAIL'], burnout:'110 lbs × 20 reps',
           cue:'Pull elbows down and in. Chest tall. No shoulder shrug.' },
         { id:'pull-row', name:'Seated Cable Row', muscle:'back',
+          warnSpinal:true,
           sets:[{wt:132,reps:'6'},{wt:154,reps:'FAIL'}],
           chips:{sets:'2 Sets',reps:'10-12 reps',pr:'PR: 154×10',tag:'Hassan'},
           hassan:true, ladder:['132×6','154×FAIL'],
-          cue:'Initiate with scapular retraction. Pull elbows back. Torso still.' }
+          cue:'Initiate with scapular retraction. Pull elbows back. Torso still. ⚠️ Keep torso upright — avoid forward lean during back recovery.' }
       ]},
       { label:'Isolation', exercises:[
         { id:'pull-face', name:'Rope Face Pull', muscle:'back_fly',
@@ -992,11 +993,18 @@ const WORKOUTS = {
           cue:'LEAN FORWARD 30°. 55 lbs baseline. Feel glute medius.' }
       ]},
       { label:'Ab Finisher 🎯', exercises:[
-        { id:'f-abwheel', name:'Ab Wheel Rollout', muscle:'abs',
+        // Ab Wheel Rollout disabled - lumbar load risk during back injury recovery
+        // (started March 14, 2026) — restore when cleared to train posterior chain
+        // { id:'f-abwheel', name:'Ab Wheel Rollout', muscle:'abs',
+        //   sets:[{wt:0,reps:'8-10'},{wt:0,reps:'8-10'}],
+        //   chips:{sets:'2 Sets',reps:'8-10 reps',tag:'Nippard Abs'},
+        //   note:'Do after AM treadmill',
+        //   cue:'Posteriorly tilt pelvis (squeeze glutes). Roll out ONLY as far as you can maintain. Short ROM with control > full ROM with lower back cave.' },
+        { id:'f-cable-crunch', name:'Cable Crunch', muscle:'abs',
           sets:[{wt:0,reps:'8-10'},{wt:0,reps:'8-10'}],
           chips:{sets:'2 Sets',reps:'8-10 reps',tag:'Nippard Abs'},
-          note:'Do after AM treadmill',
-          cue:'Posteriorly tilt pelvis (squeeze glutes). Roll out ONLY as far as you can maintain. Short ROM with control > full ROM with lower back cave.' }
+          note:'Back-safe ab sub — replaces Ab Wheel during recovery',
+          cue:'Kneel facing cable. Hands at temples. Crunch DOWN — flex spine, not arms. Full stretch at top. Spine-safe alternative to Ab Wheel during lower back recovery.' }
       ]}
     ]
   },
