@@ -13,6 +13,13 @@
       "channel_handle": "@Chase-H-AI",
       "notebook_name": "Chase AI",
       "keywords": ["AI", "artificial intelligence", "automation", "workflow", "productivity"]
+    },
+    "nick": {
+      "name": "Nick Saraev",
+      "channel_id": "",
+      "channel_handle": "@nicksaraev",
+      "notebook_name": "Nick Saraev AI",
+      "keywords": ["AI", "artificial intelligence", "automation", "workflow", "productivity"]
     }
   },
   "obsidian_vault_path": "/Users/jasonarias/Documents/Obsidian Vault",
