@@ -1,0 +1,26 @@
+{
+  "channels": {
+    "jack": {
+      "name": "Jack AI",
+      "channel_id": "",
+      "channel_handle": "@Itssssss_Jack",
+      "notebook_name": "Jack AI",
+      "keywords": ["AI", "artificial intelligence", "automation", "workflow", "productivity"]
+    },
+    "chase": {
+      "name": "Chase AI",
+      "channel_id": "",
+      "channel_handle": "@Chase-H-AI",
+      "notebook_name": "Chase AI",
+      "keywords": ["AI", "artificial intelligence", "automation", "workflow", "productivity"]
+    }
+  },
+  "obsidian_vault_path": "/Users/jasonarias/Documents/Obsidian Vault",
+  "obsidian_automation_folder": "00-Prompts-and-Skills",
+  "scrape_interval_hours": 24,
+  "max_videos_per_channel": 10,
+  "transcript_language": "en",
+  "output_dir": "scraper/output",
+  "notebooklm_export_dir": "scraper/notebooklm_exports",
+  "state_file": "scraper/state.json"
+}
