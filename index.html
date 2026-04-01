@@ -1423,7 +1423,7 @@ async function loadAll() {
   // Restore fort-cancelled flag for today
   try {
     const key = `fort-cancelled-${getDateStr()}`;
-    const v = await getStored(key);
+    const v = await getStored(key) || localStorage.getItem(key);
     fortCancelled = !!(v);
   } catch(e) { fortCancelled = false; }
 
@@ -3583,8 +3583,11 @@ const SPRINT_PHASES = {
 
 function doMissedLowerDay() {
   fortCancelled = true;
+  currentDayIdx = 1; // Tuesday (fort day)
   try { window.storage.set(`fort-cancelled-${getDateStr()}`, '1').catch(()=>{}); } catch(e) {}
-  selectDay(1); // navigate to Tuesday workout
+  try { localStorage.setItem(`fort-cancelled-${getDateStr()}`, '1'); } catch(e) {}
+  buildDayPills();
+  renderWorkoutView();
 }
 
 function renderSprintDay(dayKey, content) {
