@@ -2020,11 +2020,10 @@ function toggleFortCancelled() {
   fortCancelled = !fortCancelled;
   // Persist choice for today so page reload remembers
   const key = `fort-cancelled-${getDateStr()}`;
-  if (fortCancelled) {
-    window.storage.set(key, '1').catch(()=>{});
-  } else {
-    window.storage.delete(key).catch(()=>{});
-  }
+  try {
+    if (fortCancelled) { window.storage.set(key, '1').catch(()=>{}); }
+    else { window.storage.delete(key).catch(()=>{}); }
+  } catch(e) {}
   renderWorkoutView();
 }
 
@@ -3584,8 +3583,7 @@ const SPRINT_PHASES = {
 
 function doMissedLowerDay() {
   fortCancelled = true;
-  const key = `fort-cancelled-${getDateStr()}`;
-  window.storage.set(key, '1').catch(()=>{});
+  try { window.storage.set(`fort-cancelled-${getDateStr()}`, '1').catch(()=>{}); } catch(e) {}
   selectDay(1); // navigate to Tuesday workout
 }
 
