@@ -1615,9 +1615,9 @@ function renderWorkoutView() {
   if (!workout) { scroll.innerHTML = '<div class="empty-state">No workout data for this day.</div>'; return; }
 
   const sectionsForProgress = (day.type === 'fort' && fortCancelled)
-    ? workout.sections.filter(s => s.label !== 'If At FORT')
+    ? workout.sections.filter(s => s.label !== 'If At A Class (Boxing / HIIT)')
     : (day.type === 'fort' && !fortCancelled)
-      ? workout.sections.filter(s => s.label === 'If At FORT' || s.label.includes('Ab'))
+      ? workout.sections.filter(s => s.label === 'If At A Class (Boxing / HIIT)' || s.label.includes('Ab'))
       : workout.sections;
 
   const allExIds = [];
@@ -1750,11 +1750,11 @@ function renderWorkoutView() {
     </div>
   </div>`;
 
-  // Exercises — if FORT day and cancelled, skip "If At FORT" section, show only sub + abs
+  // Exercises — if FORT day and cancelled, show home lower sub + abs; if not cancelled, show class + abs
   const sectionsToRender = (day.type === 'fort' && fortCancelled)
-    ? workout.sections.filter(s => s.label !== 'If At FORT')
+    ? workout.sections.filter(s => s.label !== 'If At A Class (Boxing / HIIT)')
     : (day.type === 'fort' && !fortCancelled)
-      ? workout.sections.filter(s => s.label === 'If At FORT' || s.label.includes('Ab'))
+      ? workout.sections.filter(s => s.label === 'If At A Class (Boxing / HIIT)' || s.label.includes('Ab'))
       : workout.sections;
 
   sectionsToRender.forEach(section => {
@@ -2496,9 +2496,9 @@ async function saveWorkout(type, dayKey) {
 
   // Use sections that are currently rendered (respects fort cancelled state)
   const sectionsToSave = (type === 'fort' && fortCancelled)
-    ? workout.sections.filter(s => s.label !== 'If At FORT')
+    ? workout.sections.filter(s => s.label !== 'If At A Class (Boxing / HIIT)')
     : (type === 'fort' && !fortCancelled)
-      ? workout.sections.filter(s => s.label === 'If At FORT' || s.label.includes('Ab'))
+      ? workout.sections.filter(s => s.label === 'If At A Class (Boxing / HIIT)' || s.label.includes('Ab'))
       : workout.sections;
 
   for (const section of sectionsToSave) {
@@ -2589,7 +2589,7 @@ function generateSessionSummary(type) {
   lines.push(type === 'recovery' ? '🏥 REHAB EXERCISES' : '💪 EXERCISES');
 
   const sections = (type === 'fort' && fortCancelled)
-    ? workout.sections.filter(s => s.label !== 'If At FORT')
+    ? workout.sections.filter(s => s.label !== 'If At A Class (Boxing / HIIT)')
     : workout.sections;
 
   sections.forEach(section => {
@@ -3582,6 +3582,13 @@ const SPRINT_PHASES = {
   done:     { label: 'SESSION COMPLETE', secs: 0,   cue: 'Head straight to the sauna. 20 min @ 175°F. Non-optional.' }
 };
 
+function doMissedLowerDay() {
+  fortCancelled = true;
+  const key = `fort-cancelled-${getDateStr()}`;
+  window.storage.set(key, '1').catch(()=>{});
+  selectDay(1); // navigate to Tuesday workout
+}
+
 function renderSprintDay(dayKey, content) {
   sprintState = { running: false, phase: 'idle', round: 0, totalRounds: 6, elapsed: 0, phaseDuration: 0, interval: null, hrAvg: '', hrMax: '' };
 
@@ -3589,7 +3596,18 @@ function renderSprintDay(dayKey, content) {
     `<div class="rest-tip"><span class="rt-icon">${t.icon}</span><span>${t.text}</span></div>`
   ).join('');
 
-  document.getElementById('mainScroll').innerHTML = `
+  const missedLowerBanner = dayKey === 'wed' ? `
+  <div class="fort-cancel-banner" style="margin-bottom:14px">
+    <div class="fort-cancel-top">
+      <div class="fort-cancel-title">💪 MISSED LOWER DAY?</div>
+    </div>
+    <div class="fort-cancel-sub">Skipped Tuesday? Do your home lower body session now — logged as today.</div>
+    <div class="fort-cancel-btns">
+      <button class="fort-btn fort-btn-go" onclick="doMissedLowerDay()">🏠 Do Lower Day Now</button>
+    </div>
+  </div>` : '';
+
+  document.getElementById('mainScroll').innerHTML = missedLowerBanner + `
   <div class="sprint-card">
     <div class="sprint-header">
       <div class="sprint-title">⚡ SPRINT SESSION</div>
