@@ -101,6 +101,15 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .rotation-ex:hover,.rotation-ex:active{background:rgba(192,132,252,0.2);}
 .rotation-dismiss{font-size:10px;color:var(--dim);margin-top:8px;cursor:pointer;text-decoration:underline;}
 
+/* LEG DAY RECOVERY BANNER */
+.leg-recovery-banner{background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.35);border-radius:14px;padding:13px 15px;margin-bottom:14px;}
+.leg-recovery-banner-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.leg-recovery-banner-title{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;color:#ffc107;}
+.leg-recovery-banner-body{font-size:11px;color:var(--dim2);line-height:1.5;}
+.leg-recovery-dismiss{font-size:10px;color:var(--dim);cursor:pointer;text-decoration:underline;flex-shrink:0;}
+/* SPINAL CAUTION BADGE */
+.spinal-warn-badge{display:inline-block;font-size:10px;background:rgba(255,193,7,0.15);border:1px solid rgba(255,193,7,0.4);color:#ffc107;padding:2px 7px;border-radius:8px;font-weight:700;margin-left:5px;vertical-align:middle;}
+
 /* FORT CANCELLED BANNER */
 .fort-cancel-banner{background:rgba(255,77,77,0.08);border:1px solid rgba(255,77,77,0.25);border-radius:14px;padding:14px 15px;margin-bottom:14px;}
 .fort-cancel-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
@@ -881,10 +890,11 @@ const WORKOUTS = {
           hassan:true, ladder:['121×6','132×4','143×FAIL'], burnout:'110 lbs × 20 reps',
           cue:'Pull elbows down and in. Chest tall. No shoulder shrug.' },
         { id:'pull-row', name:'Seated Cable Row', muscle:'back',
+          warnSpinal:true,
           sets:[{wt:132,reps:'6'},{wt:154,reps:'FAIL'}],
           chips:{sets:'2 Sets',reps:'10-12 reps',pr:'PR: 154×10',tag:'Hassan'},
           hassan:true, ladder:['132×6','154×FAIL'],
-          cue:'Initiate with scapular retraction. Pull elbows back. Torso still.' }
+          cue:'Initiate with scapular retraction. Pull elbows back. Torso still. ⚠️ Keep torso upright — avoid forward lean during back recovery.' }
       ]},
       { label:'Isolation', exercises:[
         { id:'pull-face', name:'Rope Face Pull', muscle:'back_fly',
@@ -917,13 +927,20 @@ const WORKOUTS = {
       ]},
       { label:'Main Compound', exercises:[
         { id:'l-squat', name:'Smith Machine Squat', muscle:'quads',
+          warnSpinal:true,
           sets:[{wt:135,reps:'10'},{wt:155,reps:'8-10'}],
           chips:{sets:'2 Sets',reps:'8-12 reps',pr:'PR: 145×10',target:'Target: 155 lbs'},
           cue:'⚠️ LOWER BACK: Feet slightly forward. Sit back. Drive knees OUT. Chest tall.' },
-        { id:'l-rdl', name:'Smith Machine RDL', muscle:'hams',
-          sets:[{wt:245,reps:'10'},{wt:275,reps:'10-12'}],
-          chips:{sets:'2 Sets',reps:'10-12 reps',pr:'PR: 265×10',target:'Target: 275 lbs'},
-          cue:'Hip hinge — push hips BACK. Feel deep hamstring stretch. Bar stays close.' }
+        // RDL temporarily disabled - lower back injury recovery (started ~March 14, 2026)
+        // Confirmed PR: 205 lbs — restore when cleared to train posterior chain
+        // { id:'l-rdl', name:'Smith Machine RDL', muscle:'hams',
+        //   sets:[{wt:245,reps:'10'},{wt:275,reps:'10-12'}],
+        //   chips:{sets:'2 Sets',reps:'10-12 reps',pr:'PR: 265×10',target:'Target: 275 lbs'},
+        //   cue:'Hip hinge — push hips BACK. Feel deep hamstring stretch. Bar stays close.' },
+        { id:'l-seated-curl', name:'Seated Leg Curl', muscle:'hams',
+          sets:[{wt:110,reps:'10-12'},{wt:121,reps:'10-12'}],
+          chips:{sets:'2 Sets',reps:'10-12 reps',pr:'PR: –',target:'Target: 121 lbs'},
+          cue:'SEATED curl machine — spine-neutral, no disc pressure. Hamstring squeeze. Control the negative. Alternative: Cable Pull-Through if Seated Leg Curl is already in session.' }
       ]},
       { label:'Glutes + Calves', exercises:[
         { id:'l-abduct', name:'Hip Abduction Machine', muscle:'glutes',
@@ -976,11 +993,18 @@ const WORKOUTS = {
           cue:'LEAN FORWARD 30°. 55 lbs baseline. Feel glute medius.' }
       ]},
       { label:'Ab Finisher 🎯', exercises:[
-        { id:'f-abwheel', name:'Ab Wheel Rollout', muscle:'abs',
+        // Ab Wheel Rollout disabled - lumbar load risk during back injury recovery
+        // (started March 14, 2026) — restore when cleared to train posterior chain
+        // { id:'f-abwheel', name:'Ab Wheel Rollout', muscle:'abs',
+        //   sets:[{wt:0,reps:'8-10'},{wt:0,reps:'8-10'}],
+        //   chips:{sets:'2 Sets',reps:'8-10 reps',tag:'Nippard Abs'},
+        //   note:'Do after AM treadmill',
+        //   cue:'Posteriorly tilt pelvis (squeeze glutes). Roll out ONLY as far as you can maintain. Short ROM with control > full ROM with lower back cave.' },
+        { id:'f-cable-crunch', name:'Cable Crunch', muscle:'abs',
           sets:[{wt:0,reps:'8-10'},{wt:0,reps:'8-10'}],
           chips:{sets:'2 Sets',reps:'8-10 reps',tag:'Nippard Abs'},
-          note:'Do after AM treadmill',
-          cue:'Posteriorly tilt pelvis (squeeze glutes). Roll out ONLY as far as you can maintain. Short ROM with control > full ROM with lower back cave.' }
+          note:'Back-safe ab sub — replaces Ab Wheel during recovery',
+          cue:'Kneel facing cable. Hands at temples. Crunch DOWN — flex spine, not arms. Full stretch at top. Spine-safe alternative to Ab Wheel during lower back recovery.' }
       ]}
     ]
   },
@@ -1388,6 +1412,9 @@ async function loadAll() {
 
   try { const v = await getStored('workout-history'); if (v) historyStore = JSON.parse(v); } catch(e) { historyStore = []; }
   try { const v = await getStored('pr-store'); if (v) prStore = JSON.parse(v); } catch(e) { prStore = {}; }
+  // RDL temporarily disabled - lower back injury recovery (started ~March 14, 2026)
+  // Confirmed PR: 205 lbs — restore when cleared to train posterior chain
+  if (!prStore['l-rdl']) { prStore['l-rdl'] = { weight: 205, date: '2026-03-14' }; }
   try { const v = await getStored('exercise-freq'); if (v) exerciseFreq = JSON.parse(v); } catch(e) { exerciseFreq = {}; }
   try { const v = await getStored('rest-overrides'); if (v) restOverrides = JSON.parse(v); } catch(e) { restOverrides = {}; }
   try { const v = await getStored('swap-overrides'); if (v) swapOverrides = JSON.parse(v); } catch(e) { swapOverrides = {}; }
@@ -1588,9 +1615,9 @@ function renderWorkoutView() {
   if (!workout) { scroll.innerHTML = '<div class="empty-state">No workout data for this day.</div>'; return; }
 
   const sectionsForProgress = (day.type === 'fort' && fortCancelled)
-    ? workout.sections.filter(s => s.label !== 'If At FORT')
+    ? workout.sections.filter(s => s.label !== 'If At A Class (Boxing / HIIT)')
     : (day.type === 'fort' && !fortCancelled)
-      ? workout.sections.filter(s => s.label === 'If At FORT' || s.label.includes('Ab'))
+      ? workout.sections.filter(s => s.label === 'If At A Class (Boxing / HIIT)' || s.label.includes('Ab'))
       : workout.sections;
 
   const allExIds = [];
@@ -1666,6 +1693,20 @@ function renderWorkoutView() {
     });
   }
 
+  // Leg Day back injury recovery notice
+  if (day.type === 'legs') {
+    const legRecoveryDismissed = localStorage.getItem('leg-recovery-banner-dismissed');
+    if (!legRecoveryDismissed) {
+      html += `<div class="leg-recovery-banner" id="legRecoveryBanner">
+        <div class="leg-recovery-banner-top">
+          <div class="leg-recovery-banner-title">⚠️ Back Recovery Mode</div>
+          <span class="leg-recovery-dismiss" onclick="dismissLegRecoveryBanner()">Dismiss</span>
+        </div>
+        <div class="leg-recovery-banner-body">RDL removed. Avoid Smith Machine Squat this week. Stick to Leg Press, Leg Extension, Leg Curl, and Calf Raises.</div>
+      </div>`;
+    }
+  }
+
   // Galaxy Watch
   const ws = sessionState['__watch__'] || {};
   const sessionDuration = getSessionDuration();
@@ -1709,11 +1750,11 @@ function renderWorkoutView() {
     </div>
   </div>`;
 
-  // Exercises — if FORT day and cancelled, skip "If At FORT" section, show only sub + abs
+  // Exercises — if FORT day and cancelled, show home lower sub + abs; if not cancelled, show class + abs
   const sectionsToRender = (day.type === 'fort' && fortCancelled)
-    ? workout.sections.filter(s => s.label !== 'If At FORT')
+    ? workout.sections.filter(s => s.label !== 'If At A Class (Boxing / HIIT)')
     : (day.type === 'fort' && !fortCancelled)
-      ? workout.sections.filter(s => s.label === 'If At FORT' || s.label.includes('Ab'))
+      ? workout.sections.filter(s => s.label === 'If At A Class (Boxing / HIIT)' || s.label.includes('Ab'))
       : workout.sections;
 
   sectionsToRender.forEach(section => {
@@ -1785,6 +1826,9 @@ function buildExCard(ex, isDone, savedWeights, hasPR, type) {
   const levelUpHtml = streak >= 3
     ? `<span class="level-up-badge" onclick="event.stopPropagation();showSwapSheet('${ex.id}','${ex.muscle || ''}','${type}','${ex.name.replace(/'/g,"\\'")}')">🚀 Level Up (${streak}x PR)</span>`
     : '';
+
+  // Spinal caution warning (temporary — lower back injury recovery)
+  const spinalWarnHtml = ex.warnSpinal ? `<span class="spinal-warn-badge">⚠️ Spinal Caution</span>` : '';
 
   let detail = '';
   if (ex.hassan) detail += `<div class="hassan-tag">⚡ Hassan Protocol — To Failure</div>`;
@@ -1858,7 +1902,7 @@ function buildExCard(ex, isDone, savedWeights, hasPR, type) {
       <div class="ex-info">
         <div class="ex-name-row">
           <span class="ex-name">${displayName}</span>
-          ${prBadgeHtml}${rotFlagHtml}${levelUpHtml}
+          ${prBadgeHtml}${rotFlagHtml}${levelUpHtml}${spinalWarnHtml}
         </div>
         <div class="ex-chips">${chipsHtml}</div>
       </div>
@@ -1964,6 +2008,12 @@ function getRotationAlerts(workoutType) {
 function dismissAlert(id) {
   const el = document.getElementById(id);
   if (el) el.classList.remove('visible');
+}
+
+function dismissLegRecoveryBanner() {
+  try { localStorage.setItem('leg-recovery-banner-dismissed', '1'); } catch(e) {}
+  const el = document.getElementById('legRecoveryBanner');
+  if (el) el.style.display = 'none';
 }
 
 function toggleFortCancelled() {
@@ -2446,9 +2496,9 @@ async function saveWorkout(type, dayKey) {
 
   // Use sections that are currently rendered (respects fort cancelled state)
   const sectionsToSave = (type === 'fort' && fortCancelled)
-    ? workout.sections.filter(s => s.label !== 'If At FORT')
+    ? workout.sections.filter(s => s.label !== 'If At A Class (Boxing / HIIT)')
     : (type === 'fort' && !fortCancelled)
-      ? workout.sections.filter(s => s.label === 'If At FORT' || s.label.includes('Ab'))
+      ? workout.sections.filter(s => s.label === 'If At A Class (Boxing / HIIT)' || s.label.includes('Ab'))
       : workout.sections;
 
   for (const section of sectionsToSave) {
@@ -2539,7 +2589,7 @@ function generateSessionSummary(type) {
   lines.push(type === 'recovery' ? '🏥 REHAB EXERCISES' : '💪 EXERCISES');
 
   const sections = (type === 'fort' && fortCancelled)
-    ? workout.sections.filter(s => s.label !== 'If At FORT')
+    ? workout.sections.filter(s => s.label !== 'If At A Class (Boxing / HIIT)')
     : workout.sections;
 
   sections.forEach(section => {
@@ -3532,6 +3582,13 @@ const SPRINT_PHASES = {
   done:     { label: 'SESSION COMPLETE', secs: 0,   cue: 'Head straight to the sauna. 20 min @ 175°F. Non-optional.' }
 };
 
+function doMissedLowerDay() {
+  fortCancelled = true;
+  const key = `fort-cancelled-${getDateStr()}`;
+  window.storage.set(key, '1').catch(()=>{});
+  selectDay(1); // navigate to Tuesday workout
+}
+
 function renderSprintDay(dayKey, content) {
   sprintState = { running: false, phase: 'idle', round: 0, totalRounds: 6, elapsed: 0, phaseDuration: 0, interval: null, hrAvg: '', hrMax: '' };
 
@@ -3539,7 +3596,18 @@ function renderSprintDay(dayKey, content) {
     `<div class="rest-tip"><span class="rt-icon">${t.icon}</span><span>${t.text}</span></div>`
   ).join('');
 
-  document.getElementById('mainScroll').innerHTML = `
+  const missedLowerBanner = dayKey === 'wed' ? `
+  <div class="fort-cancel-banner" style="margin-bottom:14px">
+    <div class="fort-cancel-top">
+      <div class="fort-cancel-title">💪 MISSED LOWER DAY?</div>
+    </div>
+    <div class="fort-cancel-sub">Skipped Tuesday? Do your home lower body session now — logged as today.</div>
+    <div class="fort-cancel-btns">
+      <button class="fort-btn fort-btn-go" onclick="doMissedLowerDay()">🏠 Do Lower Day Now</button>
+    </div>
+  </div>` : '';
+
+  document.getElementById('mainScroll').innerHTML = missedLowerBanner + `
   <div class="sprint-card">
     <div class="sprint-header">
       <div class="sprint-title">⚡ SPRINT SESSION</div>
