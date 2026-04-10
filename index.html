@@ -153,6 +153,7 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .ex-detail{display:none;padding:0 13px 13px;border-top:1px solid var(--border);}
 .ex-card.expanded .ex-detail{display:block;}
 .hassan-tag{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--purple);background:var(--purple-dim);padding:3px 8px;border-radius:9px;margin-top:9px;}
+.warn-spinal-tag{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--orange);background:var(--orange-dim);padding:3px 8px;border-radius:9px;margin-top:9px;}
 .ladder-display{display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin:7px 0 4px;}
 .ladder-step{font-size:11px;background:var(--border);border-radius:5px;padding:3px 7px;color:var(--white);font-weight:600;}
 .ladder-arrow{color:var(--dim);font-size:9px;}
@@ -789,14 +790,14 @@ const WORKOUTS = {
         { id:'u-row', name:'Seated Cable Row', muscle:'back',
           sets:[{wt:132,reps:'6'},{wt:154,reps:'FAIL'}],
           chips:{sets:'2 Sets',reps:'10-12 reps',pr:'PR: 154×10',tag:'Hassan'},
-          hassan:true, ladder:['132×6','154×FAIL'],
+          hassan:true, warnSpinal:true, ladder:['132×6','154×FAIL'],
           cue:'Initiate with scapular retraction first. Torso still throughout.' }
       ]},
       { label:'Shoulders + Arms', exercises:[
         { id:'u-shoulder', name:'Seated Shoulder Press', muscle:'shoulders',
           sets:[{wt:121,reps:'6'},{wt:143,reps:'FAIL'},{wt:121,reps:'20',note:'Burnout'}],
           chips:{sets:'2 Sets',reps:'8-10 reps',pr:'PR: 143×10',tag:'Hassan'},
-          hassan:true, ladder:['121×4','132×2','143×FAIL'], burnout:'121 lbs × 20 reps',
+          hassan:true, warnSpinal:true, ladder:['121×4','132×2','143×FAIL'], burnout:'121 lbs × 20 reps',
           cue:'Torso upright. Full ROM down to shoulder level.' },
         { id:'u-lat-raise', name:'Cable Lateral Raise', muscle:'shoulders',
           sets:[{wt:15,reps:'15'},{wt:15,reps:'15'}],
@@ -841,7 +842,7 @@ const WORKOUTS = {
         { id:'p-shoulder', name:'Seated Shoulder Press', muscle:'shoulders',
           sets:[{wt:121,reps:'4'},{wt:143,reps:'FAIL'},{wt:121,reps:'20',note:'Burnout'}],
           chips:{sets:'2 Sets',reps:'8-10 reps',pr:'PR: 143×10',target:'Target: 143×11',tag:'Hassan'},
-          hassan:true, ladder:['121×4','132×2','143×FAIL'], burnout:'121 lbs × 20 reps',
+          hassan:true, warnSpinal:true, ladder:['121×4','132×2','143×FAIL'], burnout:'121 lbs × 20 reps',
           cue:'Torso upright. Full ROM to shoulder level every rep. This is your main shoulder strength builder — different emphasis from Upper Day.' }
       ]},
       { label:'Chest Accessory', exercises:[
@@ -858,7 +859,7 @@ const WORKOUTS = {
         { id:'p-tricep-oh', name:'Overhead Rope Extension', muscle:'triceps',
           sets:[{wt:100,reps:'FAIL'},{wt:110,reps:'20',note:'Burnout'}],
           chips:{sets:'2 Sets',reps:'12-15 reps',pr:'PR: 100×FAIL / 110×20',tag:'Hassan'},
-          hassan:true,
+          hassan:true, warnSpinal:true,
           cue:'Elbows point to ceiling — do NOT let them flare out. Drive hands apart at full extension. You\'re targeting the long head here, which the pushdown on Upper Day misses. Feel the stretch overhead.' }
       ]},
       { label:'Ab Finisher 🎯', exercises:[
@@ -889,7 +890,7 @@ const WORKOUTS = {
         { id:'pull-row', name:'Seated Cable Row', muscle:'back',
           sets:[{wt:132,reps:'6'},{wt:154,reps:'FAIL'}],
           chips:{sets:'2 Sets',reps:'10-12 reps',pr:'PR: 154×10',tag:'Hassan'},
-          hassan:true, ladder:['132×6','154×FAIL'],
+          hassan:true, warnSpinal:true, ladder:['132×6','154×FAIL'],
           cue:'Initiate with scapular retraction. Pull elbows back. Torso still.' }
       ]},
       { label:'Isolation', exercises:[
@@ -925,11 +926,12 @@ const WORKOUTS = {
         { id:'l-squat', name:'Smith Machine Squat', muscle:'quads',
           sets:[{wt:135,reps:'10'},{wt:155,reps:'8-10'}],
           chips:{sets:'2 Sets',reps:'8-12 reps',pr:'PR: 145×10',target:'Target: 155 lbs'},
+          warnSpinal:true,
           cue:'⚠️ LOWER BACK: Feet slightly forward. Sit back. Drive knees OUT. Chest tall.' },
-        { id:'l-rdl', name:'Smith Machine RDL', muscle:'hams',
-          sets:[{wt:245,reps:'10'},{wt:275,reps:'10-12'}],
-          chips:{sets:'2 Sets',reps:'10-12 reps',pr:'PR: 265×10',target:'Target: 275 lbs'},
-          cue:'Hip hinge — push hips BACK. Feel deep hamstring stretch. Bar stays close.' }
+        { id:'l-seated-curl', name:'Seated Leg Curl', muscle:'hams',
+          sets:[{wt:132,reps:'10'},{wt:154,reps:'10-12'}],
+          chips:{sets:'2 Sets',reps:'10-12 reps',pr:'PR: 143×10',target:'Target: 154 lbs'},
+          cue:'🔒 BACK RECOVERY: Seated position maintains neutral spine. Hamstring squeeze. Control the negative. No hip rise.' }
       ]},
       { label:'Glutes + Calves', exercises:[
         { id:'l-abduct', name:'Hip Abduction Machine', muscle:'glutes',
@@ -982,11 +984,10 @@ const WORKOUTS = {
           cue:'LEAN FORWARD 30°. 55 lbs baseline. Feel glute medius.' }
       ]},
       { label:'Ab Finisher 🎯', exercises:[
-        { id:'f-abwheel', name:'Ab Wheel Rollout', muscle:'abs',
-          sets:[{wt:0,reps:'8-10'},{wt:0,reps:'8-10'}],
-          chips:{sets:'2 Sets',reps:'8-10 reps',tag:'Nippard Abs'},
-          note:'Do after AM treadmill',
-          cue:'Posteriorly tilt pelvis (squeeze glutes). Roll out ONLY as far as you can maintain. Short ROM with control > full ROM with lower back cave.' }
+        { id:'f-cable-crunch', name:'Cable Crunch', muscle:'abs',
+          sets:[{wt:0,reps:'15-20'},{wt:0,reps:'15-20'}],
+          chips:{sets:'2 Sets',reps:'15-20 reps',tag:'Nippard Abs'},
+          cue:'🔒 BACK RECOVERY: Kneel facing cable. Hands at temples. Crunch DOWN — flex spine, not arms. Full stretch at top. Eliminates spinal loading.' }
       ]}
     ]
   },
@@ -1815,6 +1816,7 @@ function buildExCard(ex, isDone, savedWeights, hasPR, type) {
     : '';
 
   let detail = '';
+  if (ex.warnSpinal) detail += `<div class="warn-spinal-tag">⚠️ SPINAL LOAD — Monitor form closely</div>`;
   if (ex.hassan) detail += `<div class="hassan-tag">⚡ Hassan Protocol — To Failure</div>`;
   if (ex.ladder?.length) {
     detail += `<div class="ladder-display">${ex.ladder.map((s,i) => `<span class="ladder-step">${s}</span>${i<ex.ladder.length-1?'<span class="ladder-arrow">→</span>':''}`).join('')}</div>`;
