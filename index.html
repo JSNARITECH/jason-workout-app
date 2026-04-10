@@ -73,6 +73,12 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .mini-bar-fill{height:100%;border-radius:2px;transition:width 0.4s ease;width:0%;}
 .prog-pct{font-size:10px;font-weight:700;width:30px;text-align:right;}
 
+/* WORKOUT TYPE SELECTOR */
+.w-type-selector{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;}
+.type-btn{flex:1;min-width:40px;padding:8px;border:2px solid var(--border);border-radius:8px;background:var(--bg);color:var(--dim1);font-size:18px;cursor:pointer;transition:all 0.2s ease;font-weight:700;}
+.type-btn:active,.type-btn.active{border-color:var(--accent);background:var(--accent);color:var(--bg);transform:scale(0.95);}
+.type-btn.reset-btn{font-size:14px;flex:0 0 auto;}
+
 /* GALAXY WATCH WIDGET */
 .watch-widget{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:13px 14px;margin-bottom:14px;}
 .watch-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--dim2);font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
@@ -147,6 +153,7 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .ex-detail{display:none;padding:0 13px 13px;border-top:1px solid var(--border);}
 .ex-card.expanded .ex-detail{display:block;}
 .hassan-tag{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--purple);background:var(--purple-dim);padding:3px 8px;border-radius:9px;margin-top:9px;}
+.warn-spinal-tag{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--orange);background:var(--orange-dim);padding:3px 8px;border-radius:9px;margin-top:9px;}
 .ladder-display{display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin:7px 0 4px;}
 .ladder-step{font-size:11px;background:var(--border);border-radius:5px;padding:3px 7px;color:var(--white);font-weight:600;}
 .ladder-arrow{color:var(--dim);font-size:9px;}
@@ -783,14 +790,14 @@ const WORKOUTS = {
         { id:'u-row', name:'Seated Cable Row', muscle:'back',
           sets:[{wt:132,reps:'6'},{wt:154,reps:'FAIL'}],
           chips:{sets:'2 Sets',reps:'10-12 reps',pr:'PR: 154×10',tag:'Hassan'},
-          hassan:true, ladder:['132×6','154×FAIL'],
+          hassan:true, warnSpinal:true, ladder:['132×6','154×FAIL'],
           cue:'Initiate with scapular retraction first. Torso still throughout.' }
       ]},
       { label:'Shoulders + Arms', exercises:[
         { id:'u-shoulder', name:'Seated Shoulder Press', muscle:'shoulders',
           sets:[{wt:121,reps:'6'},{wt:143,reps:'FAIL'},{wt:121,reps:'20',note:'Burnout'}],
           chips:{sets:'2 Sets',reps:'8-10 reps',pr:'PR: 143×10',tag:'Hassan'},
-          hassan:true, ladder:['121×4','132×2','143×FAIL'], burnout:'121 lbs × 20 reps',
+          hassan:true, warnSpinal:true, ladder:['121×4','132×2','143×FAIL'], burnout:'121 lbs × 20 reps',
           cue:'Torso upright. Full ROM down to shoulder level.' },
         { id:'u-lat-raise', name:'Cable Lateral Raise', muscle:'shoulders',
           sets:[{wt:15,reps:'15'},{wt:15,reps:'15'}],
@@ -835,7 +842,7 @@ const WORKOUTS = {
         { id:'p-shoulder', name:'Seated Shoulder Press', muscle:'shoulders',
           sets:[{wt:121,reps:'4'},{wt:143,reps:'FAIL'},{wt:121,reps:'20',note:'Burnout'}],
           chips:{sets:'2 Sets',reps:'8-10 reps',pr:'PR: 143×10',target:'Target: 143×11',tag:'Hassan'},
-          hassan:true, ladder:['121×4','132×2','143×FAIL'], burnout:'121 lbs × 20 reps',
+          hassan:true, warnSpinal:true, ladder:['121×4','132×2','143×FAIL'], burnout:'121 lbs × 20 reps',
           cue:'Torso upright. Full ROM to shoulder level every rep. This is your main shoulder strength builder — different emphasis from Upper Day.' }
       ]},
       { label:'Chest Accessory', exercises:[
@@ -852,7 +859,7 @@ const WORKOUTS = {
         { id:'p-tricep-oh', name:'Overhead Rope Extension', muscle:'triceps',
           sets:[{wt:100,reps:'FAIL'},{wt:110,reps:'20',note:'Burnout'}],
           chips:{sets:'2 Sets',reps:'12-15 reps',pr:'PR: 100×FAIL / 110×20',tag:'Hassan'},
-          hassan:true,
+          hassan:true, warnSpinal:true,
           cue:'Elbows point to ceiling — do NOT let them flare out. Drive hands apart at full extension. You\'re targeting the long head here, which the pushdown on Upper Day misses. Feel the stretch overhead.' }
       ]},
       { label:'Ab Finisher 🎯', exercises:[
@@ -883,7 +890,7 @@ const WORKOUTS = {
         { id:'pull-row', name:'Seated Cable Row', muscle:'back',
           sets:[{wt:132,reps:'6'},{wt:154,reps:'FAIL'}],
           chips:{sets:'2 Sets',reps:'10-12 reps',pr:'PR: 154×10',tag:'Hassan'},
-          hassan:true, ladder:['132×6','154×FAIL'],
+          hassan:true, warnSpinal:true, ladder:['132×6','154×FAIL'],
           cue:'Initiate with scapular retraction. Pull elbows back. Torso still.' }
       ]},
       { label:'Isolation', exercises:[
@@ -919,11 +926,12 @@ const WORKOUTS = {
         { id:'l-squat', name:'Smith Machine Squat', muscle:'quads',
           sets:[{wt:135,reps:'10'},{wt:155,reps:'8-10'}],
           chips:{sets:'2 Sets',reps:'8-12 reps',pr:'PR: 145×10',target:'Target: 155 lbs'},
+          warnSpinal:true,
           cue:'⚠️ LOWER BACK: Feet slightly forward. Sit back. Drive knees OUT. Chest tall.' },
-        { id:'l-rdl', name:'Smith Machine RDL', muscle:'hams',
-          sets:[{wt:245,reps:'10'},{wt:275,reps:'10-12'}],
-          chips:{sets:'2 Sets',reps:'10-12 reps',pr:'PR: 265×10',target:'Target: 275 lbs'},
-          cue:'Hip hinge — push hips BACK. Feel deep hamstring stretch. Bar stays close.' }
+        { id:'l-seated-curl', name:'Seated Leg Curl', muscle:'hams',
+          sets:[{wt:132,reps:'10'},{wt:154,reps:'10-12'}],
+          chips:{sets:'2 Sets',reps:'10-12 reps',pr:'PR: 143×10',target:'Target: 154 lbs'},
+          cue:'🔒 BACK RECOVERY: Seated position maintains neutral spine. Hamstring squeeze. Control the negative. No hip rise.' }
       ]},
       { label:'Glutes + Calves', exercises:[
         { id:'l-abduct', name:'Hip Abduction Machine', muscle:'glutes',
@@ -976,11 +984,10 @@ const WORKOUTS = {
           cue:'LEAN FORWARD 30°. 55 lbs baseline. Feel glute medius.' }
       ]},
       { label:'Ab Finisher 🎯', exercises:[
-        { id:'f-abwheel', name:'Ab Wheel Rollout', muscle:'abs',
-          sets:[{wt:0,reps:'8-10'},{wt:0,reps:'8-10'}],
-          chips:{sets:'2 Sets',reps:'8-10 reps',tag:'Nippard Abs'},
-          note:'Do after AM treadmill',
-          cue:'Posteriorly tilt pelvis (squeeze glutes). Roll out ONLY as far as you can maintain. Short ROM with control > full ROM with lower back cave.' }
+        { id:'f-cable-crunch', name:'Cable Crunch', muscle:'abs',
+          sets:[{wt:0,reps:'15-20'},{wt:0,reps:'15-20'}],
+          chips:{sets:'2 Sets',reps:'15-20 reps',tag:'Nippard Abs'},
+          cue:'🔒 BACK RECOVERY: Kneel facing cable. Hands at temples. Crunch DOWN — flex spine, not arms. Full stretch at top. Eliminates spinal loading.' }
       ]}
     ]
   },
@@ -1290,6 +1297,7 @@ let prStreaks = {};     // { exId: count } — consecutive sessions with new PRs
 let notesStore = {};   // { exId: { todayNote, lastWeekNote, weekCount } }
 let fortCancelled = false;
 let backRecoveryMode = false;
+let dayTypeOverride = {}; // { dateStr: 'upper'|'push'|'pull'|'legs'|'fort'|'flex' }
 
 const SUPABASE_URL  = 'https://fnjjfnsdxibjbzldfgit.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZuampmbnNkeGliamJ6bGRmZ2l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY1MDM2MjAsImV4cCI6MjA4MjA3OTYyMH0.oZYn5OXKZH2h1wGfIj_R1L8Hlk3ytGFBgDCyGqUcatk'; // true = show home lower body sub instead of FORT class
@@ -1406,6 +1414,12 @@ async function loadAll() {
     backRecoveryMode = !!(v);
   } catch(e) { backRecoveryMode = false; }
   updateRecoveryModePill();
+
+  // Restore day type overrides
+  try {
+    const v = await getStored('day-type-overrides');
+    if (v) dayTypeOverride = JSON.parse(v);
+  } catch(e) { dayTypeOverride = {}; }
 
   // Fetch completed workout dates from Supabase (populates green dots on day pills)
   try {
@@ -1582,14 +1596,18 @@ function renderWorkoutView() {
     renderRecoveryDay(day.key); return;
   }
 
-  if (day.type === 'rest') { renderRestDay(day.key); return; }
+  // Compute effective workout type (may be overridden for this date)
+  const todayDateStr = getDateStr();
+  const effectiveType = dayTypeOverride[todayDateStr] || day.type;
 
-  const workout = WORKOUTS[day.type];
+  if (effectiveType === 'rest') { renderRestDay(day.key); return; }
+
+  const workout = WORKOUTS[effectiveType];
   if (!workout) { scroll.innerHTML = '<div class="empty-state">No workout data for this day.</div>'; return; }
 
-  const sectionsForProgress = (day.type === 'fort' && fortCancelled)
+  const sectionsForProgress = (effectiveType === 'fort' && fortCancelled)
     ? workout.sections.filter(s => s.label !== 'If At FORT')
-    : (day.type === 'fort' && !fortCancelled)
+    : (effectiveType === 'fort' && !fortCancelled)
       ? workout.sections.filter(s => s.label === 'If At FORT' || s.label.includes('Ab'))
       : workout.sections;
 
@@ -1597,12 +1615,12 @@ function renderWorkoutView() {
   sectionsForProgress.forEach(s => s.exercises.forEach(e => allExIds.push(e.id)));
 
   // Check rotation alerts
-  const rotationAlerts = getRotationAlerts(day.type);
+  const rotationAlerts = getRotationAlerts(effectiveType);
 
   let html = '';
 
-  // FORT cancelled banner (Tuesday only)
-  if (day.type === 'fort') {
+  // FORT cancelled banner (only when scheduled type is FORT and no override)
+  if (day.type === 'fort' && !dayTypeOverride[todayDateStr]) {
     if (fortCancelled) {
       html += `<div class="fort-cancel-banner">
         <div class="fort-cancel-top">
@@ -1629,17 +1647,28 @@ function renderWorkoutView() {
 
   // Workout header
   html += `<div class="w-header">
-    <div class="w-title"><span>${workout.emoji}</span>${fortCancelled && day.type==='fort' ? 'HOME LOWER DAY' : workout.title}</div>
-    <div class="w-chips">${(fortCancelled && day.type==='fort' ? ['Home Gym Lower Body','Hassan Protocol'] : workout.chips).map(c => `<span class="wchip bg-${day.type} c-${day.type}">${c}</span>`).join('')}</div>
+    <div class="w-title"><span>${workout.emoji}</span>${fortCancelled && effectiveType==='fort' ? 'HOME LOWER DAY' : workout.title}</div>
+    <div class="w-chips">${(fortCancelled && effectiveType==='fort' ? ['Home Gym Lower Body','Hassan Protocol'] : workout.chips).map(c => `<span class="wchip bg-${effectiveType} c-${effectiveType}">${c}</span>`).join('')}</div>
     <div class="prog-row">
       <span class="prog-label">Progress</span>
-      <div class="mini-bar"><div class="mini-bar-fill bar-${day.type}" id="dayProg" style="width:0%"></div></div>
-      <span class="prog-pct c-${day.type}" id="dayPct">0%</span>
+      <div class="mini-bar"><div class="mini-bar-fill bar-${effectiveType}" id="dayProg" style="width:0%"></div></div>
+      <span class="prog-pct c-${effectiveType}" id="dayPct">0%</span>
     </div>
   </div>`;
 
+  // Type selector row
+  const workoutTypes = ['upper', 'push', 'pull', 'legs', 'fort'];
+  const typeEmojis = { upper: '⬆️', push: '📤', pull: '📥', legs: '🦵', fort: '🥊' };
+  html += `<div class="w-type-selector">`;
+  workoutTypes.forEach(wType => {
+    const isActive = effectiveType === wType ? ' active' : '';
+    html += `<button class="type-btn${isActive} bg-${wType}" onclick="switchDayType('${wType}')" title="${wType}">${typeEmojis[wType]}</button>`;
+  });
+  html += `<button class="type-btn reset-btn" onclick="resetDayType()" title="Reset to scheduled">↻</button>`;
+  html += `</div>`;
+
   // Done banner
-  const doneBannerTitle = (fortCancelled && day.type==='fort') ? 'HOME LOWER DAY COMPLETE' : `${workout.title} COMPLETE`;
+  const doneBannerTitle = (fortCancelled && effectiveType==='fort') ? 'HOME LOWER DAY COMPLETE' : `${workout.title} COMPLETE`;
   html += `<div class="done-banner" id="doneBanner">
     <div class="done-emoji">${workout.emoji}</div>
     <div class="done-title">${doneBannerTitle}</div>
@@ -1659,7 +1688,7 @@ function renderWorkoutView() {
         <div class="rotation-title">🔄 Time to Mix It Up — ${alert.exName}</div>
         <div class="rotation-body">You've hit this exercise ${alert.count} sessions in a row without a PR increase. Your body is adapting. Try one of these variations:</div>
         <div class="rotation-exercises">
-          ${alert.alternatives.map(alt => `<span class="rotation-ex" onclick="swapExercise('${alert.exId}','${alt.replace(/'/g,"\\'")}','${day.type}')">${alt}</span>`).join('')}
+          ${alert.alternatives.map(alt => `<span class="rotation-ex" onclick="swapExercise('${alert.exId}','${alt.replace(/'/g,"\\'")}','${effectiveType}')">${alt}</span>`).join('')}
         </div>
         <div class="rotation-dismiss" onclick="dismissAlert('rot-${alert.exId}')">Dismiss for now</div>
       </div>`;
@@ -1710,9 +1739,9 @@ function renderWorkoutView() {
   </div>`;
 
   // Exercises — if FORT day and cancelled, skip "If At FORT" section, show only sub + abs
-  const sectionsToRender = (day.type === 'fort' && fortCancelled)
+  const sectionsToRender = (effectiveType === 'fort' && fortCancelled)
     ? workout.sections.filter(s => s.label !== 'If At FORT')
-    : (day.type === 'fort' && !fortCancelled)
+    : (effectiveType === 'fort' && !fortCancelled)
       ? workout.sections.filter(s => s.label === 'If At FORT' || s.label.includes('Ab'))
       : workout.sections;
 
@@ -1723,7 +1752,7 @@ function renderWorkoutView() {
       const isDone = state.done || false;
       const savedWeights = state.weights || ex.sets.map(s => s.wt);
       const hasPRThisSession = checkIfPR(ex.id, savedWeights);
-      html += buildExCard(ex, isDone, savedWeights, hasPRThisSession, day.type);
+      html += buildExCard(ex, isDone, savedWeights, hasPRThisSession, effectiveType);
     });
   });
 
@@ -1732,8 +1761,8 @@ function renderWorkoutView() {
   html += `<div class="notes-section">
     <div class="notes-label">Session Notes</div>
     <textarea class="notes-input" id="sessionNotes" placeholder="How did it feel? Any PRs? Energy? Pain?" oninput="saveNotes(this.value)">${savedNotes}</textarea>
-    <button class="save-btn" id="saveBtn" onclick="saveWorkout('${day.type}','${day.key}')">💾 SAVE WORKOUT TO HISTORY</button>
-    <button class="share-claude-btn" onclick="shareToClaudeChat('${day.type}')">📤 Send to Claude Chat</button>
+    <button class="save-btn" id="saveBtn" onclick="saveWorkout('${effectiveType}','${day.key}')">💾 SAVE WORKOUT TO HISTORY</button>
+    <button class="share-claude-btn" onclick="shareToClaudeChat('${effectiveType}')">📤 Send to Claude Chat</button>
   </div>
   <button class="reset-btn" onclick="resetDay()">↺ Reset ${workout.title}</button>`;
 
@@ -1787,6 +1816,7 @@ function buildExCard(ex, isDone, savedWeights, hasPR, type) {
     : '';
 
   let detail = '';
+  if (ex.warnSpinal) detail += `<div class="warn-spinal-tag">⚠️ SPINAL LOAD — Monitor form closely</div>`;
   if (ex.hassan) detail += `<div class="hassan-tag">⚡ Hassan Protocol — To Failure</div>`;
   if (ex.ladder?.length) {
     detail += `<div class="ladder-display">${ex.ladder.map((s,i) => `<span class="ladder-step">${s}</span>${i<ex.ladder.length-1?'<span class="ladder-arrow">→</span>':''}`).join('')}</div>`;
@@ -1975,6 +2005,35 @@ function toggleFortCancelled() {
   } else {
     window.storage.delete(key).catch(()=>{});
   }
+  renderWorkoutView();
+}
+
+function switchDayType(newType) {
+  const todayDateStr = getDateStr();
+  const day = WEEK[currentDayIdx];
+
+  // If switching to the same type as scheduled, just clear the override
+  if (newType === day.type) {
+    delete dayTypeOverride[todayDateStr];
+  } else {
+    dayTypeOverride[todayDateStr] = newType;
+  }
+
+  // Persist overrides
+  window.storage.set('day-type-overrides', JSON.stringify(dayTypeOverride)).catch(()=>{});
+  localStorage.setItem('day-type-overrides', JSON.stringify(dayTypeOverride));
+
+  renderWorkoutView();
+}
+
+function resetDayType() {
+  const todayDateStr = getDateStr();
+  delete dayTypeOverride[todayDateStr];
+
+  // Persist overrides
+  window.storage.set('day-type-overrides', JSON.stringify(dayTypeOverride)).catch(()=>{});
+  localStorage.setItem('day-type-overrides', JSON.stringify(dayTypeOverride));
+
   renderWorkoutView();
 }
 
