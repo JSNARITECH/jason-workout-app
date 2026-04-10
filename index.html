@@ -3581,15 +3581,6 @@ const SPRINT_PHASES = {
   done:     { label: 'SESSION COMPLETE', secs: 0,   cue: 'Head straight to the sauna. 20 min @ 175°F. Non-optional.' }
 };
 
-function doMissedLowerDay() {
-  fortCancelled = true;
-  currentDayIdx = 1; // Tuesday (fort day)
-  try { window.storage.set(`fort-cancelled-${getDateStr()}`, '1').catch(()=>{}); } catch(e) {}
-  try { localStorage.setItem(`fort-cancelled-${getDateStr()}`, '1'); } catch(e) {}
-  buildDayPills();
-  renderWorkoutView();
-}
-
 function renderSprintDay(dayKey, content) {
   sprintState = { running: false, phase: 'idle', round: 0, totalRounds: 6, elapsed: 0, phaseDuration: 0, interval: null, hrAvg: '', hrMax: '' };
 
@@ -3597,18 +3588,7 @@ function renderSprintDay(dayKey, content) {
     `<div class="rest-tip"><span class="rt-icon">${t.icon}</span><span>${t.text}</span></div>`
   ).join('');
 
-  const missedLowerBanner = dayKey === 'wed' ? `
-  <div class="fort-cancel-banner" style="margin-bottom:14px">
-    <div class="fort-cancel-top">
-      <div class="fort-cancel-title">💪 MISSED LOWER DAY?</div>
-    </div>
-    <div class="fort-cancel-sub">Skipped Tuesday? Do your home lower body session now — logged as today.</div>
-    <div class="fort-cancel-btns">
-      <button class="fort-btn fort-btn-go" onclick="doMissedLowerDay()">🏠 Do Lower Day Now</button>
-    </div>
-  </div>` : '';
-
-  document.getElementById('mainScroll').innerHTML = missedLowerBanner + `
+  document.getElementById('mainScroll').innerHTML = `
   <div class="sprint-card">
     <div class="sprint-header">
       <div class="sprint-title">⚡ SPRINT SESSION</div>
