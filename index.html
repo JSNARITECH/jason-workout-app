@@ -2025,9 +2025,9 @@ function switchDayType(newType) {
     dayTypeOverride[todayDateStr] = newType;
   }
 
-  // Persist overrides
-  window.storage.set('day-type-overrides', JSON.stringify(dayTypeOverride)).catch(()=>{});
-  localStorage.setItem('day-type-overrides', JSON.stringify(dayTypeOverride));
+  // Persist overrides (try-catch because window.storage may throw synchronously)
+  try { window.storage.set('day-type-overrides', JSON.stringify(dayTypeOverride)).catch(()=>{}); } catch(e) {}
+  try { localStorage.setItem('day-type-overrides', JSON.stringify(dayTypeOverride)); } catch(e) {}
 
   renderWorkoutView();
 }
@@ -2036,9 +2036,9 @@ function resetDayType() {
   const todayDateStr = getDateStr();
   delete dayTypeOverride[todayDateStr];
 
-  // Persist overrides
-  window.storage.set('day-type-overrides', JSON.stringify(dayTypeOverride)).catch(()=>{});
-  localStorage.setItem('day-type-overrides', JSON.stringify(dayTypeOverride));
+  // Persist overrides (try-catch because window.storage may throw synchronously)
+  try { window.storage.set('day-type-overrides', JSON.stringify(dayTypeOverride)).catch(()=>{}); } catch(e) {}
+  try { localStorage.setItem('day-type-overrides', JSON.stringify(dayTypeOverride)); } catch(e) {}
 
   renderWorkoutView();
 }
