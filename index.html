@@ -140,6 +140,9 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .ex-name{font-weight:600;font-size:14px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .pr-badge{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:800;letter-spacing:1px;background:var(--gold-dim);color:var(--gold);padding:2px 7px;border-radius:8px;border:1px solid rgba(255,215,0,0.3);animation:prPulse 1.5s ease-in-out infinite;flex-shrink:0;}
 @keyframes prPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,215,0,0.3)}50%{box-shadow:0 0 0 4px rgba(255,215,0,0)}}
+.ex-card.pr-ready{border-color:#ff8c00!important;animation:prReadyGlow 2s ease-in-out infinite;}
+@keyframes prReadyGlow{0%,100%{box-shadow:0 0 8px 2px rgba(255,140,0,0.45),0 0 22px 5px rgba(255,60,0,0.18);}50%{box-shadow:0 0 18px 7px rgba(255,140,0,0.75),0 0 45px 14px rgba(255,60,0,0.32);}}
+.pr-ready-badge{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:800;letter-spacing:1px;background:rgba(255,140,0,0.15);color:#ff8c00;padding:2px 7px;border-radius:8px;border:1px solid rgba(255,140,0,0.4);flex-shrink:0;}
 .rotation-flag{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:700;letter-spacing:1px;background:var(--purple-dim);color:var(--purple);padding:2px 7px;border-radius:8px;border:1px solid rgba(192,132,252,0.25);flex-shrink:0;}
 .ex-chips{display:flex;gap:4px;margin-top:4px;flex-wrap:wrap;}
 .chip{font-size:9px;padding:2px 6px;border-radius:9px;font-weight:700;}
@@ -1301,6 +1304,7 @@ let notesStore = {};   // { exId: { todayNote, lastWeekNote, weekCount } }
 let fortCancelled = false;
 let backRecoveryMode = false;
 let dayTypeOverride = {}; // { dateStr: 'upper'|'push'|'pull'|'legs'|'fort'|'flex' }
+let prReadyFlags = new Set(); // exercise names flagged pr_ready=true in Supabase
 
 const SUPABASE_URL  = 'https://fnjjfnsdxibjbzldfgit.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZuampmbnNkeGliamJ6bGRmZ2l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY1MDM2MjAsImV4cCI6MjA4MjA3OTYyMH0.oZYn5OXKZH2h1wGfIj_R1L8Hlk3ytGFBgDCyGqUcatk'; // true = show home lower body sub instead of FORT class
@@ -1460,6 +1464,18 @@ async function loadAll() {
           weekCount:    distinctWeeks,
         };
       });
+    }
+  } catch(e) { /* non-fatal */ }
+
+  // Load PR-ready flags from Supabase
+  try {
+    const prRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/exercise_pr_flags?pr_ready=eq.true&select=exercise_name`,
+      { headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` } }
+    );
+    if (prRes.ok) {
+      const prRows = await prRes.json();
+      prReadyFlags = new Set(prRows.map(r => r.exercise_name));
     }
   } catch(e) { /* non-fatal */ }
 
@@ -1794,12 +1810,15 @@ function renderWorkoutView() {
 function buildExCard(ex, isDone, savedWeights, hasPR, type) {
   const doneClass = isDone ? 'done' : '';
   const prCardClass = hasPR ? 'pr-card' : '';
+  const isPRReady = prReadyFlags.has(ex.name);
+  const prReadyClass = isPRReady ? 'pr-ready' : '';
   const c = ex.chips || {};
   let chipsHtml = '';
   if (c.sets) chipsHtml += `<span class="chip chip-sets">${c.sets}</span>`;
   if (c.reps) chipsHtml += `<span class="chip chip-reps">${c.reps}</span>`;
   if (hasPR) chipsHtml += `<span class="chip chip-pr-badge">🏆 PR SESSION</span>`;
   else if (c.pr) chipsHtml += `<span class="chip chip-pr">${c.pr}</span>`;
+  if (isPRReady) chipsHtml += `<span class="chip" style="background:rgba(255,140,0,0.15);color:#ff8c00;border:1px solid rgba(255,140,0,0.4);">🔥 PR READY</span>`;
   if (c.target) chipsHtml += `<span class="chip chip-target">${c.target}</span>`;
   if (c.tag) chipsHtml += `<span class="chip chip-hassan">${c.tag}</span>`;
 
@@ -1888,7 +1907,7 @@ function buildExCard(ex, isDone, savedWeights, hasPR, type) {
   const btnText = isDone ? '✓ COMPLETED' : 'MARK COMPLETE + START REST TIMER';
   detail += `<button class="complete-btn ${btnState}" id="btn-${ex.id}" onclick="completeExBtn('${ex.id}','${type}')">${btnText}</button>`;
 
-  return `<div class="ex-card ${doneClass} ${prCardClass}" id="card-${ex.id}" data-exid="${ex.id}">
+  return `<div class="ex-card ${doneClass} ${prCardClass} ${prReadyClass}" id="card-${ex.id}" data-exid="${ex.id}">
     <div class="ex-hdr" onclick="toggleCard('${ex.id}')">
       <button class="check-btn" onclick="toggleDone(event,'${ex.id}','${type}')">✓</button>
       <div class="ex-info">
