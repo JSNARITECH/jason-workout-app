@@ -475,6 +475,10 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .toast{position:fixed;bottom:76px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--green);color:var(--black);font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:2px;padding:9px 18px;border-radius:18px;z-index:300;opacity:0;transition:all 0.3s;pointer-events:none;white-space:nowrap;}
 .toast.visible{opacity:1;transform:translateX(-50%) translateY(0);}
 .toast.gold-toast{background:var(--gold);color:var(--black);}
+.pr-sync-pill{position:fixed;top:14px;right:14px;background:rgba(18,18,18,0.95);border:1px solid var(--border2);border-radius:20px;padding:5px 11px;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim2);z-index:200;display:none;align-items:center;gap:5px;backdrop-filter:blur(8px);}
+.pr-sync-pill.visible{display:flex;}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:syncPulse 0.9s ease-in-out infinite;}
+@keyframes syncPulse{0%,100%{opacity:1}50%{opacity:0.25}}
 
 /* LOADING */
 .load-overlay{position:fixed;inset:0;background:var(--black);display:flex;align-items:center;justify-content:center;z-index:500;transition:opacity 0.5s;}
@@ -576,6 +580,7 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 <div class="load-overlay" id="loadOverlay"><div class="load-icon">🏋️</div></div>
 <div class="pr-flash" id="prFlash">🏆 NEW PR!</div>
 <div class="toast" id="toast">✓ SAVED</div>
+<div class="pr-sync-pill" id="prSyncPill"><div class="sync-dot"></div>Syncing PRs</div>
 
 <div class="app">
   <div class="hdr">
@@ -1289,6 +1294,8 @@ let currentDayIdx = 0;
 let currentView = 'workout';
 let sessionState = {}; // exercise state for today
 let prStore = {};       // PRs: { exId: { weight, date } }
+const prSyncCache = {}; // { workoutType: timestamp } — prevents hammering Supabase on every day tap
+const PR_SYNC_TTL  = 5 * 60 * 1000; // 5 minutes
 let historyStore = [];  // saved workouts array (local window.storage)
 let completedDates = new Set(); // dates logged in Supabase — drives green dot on day pills
 let exerciseFreq = {};  // { exId: consecutive_sessions_count }
@@ -1382,6 +1389,14 @@ async function init() {
 
   // Load all persisted data
   await loadAll();
+
+  // Sync PRs from Supabase before first render (dayTypeOverride is now loaded)
+  const _initType = dayTypeOverride[getDateStr()] || WEEK[currentDayIdx].type;
+  if (_initType !== 'rest') {
+    showPRSyncPill();
+    await syncPRsFromSupabase(_initType);
+    hidePRSyncPill();
+  }
 
   buildUI();
   setTimeout(() => {
@@ -1580,10 +1595,18 @@ function updateHeader() {
   document.getElementById('hdrType').textContent = WEEK[currentDayIdx].label;
 }
 
-function selectDay(idx) {
+async function selectDay(idx) {
   currentDayIdx = idx;
   buildDayPills();
-  if (currentView === 'workout') renderWorkoutView();
+  if (currentView === 'workout') {
+    const _selType = dayTypeOverride[getDateStr()] || WEEK[idx].type;
+    if (_selType !== 'rest') {
+      showPRSyncPill();
+      await syncPRsFromSupabase(_selType);
+      hidePRSyncPill();
+    }
+    renderWorkoutView();
+  }
 }
 
 // ============================================================
@@ -2326,6 +2349,96 @@ function getExById(id) {
     }
   }
   return null;
+}
+
+function showPRSyncPill() {
+  const el = document.getElementById('prSyncPill');
+  if (el) el.classList.add('visible');
+}
+
+function hidePRSyncPill() {
+  const el = document.getElementById('prSyncPill');
+  if (el) el.classList.remove('visible');
+}
+
+// Build a name→exId reverse lookup across all workout types (and recovery)
+function buildExNameToIdMap() {
+  const map = {};
+  const sources = [WORKOUTS];
+  if (typeof RECOVERY_WORKOUTS !== 'undefined') sources.push(RECOVERY_WORKOUTS);
+  for (const src of sources) {
+    if (!src) continue;
+    for (const type in src) {
+      for (const section of (src[type].sections || [])) {
+        for (const ex of (section.exercises || [])) {
+          if (ex.name && ex.id) map[ex.name.toLowerCase()] = ex.id;
+        }
+      }
+    }
+  }
+  return map;
+}
+
+// Fetch up to 30 recent workouts of the given type from Supabase and update prStore
+// with any weights higher than what's stored locally. Results are cached for PR_SYNC_TTL.
+async function syncPRsFromSupabase(workoutType) {
+  if (!workoutType || workoutType === 'rest') return;
+  const cached = prSyncCache[workoutType];
+  if (cached && (Date.now() - cached) < PR_SYNC_TTL) return;
+
+  try {
+    const url = `${SUPABASE_URL}/rest/v1/workouts`
+      + `?workout_type=eq.${encodeURIComponent(workoutType)}`
+      + `&order=workout_date.desc&limit=30`
+      + `&select=workout_date,exercises`;
+    const res = await fetch(url, {
+      headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` }
+    });
+    if (!res.ok) return; // fall back to local silently
+
+    const rows = await res.json();
+    if (!Array.isArray(rows) || rows.length === 0) {
+      prSyncCache[workoutType] = Date.now();
+      return;
+    }
+
+    // Find the highest weight ever recorded per exercise name across all fetched workouts
+    const nameToId = buildExNameToIdMap();
+    const maxByName = {};
+    for (const row of rows) {
+      const exList = Array.isArray(row.exercises) ? row.exercises : [];
+      for (const ex of exList) {
+        const name = (ex.name || '').toLowerCase();
+        if (!name) continue;
+        for (const set of (ex.sets || [])) {
+          const w = parseFloat(set.weight);
+          if (!isNaN(w) && w > 0) {
+            if (!(name in maxByName) || w > maxByName[name]) maxByName[name] = w;
+          }
+        }
+      }
+    }
+
+    // Merge into prStore — only upgrade, never downgrade a local PR
+    let updated = false;
+    for (const [name, maxW] of Object.entries(maxByName)) {
+      const exId = nameToId[name];
+      if (!exId) continue;
+      const prKey = getPRKey(exId);
+      const local = prStore[prKey];
+      if (!local || maxW > parseFloat(local.weight)) {
+        prStore[prKey] = { weight: maxW, date: rows[0]?.workout_date || getDateStr(), source: 'supabase' };
+        updated = true;
+      }
+    }
+
+    if (updated) {
+      try { localStorage.setItem('pr-store', JSON.stringify(prStore)); } catch(e) {}
+      try { await window.storage.set('pr-store', JSON.stringify(prStore)); } catch(e) {}
+    }
+
+    prSyncCache[workoutType] = Date.now();
+  } catch(e) { /* non-fatal — local prStore is the fallback */ }
 }
 
 function startTimerForEx(exId, type) {
