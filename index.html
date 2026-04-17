@@ -31,6 +31,7 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .hdr-right{text-align:right;}
 .hdr-day{font-size:9px;color:var(--dim2);letter-spacing:2px;text-transform:uppercase;}
 .hdr-wtype{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1px;}
+.hdr-bw{font-size:10px;color:var(--dim2);letter-spacing:1px;margin-top:2px;display:none;}
 
 /* DAY PILLS */
 .day-scroll{overflow-x:auto;scrollbar-width:none;display:flex;gap:5px;padding:8px 16px;}
@@ -592,6 +593,7 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
       <div class="hdr-right">
         <div class="hdr-day" id="hdrDay">—</div>
         <div class="hdr-wtype" id="hdrType">—</div>
+        <div class="hdr-bw" id="hdrWeight">⚖️ —</div>
       </div>
     </div>
     <div class="day-scroll" id="dayScroll"></div>
@@ -1296,6 +1298,9 @@ let sessionState = {}; // exercise state for today
 let prStore = {};       // PRs: { exId: { weight, date } }
 const prSyncCache = {}; // { workoutType: timestamp } — prevents hammering Supabase on every day tap
 const PR_SYNC_TTL  = 5 * 60 * 1000; // 5 minutes
+let bodyCompLatest = null; // most recent weight_lbs from body_composition table
+let bodyCompPrev   = null; // second-most-recent — used for the ↓ delta
+let bodyCompTs     = 0;    // ms timestamp of last successful fetch
 let historyStore = [];  // saved workouts array (local window.storage)
 let completedDates = new Set(); // dates logged in Supabase — drives green dot on day pills
 let exerciseFreq = {};  // { exId: consecutive_sessions_count }
@@ -1389,6 +1394,9 @@ async function init() {
 
   // Load all persisted data
   await loadAll();
+
+  // Body weight fetch is fire-and-forget — it updates the header badge asynchronously
+  syncBodyWeightFromSupabase();
 
   // Sync PRs from Supabase before first render (dayTypeOverride is now loaded)
   const _initType = dayTypeOverride[getDateStr()] || WEEK[currentDayIdx].type;
@@ -2441,6 +2449,37 @@ async function syncPRsFromSupabase(workoutType) {
   } catch(e) { /* non-fatal — local prStore is the fallback */ }
 }
 
+async function syncBodyWeightFromSupabase() {
+  if (bodyCompTs && (Date.now() - bodyCompTs) < PR_SYNC_TTL) return;
+  try {
+    const url = `${SUPABASE_URL}/rest/v1/body_composition`
+      + `?order=measurement_date.desc&limit=2`
+      + `&select=measurement_date,weight_lbs`;
+    const res = await fetch(url, {
+      headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` }
+    });
+    if (!res.ok) return;
+    const rows = await res.json();
+    if (!Array.isArray(rows) || rows.length === 0) return;
+    bodyCompLatest = parseFloat(rows[0].weight_lbs) || null;
+    bodyCompPrev   = rows.length > 1 ? (parseFloat(rows[1].weight_lbs) || null) : null;
+    bodyCompTs     = Date.now();
+    updateBodyWeightBadge();
+  } catch(e) { /* non-fatal */ }
+}
+
+function updateBodyWeightBadge() {
+  const el = document.getElementById('hdrWeight');
+  if (!el || !bodyCompLatest) return;
+  let label = `⚖️ ${bodyCompLatest} lbs`;
+  if (bodyCompPrev && bodyCompLatest < bodyCompPrev) {
+    const delta = (bodyCompPrev - bodyCompLatest).toFixed(1);
+    label += ` ↓${delta}`;
+  }
+  el.textContent = label;
+  el.style.display = 'block';
+}
+
 function startTimerForEx(exId, type) {
   const workout = WORKOUTS[type];
   if (!workout) return;
@@ -3251,10 +3290,17 @@ function buildProgressUI(data) {
   // Set default selected exercise
   if (!selectedExercise && exProgress.length > 0) selectedExercise = exProgress[0].name;
 
-  // KPI row
-  const bwChangeNum = parseFloat(bwChange) || 0;
+  // KPI row — prefer direct body_composition fetch over stale insights-API value
+  syncBodyWeightFromSupabase(); // cache-guarded, safe to call here
+  const displayBW = bodyCompLatest || latestBW;
+  const bwChangeNum = bodyCompLatest && bodyCompPrev
+    ? bodyCompLatest - bodyCompPrev
+    : (parseFloat(bwChange) || 0);
   const bwColor = bwChangeNum <= 0 ? 'green' : 'red';
-  const bwSign = bwChangeNum <= 0 ? '▼' : '▲';
+  const bwSign  = bwChangeNum <= 0 ? '▼' : '▲';
+  const bwSub   = bwChangeNum !== 0
+    ? `${bwSign}${Math.abs(bwChangeNum).toFixed(1)} lbs`
+    : 'lbs';
 
   let html = `
   <div class="prog-kpi-row">
@@ -3263,10 +3309,10 @@ function buildProgressUI(data) {
       <div class="prog-kpi-val">${totalWorkouts}</div>
       <div class="prog-kpi-sub">last 8 weeks</div>
     </div>
-    ${latestBW ? `<div class="prog-kpi ${bwColor}">
+    ${displayBW ? `<div class="prog-kpi ${bwColor}">
       <div class="prog-kpi-label">BODY WEIGHT</div>
-      <div class="prog-kpi-val">${latestBW}</div>
-      <div class="prog-kpi-sub">${bwChange ? `${bwSign}${Math.abs(bwChangeNum)} lbs` : 'lbs'}</div>
+      <div class="prog-kpi-val">${displayBW}</div>
+      <div class="prog-kpi-sub">${bwSub}</div>
     </div>` : ''}
     <div class="prog-kpi purple">
       <div class="prog-kpi-label">STREAK</div>
