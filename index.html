@@ -663,7 +663,7 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 // ============================================================
 // APP VERSION — update this on every release
 // ============================================================
-const APP_VERSION = 'v12.0-flex-switch';
+const APP_VERSION = 'v12.1';
 
 // ============================================================
 // WEEKLY SCHEDULE
@@ -1874,7 +1874,11 @@ function buildExCard(ex, isDone, savedWeights, hasPR, type) {
   let detail = '';
   if (ex.warnSpinal) detail += `<div class="warn-spinal-tag">⚠️ SPINAL LOAD — Monitor form closely</div>`;
   if (ex.hassan) detail += `<div class="hassan-tag">⚡ Hassan Protocol — To Failure</div>`;
-  if (ex.ladder?.length) {
+  if (ex.hassan && ex.ladder?.length) {
+    const first = ex.ladder[0];
+    const last  = ex.ladder[ex.ladder.length - 1];
+    detail += `<div class="ladder-display"><span class="ladder-step">${first}</span><span class="ladder-arrow">→</span><span class="ladder-step">${last}</span></div>`;
+  } else if (ex.ladder?.length) {
     detail += `<div class="ladder-display">${ex.ladder.map((s,i) => `<span class="ladder-step">${s}</span>${i<ex.ladder.length-1?'<span class="ladder-arrow">→</span>':''}`).join('')}</div>`;
   }
   if (ex.burnout) detail += `<div class="burnout-badge">🔥 Burnout: ${ex.burnout}</div>`;
