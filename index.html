@@ -165,6 +165,10 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .ladder-step{font-size:11px;background:var(--border);border-radius:5px;padding:3px 7px;color:var(--white);font-weight:600;}
 .ladder-arrow{color:var(--dim);font-size:9px;}
 .burnout-badge{display:inline-flex;align-items:center;gap:3px;font-size:9px;color:var(--red);background:var(--red-dim);padding:2px 8px;border-radius:9px;font-weight:700;margin-bottom:3px;}
+.equip-selector{display:flex;align-items:center;gap:6px;margin:7px 0;flex-wrap:wrap;}
+.equip-label{font-size:9px;color:var(--dim2);letter-spacing:1.5px;text-transform:uppercase;font-weight:700;flex-shrink:0;}
+.equip-btn{padding:4px 10px;border-radius:8px;border:1px solid var(--border2);background:var(--card);color:var(--dim2);font-size:9px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:0.5px;text-transform:uppercase;transition:all 0.15s;}
+.equip-btn.active-equip{background:var(--accent-dim);border-color:var(--accent);color:var(--accent);}
 .set-table{width:100%;border-collapse:collapse;margin-top:9px;font-size:12px;}
 .set-table th{text-align:left;color:var(--dim);font-weight:500;letter-spacing:1px;font-size:9px;text-transform:uppercase;padding:0 0 5px;border-bottom:1px solid var(--border);}
 .set-table td{padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);vertical-align:middle;}
@@ -663,7 +667,7 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 // ============================================================
 // APP VERSION — update this on every release
 // ============================================================
-const APP_VERSION = 'v12.1';
+const APP_VERSION = 'v12.2';
 
 // ============================================================
 // WEEKLY SCHEDULE
@@ -755,10 +759,20 @@ const ROTATION_POOLS = {
     { name:'Stiff-Leg Deadlift',         tier:'A',  equip:'free'    },
   ],
   glutes: [
-    { name:'Hip Abduction Machine',       tier:'A',  equip:'machine' },
-    { name:'Hip Thrust (Smith)',          tier:'S',  equip:'smith'   },
-    { name:'Glute Kickback Cable',        tier:'A',  equip:'cable'   },
-    { name:'Cable Pull-Through',          tier:'A',  equip:'cable'   },
+    { name:'Hip Abduction Machine',              tier:'A',  equip:'machine' },
+    { name:'Hip Thrust (Smith)',                 tier:'S',  equip:'smith'   },
+    { name:'Glute Kickback Cable',               tier:'A',  equip:'cable'   },
+    { name:'Cable Pull-Through',                 tier:'A',  equip:'cable'   },
+    { name:'Bulgarian Dumbbell Split Squat',     tier:'S',  equip:'free'    },
+    { name:'Single-Leg Hip Thrust',              tier:'A',  equip:'free'    },
+  ],
+  abs: [
+    { name:'Cable Crunch',               tier:'S',  equip:'cable'   },
+    { name:'Ab Wheel Rollout',           tier:'S',  equip:'free'    },
+    { name:'Hanging Leg Raise',          tier:'A',  equip:'free'    },
+    { name:'Bicycle Crunch',             tier:'A',  equip:'free'    },
+    { name:'Knee Raise (Captain\'s Chair)', tier:'A', equip:'free'  },
+    { name:'Machine Crunch',             tier:'A',  equip:'machine' },
   ],
   calves: [
     { name:'Leg Press Calf Press',        tier:'A',  equip:'machine' },
@@ -783,52 +797,52 @@ const WORKOUTS = {
     chips:['Chest · Back · Shoulders · Arms','Hassan Protocol'],
     sections:[
       { label:'Chest', exercises:[
-        { id:'u-fly', name:'Cable Low-to-High Fly', muscle:'chest',
+        { id:'u-fly', name:'Cable Low-to-High Fly', muscle:'chest', restTier:'medium',
           sets:[{wt:20,reps:'Warm'},{wt:30,reps:'FAIL'}],
           chips:{sets:'2 Sets',reps:'Pre-Exhaust',pr:'PR: 30 lbs',tag:'Hassan'},
           hassan:true, ladder:['20×warm','30×FAIL'], burnout:'Drop 20%, 20 reps',
           cue:'Start externally rotated. Pull elbows up and in. Slight internal rotation at top.' },
-        { id:'u-chest', name:'Machine Chest Press', muscle:'chest',
+        { id:'u-chest', name:'Machine Chest Press', muscle:'chest', restTier:'heavy',
           sets:[{wt:121,reps:'8'},{wt:143,reps:'FAIL'},{wt:121,reps:'20',note:'Burnout'}],
           chips:{sets:'2 Sets',reps:'8-12 reps',pr:'PR: 137×12',target:'Target: 143 lbs',tag:'Hassan'},
           hassan:true, ladder:['121×6','132×4','143×FAIL'], burnout:'121 lbs × 20 reps',
           cue:'Scapulae retracted. Deep stretch. Drive through chest.' }
       ]},
       { label:'Back', exercises:[
-        { id:'u-lat', name:'Lat Pulldown (Wide Grip)', muscle:'back',
+        { id:'u-lat', name:'Lat Pulldown (Wide Grip)', muscle:'back', restTier:'heavy',
           sets:[{wt:121,reps:'8'},{wt:143,reps:'FAIL'},{wt:110,reps:'20',note:'Burnout'}],
           chips:{sets:'2 Sets',reps:'8-12 reps',pr:'PR: 143×10',tag:'Hassan'},
           hassan:true, ladder:['121×6','132×4','143×FAIL'], burnout:'110 lbs × 20 reps',
           cue:'Pull elbows down and in. Chest tall. No shoulder shrug.' },
-        { id:'u-row', name:'Seated Cable Row', muscle:'back',
+        { id:'u-row', name:'Seated Cable Row', muscle:'back', restTier:'heavy',
           sets:[{wt:132,reps:'6'},{wt:154,reps:'FAIL'}],
           chips:{sets:'2 Sets',reps:'10-12 reps',pr:'PR: 154×10',tag:'Hassan'},
           hassan:true, warnSpinal:true, ladder:['132×6','154×FAIL'],
           cue:'Initiate with scapular retraction first. Torso still throughout.' }
       ]},
       { label:'Shoulders + Arms', exercises:[
-        { id:'u-shoulder', name:'Seated Shoulder Press', muscle:'shoulders',
+        { id:'u-shoulder', name:'Seated Shoulder Press', muscle:'shoulders', restTier:'heavy',
           sets:[{wt:121,reps:'6'},{wt:143,reps:'FAIL'},{wt:121,reps:'20',note:'Burnout'}],
           chips:{sets:'2 Sets',reps:'8-10 reps',pr:'PR: 143×10',tag:'Hassan'},
           hassan:true, warnSpinal:true, ladder:['121×4','132×2','143×FAIL'], burnout:'121 lbs × 20 reps',
           cue:'Torso upright. Full ROM down to shoulder level.' },
-        { id:'u-lat-raise', name:'Cable Lateral Raise', muscle:'shoulders',
+        { id:'u-lat-raise', name:'Cable Lateral Raise', muscle:'shoulders', restTier:'light', equipment:['Cable','Dumbbell'],
           sets:[{wt:15,reps:'15'},{wt:15,reps:'15'}],
           chips:{sets:'2 Sets',reps:'12-15 reps',pr:'PR: 15×15'},
           cue:'Lean away from cable. Pinky up first. Lead with elbows.' },
-        { id:'u-bicep', name:'Cable Bicep Curl', muscle:'biceps',
+        { id:'u-bicep', name:'Cable Bicep Curl', muscle:'biceps', restTier:'light',
           sets:[{wt:40,reps:'12'},{wt:50,reps:'FAIL'}],
           chips:{sets:'2 Sets',reps:'12-15 reps',pr:'PR: 50×12',tag:'Hassan'},
           hassan:true,
           cue:'Drive pinky toward lateral delt at top. Full supination.' },
-        { id:'u-tricep', name:'Tricep Rope Pushdown', muscle:'triceps',
+        { id:'u-tricep', name:'Tricep Rope Pushdown', muscle:'triceps', restTier:'light',
           sets:[{wt:55,reps:'FAIL'},{wt:55,reps:'FAIL'}],
           chips:{sets:'2 Sets',reps:'12-15 reps',pr:'PR: 55×15',tag:'Hassan'},
           hassan:true,
           cue:'Elbows locked at sides. Spread rope at bottom. 1-sec squeeze.' }
       ]},
       { label:'Ab Finisher 🎯', exercises:[
-        { id:'u-cable-crunch', name:'Cable Crunch', muscle:'abs',
+        { id:'u-cable-crunch', name:'Cable Crunch', muscle:'abs', restTier:'core',
           sets:[{wt:0,reps:'15-20'},{wt:0,reps:'15-20'}],
           chips:{sets:'2 Sets',reps:'15-20 reps',tag:'Nippard Abs'},
           cue:'Kneel facing cable. Hands at temples. Crunch DOWN — flex spine, not arms. Full stretch at top. 8 sets/week per Nippard.' }
@@ -840,43 +854,43 @@ const WORKOUTS = {
     chips:['Chest · Shoulders · Triceps','Hassan Protocol'],
     sections:[
       { label:'Pre-Exhaust', exercises:[
-        { id:'p-pecdeck', name:'Pec Deck / Machine Fly', muscle:'chest',
+        { id:'p-pecdeck', name:'Pec Deck / Machine Fly', muscle:'chest', restTier:'medium',
           sets:[{wt:70,reps:'Warm'},{wt:90,reps:'FAIL'}],
           chips:{sets:'2 Sets',reps:'15-20 reps',pr:'PR: 90 lbs',tag:'Hassan'},
           hassan:true, ladder:['70×warm','90×FAIL'], burnout:'Drop 20%, 20 reps',
           cue:'Lead with elbows not hands. Feel the deep stretch at the bottom. Squeeze hard at peak — chest only, no shoulder creep. This is your chest activation, not a shoulder warm-up.' }
       ]},
       { label:'Main Movement', exercises:[
-        { id:'p-chest', name:'Machine Chest Press', muscle:'chest',
+        { id:'p-chest', name:'Machine Chest Press', muscle:'chest', restTier:'heavy',
           sets:[{wt:121,reps:'6'},{wt:143,reps:'FAIL'},{wt:121,reps:'20',note:'Burnout'}],
           chips:{sets:'2 Sets',reps:'8-12 reps',pr:'PR: 137×12',target:'Target: 143 lbs',tag:'Hassan'},
           hassan:true, ladder:['121×6','132×4','143×FAIL'], burnout:'121 lbs × 20 reps',
           cue:'Scapulae retracted and depressed. Drive through chest, not shoulders. Chest should be pre-fatigued from Pec Deck — good.' },
-        { id:'p-shoulder', name:'Seated Shoulder Press', muscle:'shoulders',
+        { id:'p-shoulder', name:'Seated Shoulder Press', muscle:'shoulders', restTier:'heavy',
           sets:[{wt:121,reps:'4'},{wt:143,reps:'FAIL'},{wt:121,reps:'20',note:'Burnout'}],
           chips:{sets:'2 Sets',reps:'8-10 reps',pr:'PR: 143×10',target:'Target: 143×11',tag:'Hassan'},
           hassan:true, warnSpinal:true, ladder:['121×4','132×2','143×FAIL'], burnout:'121 lbs × 20 reps',
           cue:'Torso upright. Full ROM to shoulder level every rep. This is your main shoulder strength builder — different emphasis from Upper Day.' }
       ]},
       { label:'Chest Accessory', exercises:[
-        { id:'p-cablefly', name:'Cable Low-to-High Fly', muscle:'chest',
+        { id:'p-cablefly', name:'Cable Low-to-High Fly', muscle:'chest', restTier:'medium',
           sets:[{wt:30,reps:'15'},{wt:50,reps:'15'}],
           chips:{sets:'2 Sets',reps:'12-15 reps',pr:'PR: 50×15'},
           cue:'Cable fly as accessory — not the opener. Focus on the stretch at the bottom. Pull elbows up and in. Slight internal rotation at top. Chase the pump here, not the weight.' }
       ]},
       { label:'Isolation', exercises:[
-        { id:'p-lat-raise', name:'Cable Lateral Raise', muscle:'shoulders',
+        { id:'p-lat-raise', name:'Cable Lateral Raise', muscle:'shoulders', restTier:'light', equipment:['Cable','Dumbbell'],
           sets:[{wt:40,reps:'20'},{wt:50,reps:'20'}],
           chips:{sets:'2 Sets',reps:'15-20 reps',pr:'PR: 50×20'},
           cue:'Lean away from cable. Pinky up first. Lead with elbows not wrists.' },
-        { id:'p-tricep-oh', name:'Overhead Rope Extension', muscle:'triceps',
+        { id:'p-tricep-oh', name:'Overhead Rope Extension', muscle:'triceps', restTier:'light',
           sets:[{wt:100,reps:'FAIL'},{wt:110,reps:'20',note:'Burnout'}],
           chips:{sets:'2 Sets',reps:'12-15 reps',pr:'PR: 100×FAIL / 110×20',tag:'Hassan'},
           hassan:true, warnSpinal:true,
           cue:'Elbows point to ceiling — do NOT let them flare out. Drive hands apart at full extension. You\'re targeting the long head here, which the pushdown on Upper Day misses. Feel the stretch overhead.' }
       ]},
       { label:'Ab Finisher 🎯', exercises:[
-        { id:'p-bicycle', name:'Bicycle Crunch', muscle:'abs',
+        { id:'p-bicycle', name:'Bicycle Crunch', muscle:'abs', restTier:'core',
           sets:[{wt:0,reps:'12 each side'},{wt:0,reps:'12 each side'}],
           chips:{sets:'2 Sets',reps:'12 each side',tag:'Nippard Abs'},
           supersetWith:'Superset with last tricep set',
@@ -889,29 +903,29 @@ const WORKOUTS = {
     chips:['Back · Biceps · Rear Delts','Hassan Protocol'],
     sections:[
       { label:'Pre-Exhaust', exercises:[
-        { id:'pull-sa', name:'Straight-Arm Cable Pulldown', muscle:'back',
+        { id:'pull-sa', name:'Straight-Arm Cable Pulldown', muscle:'back', restTier:'medium',
           sets:[{wt:30,reps:'20'},{wt:40,reps:'15-20'}],
           chips:{sets:'2 Sets',reps:'15-20 reps',pr:'PR: 40×20'},
           cue:'Drive elbow down and in. Laterally flex into direction of pull.' }
       ]},
       { label:'Main Movement', exercises:[
-        { id:'pull-lat', name:'Lat Pulldown (Wide Grip)', muscle:'back',
+        { id:'pull-lat', name:'Lat Pulldown (Wide Grip)', muscle:'back', restTier:'heavy',
           sets:[{wt:121,reps:'6'},{wt:143,reps:'FAIL'}],
           chips:{sets:'2 Sets',reps:'8-12 reps',pr:'PR: 143×10',target:'Target: 154 lbs',tag:'Hassan'},
           hassan:true, ladder:['121×6','132×4','143×FAIL'], burnout:'110 lbs × 20 reps',
           cue:'Pull elbows down and in. Chest tall. No shoulder shrug.' },
-        { id:'pull-row', name:'Seated Cable Row', muscle:'back',
+        { id:'pull-row', name:'Seated Cable Row', muscle:'back', restTier:'heavy',
           sets:[{wt:132,reps:'6'},{wt:154,reps:'FAIL'}],
           chips:{sets:'2 Sets',reps:'10-12 reps',pr:'PR: 154×10',tag:'Hassan'},
           hassan:true, warnSpinal:true, ladder:['132×6','154×FAIL'],
           cue:'Initiate with scapular retraction. Pull elbows back. Torso still.' }
       ]},
       { label:'Isolation', exercises:[
-        { id:'pull-face', name:'Rope Face Pull', muscle:'back_fly',
+        { id:'pull-face', name:'Rope Face Pull', muscle:'back_fly', restTier:'light',
           sets:[{wt:55,reps:'20'},{wt:55,reps:'20'}],
           chips:{sets:'2 Sets',reps:'15-20 reps',pr:'PR: 55×20'},
           cue:'Pull elbows up and out. Retract scapulae at peak.' },
-        { id:'pull-curl', name:'Cable Bicep Curl (Supinated)', muscle:'biceps',
+        { id:'pull-curl', name:'Cable Bicep Curl (Supinated)', muscle:'biceps', restTier:'light',
           sets:[{wt:40,reps:'12'},{wt:50,reps:'FAIL'}],
           chips:{sets:'2 Sets',reps:'12-15 reps',pr:'PR: 50×12',tag:'Hassan'},
           hassan:true,
@@ -924,40 +938,40 @@ const WORKOUTS = {
     chips:['Quads · Hamstrings · Glutes · Calves','Sunday Protocol'],
     sections:[
       { label:'Pre-Exhaust', exercises:[
-        { id:'l-curl', name:'Lying Leg Curl', muscle:'hams',
+        { id:'l-curl', name:'Lying Leg Curl', muscle:'hams', restTier:'heavy',
           sets:[{wt:110,reps:'15'},{wt:132,reps:'FAIL'}],
           chips:{sets:'2 Sets',reps:'To Failure',pr:'PR: 121×12',target:'Target: 132 lbs',tag:'Hassan'},
           hassan:true, ladder:['110×warm','132×FAIL'],
           cue:'Squeeze hamstrings. Don\'t let hips rise off pad.' },
-        { id:'l-ext', name:'Leg Extension', muscle:'quads',
+        { id:'l-ext', name:'Leg Extension', muscle:'quads', restTier:'heavy',
           sets:[{wt:99,reps:'15'},{wt:121,reps:'FAIL'}],
           chips:{sets:'2 Sets',reps:'To Failure',pr:'PR: 110×15',target:'Target: 121 lbs',tag:'Hassan'},
           hassan:true, ladder:['99×warm','121×FAIL'],
           cue:'Squeeze quads to move weight. 1-sec pause at peak.' }
       ]},
       { label:'Main Compound', exercises:[
-        { id:'l-squat', name:'Smith Machine Squat', muscle:'quads',
+        { id:'l-squat', name:'Smith Machine Squat', muscle:'quads', restTier:'heavy',
           sets:[{wt:135,reps:'10'},{wt:155,reps:'8-10'}],
           chips:{sets:'2 Sets',reps:'8-12 reps',pr:'PR: 145×10',target:'Target: 155 lbs'},
           warnSpinal:true,
           cue:'⚠️ LOWER BACK: Feet slightly forward. Sit back. Drive knees OUT. Chest tall.' },
-        { id:'l-seated-curl', name:'Seated Leg Curl', muscle:'hams',
+        { id:'l-seated-curl', name:'Seated Leg Curl', muscle:'hams', restTier:'heavy',
           sets:[{wt:132,reps:'10'},{wt:154,reps:'10-12'}],
           chips:{sets:'2 Sets',reps:'10-12 reps',pr:'PR: 143×10',target:'Target: 154 lbs'},
           cue:'🔒 BACK RECOVERY: Seated position maintains neutral spine. Hamstring squeeze. Control the negative. No hip rise.' }
       ]},
       { label:'Glutes + Calves', exercises:[
-        { id:'l-abduct', name:'Hip Abduction Machine', muscle:'glutes',
+        { id:'l-abduct', name:'Hip Abduction Machine', muscle:'glutes', restTier:'medium',
           sets:[{wt:55,reps:'15-20'},{wt:55,reps:'15-20'}],
           chips:{sets:'2 Sets',reps:'15-20 reps',pr:'PR: 55 lbs (NEW baseline)',target:'Target: 66 lbs'},
           cue:'⚠️ NEW BASELINE 55 lbs. LEAN FORWARD 30°. Feel glute medius, not TFL.' },
-        { id:'l-calf', name:'Smith Machine Calf Raise', muscle:'calves',
+        { id:'l-calf', name:'Smith Machine Calf Raise', muscle:'calves', restTier:'light',
           sets:[{wt:225,reps:'15-20'},{wt:225,reps:'15-20'},{wt:225,reps:'15-20'}],
           chips:{sets:'3 Sets',reps:'15-20 reps',pr:'PR: 225×15',target:'Target: 225 all 3 sets'},
           cue:'STRAIGHT KNEE. Deep stretch at bottom. 2-sec squeeze at top. No bouncing.' }
       ]},
       { label:'Ab Finisher 🎯', exercises:[
-        { id:'l-cable-crunch', name:'Cable Crunch', muscle:'abs',
+        { id:'l-cable-crunch', name:'Cable Crunch', muscle:'abs', restTier:'core',
           sets:[{wt:0,reps:'15-20'},{wt:0,reps:'15-20'}],
           chips:{sets:'2 Sets',reps:'15-20 reps',tag:'Nippard Abs'},
           cue:'Kneel facing cable. Hands at temples. Crunch DOWN — flex spine, not arms. Full stretch at top. Completes your 8 sets/week ab volume.' }
@@ -975,29 +989,29 @@ const WORKOUTS = {
           cue:'Target HR: 140–155 bpm throughout. This session = ~35-40 min toward your 90-min/week visceral fat HIIT threshold (Dr. Rhonda Patrick protocol). Log HR avg + max from Galaxy Watch after.' }
       ]},
       { label:'If Lower Day (Home Sub)', exercises:[
-        { id:'f-ext', name:'Leg Extension', muscle:'quads',
+        { id:'f-ext', name:'Leg Extension', muscle:'quads', restTier:'heavy',
           sets:[{wt:99,reps:'15'},{wt:121,reps:'FAIL'}],
           chips:{sets:'2 Sets',reps:'To Failure',pr:'PR: 121 lbs',tag:'Hassan'},
           hassan:true, cue:'Quad squeeze. Pause at peak.' },
-        { id:'f-squat', name:'Smith Machine Squat', muscle:'quads',
+        { id:'f-squat', name:'Smith Machine Squat', muscle:'quads', restTier:'heavy',
           sets:[{wt:145,reps:'8'},{wt:165,reps:'8-10'}],
           chips:{sets:'2 Sets',reps:'8-12 reps',pr:'PR: 155×10',target:'Target: 165 lbs'},
           cue:'Feet forward. Sit back. Drive knees OUT. Protect lower back.' },
-        { id:'f-lunge', name:'DB Walking Lunges', muscle:'quads',
+        { id:'f-lunge', name:'DB Walking Lunges', muscle:'quads', restTier:'medium',
           sets:[{wt:35,reps:'20 each'},{wt:40,reps:'20 each'}],
           chips:{sets:'2 Sets',reps:'20 reps/leg',pr:'PR: 35 lb DBs',target:'Target: 40 lb DBs'},
           cue:'Medium strides. Minimize rear leg push. Knee tracks toes.' },
-        { id:'f-curl', name:'Lying Leg Curl', muscle:'hams',
+        { id:'f-curl', name:'Lying Leg Curl', muscle:'hams', restTier:'heavy',
           sets:[{wt:121,reps:'15'},{wt:143,reps:'FAIL'}],
           chips:{sets:'2 Sets',reps:'To Failure',pr:'PR: 132 lbs',target:'Target: 143 lbs',tag:'Hassan'},
           hassan:true, cue:'Hamstrings squeeze. No hip rise. Control the negative.' },
-        { id:'f-abduct', name:'Hip Abduction Machine', muscle:'glutes',
+        { id:'f-abduct', name:'Hip Abduction Machine', muscle:'glutes', restTier:'medium',
           sets:[{wt:55,reps:'15-20'},{wt:66,reps:'15-20'}],
           chips:{sets:'2 Sets',reps:'15-20 reps',pr:'PR: 55 lbs (NEW baseline)'},
           cue:'LEAN FORWARD 30°. 55 lbs baseline. Feel glute medius.' }
       ]},
       { label:'Ab Finisher 🎯', exercises:[
-        { id:'f-cable-crunch', name:'Cable Crunch', muscle:'abs',
+        { id:'f-cable-crunch', name:'Cable Crunch', muscle:'abs', restTier:'core',
           sets:[{wt:0,reps:'15-20'},{wt:0,reps:'15-20'}],
           chips:{sets:'2 Sets',reps:'15-20 reps',tag:'Nippard Abs'},
           cue:'🔒 BACK RECOVERY: Kneel facing cable. Hands at temples. Crunch DOWN — flex spine, not arms. Full stretch at top. Eliminates spinal loading.' }
@@ -1327,51 +1341,47 @@ const CIRC = 2 * Math.PI * 60; // 377
 // ============================================================
 // Based on exercise type, intensity, and muscle group
 const REST_DEFAULTS = {
-  // Heavy compound Hassan exercises (RPE 9-10, 6-10 rep range)
-  heavy_hassan: 150,     // 2:30 — heavy ladder + failure needs full ATP recovery
-  // Moderate compound (RPE 8-9, 8-12 rep range)
-  moderate_compound: 120, // 2:00
-  // Burnout sets (20 rep, metabolic)
-  burnout: 90,            // 1:30 — shorter, keep metabolic stress
-  // Isolation exercises (laterals, curls, pushdowns)
-  isolation: 75,          // 1:15
-  // Pre-exhaust / warm-up sets
-  pre_exhaust: 60,        // 1:00
-  // Light warm-up
-  warmup: 45,             // 0:45
+  heavy_hassan: 150,
+  moderate_compound: 120,
+  burnout: 90,
+  isolation: 75,
+  pre_exhaust: 60,
+  warmup: 45,
+};
+
+const REST_TIER_DEFAULTS = {
+  heavy:  { base: 150, hassan: 180 }, // 2:30–3:00
+  medium: { base: 90,  hassan: 120 }, // 1:30–2:00
+  light:  { base: 60,  hassan: 90  }, // 1:00–1:30
+  core:   { base: 45,  hassan: 60  }, // 0:45–1:00
 };
 
 function getSmartRestTime(ex, setIdx) {
-  // Check for user override first
-  const overrideKey = `${ex.id}`;
-  if (restOverrides[overrideKey] !== undefined) return restOverrides[overrideKey];
+  if (restOverrides[ex.id] !== undefined) return restOverrides[ex.id];
 
   const set = ex.sets[setIdx];
   if (!set) return 90;
 
-  // Warm-up set detection
   const repsStr = String(set.reps).toLowerCase();
   if (repsStr === 'warm' || repsStr.includes('warm') || set.note === 'Warm') return REST_DEFAULTS.warmup;
-
-  // Burnout set detection
   if (set.note === 'Burnout' || (parseInt(set.reps) >= 20 && setIdx === ex.sets.length - 1)) return REST_DEFAULTS.burnout;
 
-  // Hassan heavy compound (main movements with ladder)
-  if (ex.hassan && ex.ladder && ex.ladder.length > 0) {
+  if (ex.restTier && REST_TIER_DEFAULTS[ex.restTier]) {
+    const tier = REST_TIER_DEFAULTS[ex.restTier];
+    return ex.hassan ? tier.hassan : tier.base;
+  }
+
+  // Legacy fallback for any exercise missing restTier
+  if (ex.hassan && ex.ladder?.length) {
     const weight = parseFloat(set.wt) || 0;
     if (weight >= 100 || repsStr === 'fail') return REST_DEFAULTS.heavy_hassan;
     return REST_DEFAULTS.moderate_compound;
   }
-
-  // Pre-exhaust section exercises
   const muscle = (ex.muscle || '').toLowerCase();
   if (ex.sets.length <= 2 && !ex.hassan) {
-    // Isolation or pre-exhaust
-    if (['chest','back'].includes(muscle) && !ex.hassan) return REST_DEFAULTS.pre_exhaust;
+    if (['chest','back'].includes(muscle)) return REST_DEFAULTS.pre_exhaust;
     return REST_DEFAULTS.isolation;
   }
-
-  // Default: compound non-Hassan
   return REST_DEFAULTS.moderate_compound;
 }
 
@@ -1882,6 +1892,11 @@ function buildExCard(ex, isDone, savedWeights, hasPR, type) {
     detail += `<div class="ladder-display">${ex.ladder.map((s,i) => `<span class="ladder-step">${s}</span>${i<ex.ladder.length-1?'<span class="ladder-arrow">→</span>':''}`).join('')}</div>`;
   }
   if (ex.burnout) detail += `<div class="burnout-badge">🔥 Burnout: ${ex.burnout}</div>`;
+
+  if (Array.isArray(ex.equipment)) {
+    const curEquip = sessionState[ex.id]?.equipment || ex.equipment[0];
+    detail += `<div class="equip-selector"><span class="equip-label">Equipment:</span>${ex.equipment.map(e=>`<button class="equip-btn${e===curEquip?' active-equip':''}" onclick="event.stopPropagation();selectEquipment('${ex.id}','${e.replace(/'/g,"\\'")}','${type}')">${e}</button>`).join('')}</div>`;
+  }
 
   detail += `<table class="set-table">
     <tr><th>Set</th><th>Weight (lbs)</th><th>Target</th><th></th><th></th></tr>`;
@@ -2790,7 +2805,8 @@ function generateSessionSummary(type) {
       const setStr  = ex.sets.map((s, i) => `${weights[i] || s.wt}×${s.reps}`).join(', ');
       const done    = state.done ? '✓' : '–';
       const note    = notesStore[ex.id]?.todayNote ? ` [${notesStore[ex.id].todayNote}]` : '';
-      lines.push(`${done} ${displayName}: ${setStr}${note}`);
+      const equip   = state.equipment ? ` (${state.equipment})` : '';
+      lines.push(`${done} ${displayName}${equip}: ${setStr}${note}`);
     });
   });
 
@@ -2879,6 +2895,13 @@ function saveNotes(val) {
   if (!sessionState['__notes__']) sessionState['__notes__'] = {};
   sessionState['__notes__'].notes = val;
   saveSession();
+}
+
+function selectEquipment(exId, equipment, type) {
+  if (!sessionState[exId]) sessionState[exId] = {};
+  sessionState[exId].equipment = equipment;
+  saveSession();
+  renderWorkoutView();
 }
 
 // ============================================================
