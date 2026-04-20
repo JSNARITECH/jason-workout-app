@@ -667,14 +667,14 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 // ============================================================
 // APP VERSION — update this on every release
 // ============================================================
-const APP_VERSION = 'v12.2';
+const APP_VERSION = 'v12.3';
 
 // ============================================================
 // WEEKLY SCHEDULE
 // ============================================================
 const WEEK = [
   { key:'mon', name:'Mon', type:'upper',  emoji:'💪', label:'UPPER' },
-  { key:'tue', name:'Tue', type:'fort',   emoji:'🥊', label:'FLEX/HIIT' },
+  { key:'tue', name:'Tue', type:'fort',   emoji:'🦵', label:'LOWER' },
   { key:'wed', name:'Wed', type:'rest',   emoji:'⚡', label:'SPRINT' },
   { key:'thu', name:'Thu', type:'push',   emoji:'🔥', label:'PUSH' },
   { key:'fri', name:'Fri', type:'pull',   emoji:'💙', label:'PULL' },
@@ -979,16 +979,16 @@ const WORKOUTS = {
     ]
   },
   fort:{
-    title:'TUESDAY FLEX DAY', emoji:'🥊',
-    chips:['Boxing · HIIT Class · Lower Body','Counts toward 90-min/wk HIIT target'],
+    title:'LOWER DAY', emoji:'🦵',
+    chips:['Lower Body','Lifetime or Home Gym'],
     sections:[
-      { label:'If At A Class (Boxing / HIIT)', exercises:[
+      { label:'Group Fitness Class', exercises:[
         { id:'f-class', name:'Boxing / HIIT Class', muscle:'full',
           sets:[{wt:0,reps:'Full session'}],
           chips:{sets:'Full Class',reps:'Zone 4 — 140-155 bpm'},
           cue:'Target HR: 140–155 bpm throughout. This session = ~35-40 min toward your 90-min/week visceral fat HIIT threshold (Dr. Rhonda Patrick protocol). Log HR avg + max from Galaxy Watch after.' }
       ]},
-      { label:'If Lower Day (Home Sub)', exercises:[
+      { label:'Lower Body', exercises:[
         { id:'f-ext', name:'Leg Extension', muscle:'quads', restTier:'heavy',
           sets:[{wt:99,reps:'15'},{wt:121,reps:'FAIL'}],
           chips:{sets:'2 Sets',reps:'To Failure',pr:'PR: 121 lbs',tag:'Hassan'},
@@ -1327,7 +1327,7 @@ let restOverrides = {}; // { exId: seconds } — user-customized rest per exerci
 let swapOverrides = {}; // { exId: altName } — user-selected exercise swaps
 let prStreaks = {};     // { exId: count } — consecutive sessions with new PRs
 let notesStore = {};   // { exId: { todayNote, lastWeekNote, weekCount } }
-let fortCancelled = false;
+let classMode = false;
 let backRecoveryMode = false;
 let dayTypeOverride = {}; // { dateStr: 'upper'|'push'|'pull'|'legs'|'fort'|'flex' }
 let prReadyFlags = new Set(); // exercise names flagged pr_ready=true in Supabase
@@ -1441,12 +1441,12 @@ async function loadAll() {
   try { const v = await getStored('swap-overrides'); if (v) swapOverrides = JSON.parse(v); } catch(e) { swapOverrides = {}; }
   try { const v = await getStored('pr-streaks'); if (v) prStreaks = JSON.parse(v); } catch(e) { prStreaks = {}; }
 
-  // Restore fort-cancelled flag for today
+  // Restore class-mode flag for today
   try {
-    const key = `fort-cancelled-${getDateStr()}`;
+    const key = `class-mode-${getDateStr()}`;
     const v = await getStored(key);
-    fortCancelled = !!(v);
-  } catch(e) { fortCancelled = false; }
+    classMode = !!(v);
+  } catch(e) { classMode = false; }
 
   // Restore back recovery mode
   try {
@@ -1665,11 +1665,11 @@ function renderWorkoutView() {
   const workout = WORKOUTS[effectiveType];
   if (!workout) { scroll.innerHTML = '<div class="empty-state">No workout data for this day.</div>'; return; }
 
-  const sectionsForProgress = (effectiveType === 'fort' && fortCancelled)
-    ? workout.sections.filter(s => s.label !== 'If At FORT')
-    : (effectiveType === 'fort' && !fortCancelled)
-      ? workout.sections.filter(s => s.label === 'If At FORT' || s.label.includes('Ab'))
-      : workout.sections;
+  const sectionsForProgress = effectiveType === 'fort'
+    ? (classMode
+      ? workout.sections.filter(s => s.label === 'Group Fitness Class')
+      : workout.sections.filter(s => s.label !== 'Group Fitness Class'))
+    : workout.sections;
 
   const allExIds = [];
   sectionsForProgress.forEach(s => s.exercises.forEach(e => allExIds.push(e.id)));
@@ -1679,27 +1679,27 @@ function renderWorkoutView() {
 
   let html = '';
 
-  // FORT cancelled banner (only when scheduled type is FORT and no override)
+  // Lower Day / Class mode banner (only when scheduled type is fort and no override)
   if (day.type === 'fort' && !dayTypeOverride[todayDateStr]) {
-    if (fortCancelled) {
+    if (classMode) {
       html += `<div class="fort-cancel-banner">
         <div class="fort-cancel-top">
-          <div class="fort-cancel-title">🏠 HOME LOWER DAY</div>
-          <div class="fort-mode-indicator">✓ FORT CANCELLED</div>
+          <div class="fort-cancel-title">💃 CLASS DAY</div>
+          <div class="fort-mode-indicator">✓ CLASS MODE</div>
         </div>
-        <div class="fort-cancel-sub">Swapped to your full home gym lower body protocol. All the gains, none of the commute.</div>
+        <div class="fort-cancel-sub">Dance class, boxing, HIIT, or whatever's calling. Get after it. Zone 4 target: 140–155 bpm.</div>
         <div class="fort-cancel-btns">
-          <button class="fort-btn fort-btn-fort" onclick="toggleFortCancelled()">↩ FORT Was On After All</button>
+          <button class="fort-btn fort-btn-fort" onclick="toggleClassMode()">↩ Back to Lower Body</button>
         </div>
       </div>`;
     } else {
       html += `<div class="fort-cancel-banner">
         <div class="fort-cancel-top">
-          <div class="fort-cancel-title">📍 FORT / LOWER DAY</div>
+          <div class="fort-cancel-title">🦵 LOWER DAY</div>
         </div>
-        <div class="fort-cancel-sub">Heading to FORT? Go get it. Class got cancelled? Hit the home gym lower body sub below.</div>
+        <div class="fort-cancel-sub">Lifetime or home gym. Your full lower body protocol.</div>
         <div class="fort-cancel-btns">
-          <button class="fort-btn fort-btn-go" onclick="toggleFortCancelled()">🏠 FORT Cancelled — Home Lower Day</button>
+          <button class="fort-btn fort-btn-go" onclick="toggleClassMode()">💃 Going to a class today instead?</button>
         </div>
       </div>`;
     }
@@ -1707,8 +1707,8 @@ function renderWorkoutView() {
 
   // Workout header
   html += `<div class="w-header">
-    <div class="w-title"><span>${workout.emoji}</span>${fortCancelled && effectiveType==='fort' ? 'HOME LOWER DAY' : workout.title}</div>
-    <div class="w-chips">${(fortCancelled && effectiveType==='fort' ? ['Home Gym Lower Body','Hassan Protocol'] : workout.chips).map(c => `<span class="wchip bg-${effectiveType} c-${effectiveType}">${c}</span>`).join('')}</div>
+    <div class="w-title"><span>${workout.emoji}</span>${classMode && effectiveType==='fort' ? 'CLASS DAY' : workout.title}</div>
+    <div class="w-chips">${(classMode && effectiveType==='fort' ? ['Group Fitness Class','Zone 4 Target: 140–155 bpm'] : workout.chips).map(c => `<span class="wchip bg-${effectiveType} c-${effectiveType}">${c}</span>`).join('')}</div>
     <div class="prog-row">
       <span class="prog-label">Progress</span>
       <div class="mini-bar"><div class="mini-bar-fill bar-${effectiveType}" id="dayProg" style="width:0%"></div></div>
@@ -1718,7 +1718,7 @@ function renderWorkoutView() {
 
   // Type selector row
   const workoutTypes = ['upper', 'push', 'pull', 'legs', 'fort'];
-  const typeLabels = { upper: 'UPPER', push: 'PUSH', pull: 'PULL', legs: 'LEGS', fort: 'FLEX' };
+  const typeLabels = { upper: 'UPPER', push: 'PUSH', pull: 'PULL', legs: 'LEGS', fort: 'LOWER' };
   html += `<div class="w-type-selector">
     <span class="type-selector-label">Pick a type:</span>`;
   workoutTypes.forEach(wType => {
@@ -1731,7 +1731,7 @@ function renderWorkoutView() {
   html += `</div>`;
 
   // Done banner
-  const doneBannerTitle = (fortCancelled && effectiveType==='fort') ? 'HOME LOWER DAY COMPLETE' : `${workout.title} COMPLETE`;
+  const doneBannerTitle = (classMode && effectiveType==='fort') ? 'CLASS DAY COMPLETE' : `${workout.title} COMPLETE`;
   html += `<div class="done-banner" id="doneBanner">
     <div class="done-emoji">${workout.emoji}</div>
     <div class="done-title">${doneBannerTitle}</div>
@@ -1801,12 +1801,12 @@ function renderWorkoutView() {
     </div>
   </div>`;
 
-  // Exercises — if FORT day and cancelled, skip "If At FORT" section, show only sub + abs
-  const sectionsToRender = (effectiveType === 'fort' && fortCancelled)
-    ? workout.sections.filter(s => s.label !== 'If At FORT')
-    : (effectiveType === 'fort' && !fortCancelled)
-      ? workout.sections.filter(s => s.label === 'If At FORT' || s.label.includes('Ab'))
-      : workout.sections;
+  // Exercises — fort day: default lower body, class mode shows only the class section
+  const sectionsToRender = effectiveType === 'fort'
+    ? (classMode
+      ? workout.sections.filter(s => s.label === 'Group Fitness Class')
+      : workout.sections.filter(s => s.label !== 'Group Fitness Class'))
+    : workout.sections;
 
   sectionsToRender.forEach(section => {
     html += `<div class="sec-label">${section.label}</div>`;
@@ -2071,11 +2071,11 @@ function dismissAlert(id) {
   if (el) el.classList.remove('visible');
 }
 
-function toggleFortCancelled() {
-  fortCancelled = !fortCancelled;
+function toggleClassMode() {
+  classMode = !classMode;
   // Persist choice for today so page reload remembers
-  const key = `fort-cancelled-${getDateStr()}`;
-  if (fortCancelled) {
+  const key = `class-mode-${getDateStr()}`;
+  if (classMode) {
     window.storage.set(key, '1').catch(()=>{});
   } else {
     window.storage.delete(key).catch(()=>{});
@@ -2699,12 +2699,12 @@ async function saveWorkout(type, dayKey) {
   const exercises = [];
   let newPRs = [];
 
-  // Use sections that are currently rendered (respects fort cancelled state)
-  const sectionsToSave = (type === 'fort' && fortCancelled)
-    ? workout.sections.filter(s => s.label !== 'If At FORT')
-    : (type === 'fort' && !fortCancelled)
-      ? workout.sections.filter(s => s.label === 'If At FORT' || s.label.includes('Ab'))
-      : workout.sections;
+  // Use sections that are currently rendered (respects class mode)
+  const sectionsToSave = type === 'fort'
+    ? (classMode
+      ? workout.sections.filter(s => s.label === 'Group Fitness Class')
+      : workout.sections.filter(s => s.label !== 'Group Fitness Class'))
+    : workout.sections;
 
   for (const section of sectionsToSave) {
     for (const ex of section.exercises) {
@@ -2728,7 +2728,7 @@ async function saveWorkout(type, dayKey) {
   const watch = sessionState['__watch__'] || {};
   const entry = {
     id: Date.now(), date: getDateStr(), dayKey,
-    type, title: (type === 'fort' && fortCancelled) ? 'HOME LOWER DAY' : workout.title,
+    type, title: (type === 'fort' && classMode) ? 'CLASS DAY' : workout.title,
     emoji: workout.emoji,
     exercises, newPRs,
     notes: (sessionState['__notes__']||{}).notes || '',
@@ -2793,8 +2793,10 @@ function generateSessionSummary(type) {
   lines.push('');
   lines.push(type === 'recovery' ? '🏥 REHAB EXERCISES' : '💪 EXERCISES');
 
-  const sections = (type === 'fort' && fortCancelled)
-    ? workout.sections.filter(s => s.label !== 'If At FORT')
+  const sections = type === 'fort'
+    ? (classMode
+      ? workout.sections.filter(s => s.label === 'Group Fitness Class')
+      : workout.sections.filter(s => s.label !== 'Group Fitness Class'))
     : workout.sections;
 
   sections.forEach(section => {
@@ -3063,8 +3065,8 @@ function renderSummaryView() {
 // HISTORY VIEW — Live query from Supabase Edge Function
 // ============================================================
 const HISTORY_API = 'https://fnjjfnsdxibjbzldfgit.supabase.co/functions/v1/workout-history';
-const WORKOUT_EMOJIS = { legs:'🦵', push:'🔥', pull:'💙', upper:'💪', lower:'🟢', fort:'🏙️', cardio:'🏃', arms:'💪', 'full body':'⚡' };
-const WORKOUT_LABELS_H = { legs:'Legs', push:'Push Day', pull:'Pull Day', upper:'Upper Day', lower:'Lower Day', fort:'FORT / Lower', cardio:'Cardio', arms:'Arms', 'full body':'Full Body' };
+const WORKOUT_EMOJIS = { legs:'🦵', push:'🔥', pull:'💙', upper:'💪', lower:'🟢', fort:'🦵', cardio:'🏃', arms:'💪', 'full body':'⚡' };
+const WORKOUT_LABELS_H = { legs:'Legs', push:'Push Day', pull:'Pull Day', upper:'Upper Day', lower:'Lower Day', fort:'Lower Day', cardio:'Cardio', arms:'Arms', 'full body':'Full Body' };
 
 let historyCache = null;       // full data from API
 let historyFilter = 'all';     // current type filter
