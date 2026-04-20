@@ -82,6 +82,13 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .type-btn-active{border-color:var(--accent);background:var(--accent);color:var(--bg);font-weight:900;}
 .type-reset-btn{background:var(--card2);border-color:var(--border2);font-size:7px;padding:5px 7px;}
 
+/* LOCATION SELECTOR */
+.loc-selector{display:flex;gap:6px;margin-bottom:12px;align-items:center;flex-wrap:wrap;width:100%;}
+.loc-selector-label{font-size:8px;color:var(--dim2);font-weight:700;text-transform:uppercase;letter-spacing:1px;flex-shrink:0;}
+.loc-btn{padding:6px 11px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--dim1);font-size:9px;cursor:pointer;transition:all 0.15s;font-weight:700;letter-spacing:0.3px;flex-shrink:0;}
+.loc-btn:hover{border-color:var(--accent);}
+.loc-btn.loc-active{background:var(--accent);color:#000;border-color:var(--accent);font-weight:900;}
+
 /* GALAXY WATCH WIDGET */
 .watch-widget{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:13px 14px;margin-bottom:14px;}
 .watch-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--dim2);font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
@@ -1312,6 +1319,7 @@ let fortCancelled = false;
 let backRecoveryMode = false;
 let dayTypeOverride = {}; // { dateStr: 'upper'|'push'|'pull'|'legs'|'fort'|'flex' }
 let prReadyFlags = new Set(); // exercise names flagged pr_ready=true in Supabase
+let sessionLocation = 'HG'; // 'HG' = Home Gym, 'LT' = Lifetime Fitness
 
 const SUPABASE_URL  = 'https://fnjjfnsdxibjbzldfgit.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZuampmbnNkeGliamJ6bGRmZ2l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY1MDM2MjAsImV4cCI6MjA4MjA3OTYyMH0.oZYn5OXKZH2h1wGfIj_R1L8Hlk3ytGFBgDCyGqUcatk'; // true = show home lower body sub instead of FORT class
@@ -1442,6 +1450,9 @@ async function loadAll() {
     const v = await getStored('day-type-overrides');
     if (v) dayTypeOverride = JSON.parse(v);
   } catch(e) { dayTypeOverride = {}; }
+
+  // Restore session location
+  try { const v = localStorage.getItem('session-location'); if (v) sessionLocation = v; } catch(e) {}
 
   // Fetch completed workout dates from Supabase (populates green dots on day pills)
   try {
@@ -1686,6 +1697,15 @@ function renderWorkoutView() {
       </div>`;
     }
   }
+
+  // Location selector
+  const hgActive = sessionLocation === 'HG' ? ' loc-active' : '';
+  const ltActive = sessionLocation === 'LT' ? ' loc-active' : '';
+  html += `<div class="loc-selector">
+    <span class="loc-selector-label">📍 Location:</span>
+    <button class="loc-btn${hgActive}" onclick="setSessionLocation('HG')">🏠 Home Gym [HG]</button>
+    <button class="loc-btn${ltActive}" onclick="setSessionLocation('LT')">🏋 Lifetime Fitness [LT]</button>
+  </div>`;
 
   // Workout header
   html += `<div class="w-header">
@@ -2085,6 +2105,15 @@ function resetDayType() {
   renderWorkoutView();
 }
 
+function setSessionLocation(loc) {
+  sessionLocation = loc;
+  try { localStorage.setItem('session-location', loc); } catch(e) {}
+  // Bust PR sync cache so next render re-fetches for the correct location
+  Object.keys(prSyncCache).forEach(k => delete prSyncCache[k]);
+  showToast(`📍 ${loc === 'HG' ? 'Home Gym [HG]' : 'Lifetime Fitness [LT]'}`);
+  renderWorkoutView();
+}
+
 function swapExercise(exId, newName, type) {
   showToast(`💡 Next session: try ${newName}`);
   // Reset frequency for this exercise when user acknowledges
@@ -2351,6 +2380,19 @@ function getExById(id) {
   return null;
 }
 
+function findExByNameAnywhere(name) {
+  if (!name) return null;
+  const lower = name.toLowerCase();
+  for (const workout of Object.values(WORKOUTS)) {
+    for (const section of workout.sections) {
+      for (const ex of section.exercises) {
+        if (ex.name.toLowerCase() === lower) return ex;
+      }
+    }
+  }
+  return null;
+}
+
 function showPRSyncPill() {
   const el = document.getElementById('prSyncPill');
   if (el) el.classList.add('visible');
@@ -2387,8 +2429,10 @@ async function syncPRsFromSupabase(workoutType) {
   if (cached && (Date.now() - cached) < PR_SYNC_TTL) return;
 
   try {
+    const locKey = sessionLocation === 'HG' ? 'home' : 'lifetime';
     const url = `${SUPABASE_URL}/rest/v1/workouts`
       + `?workout_type=eq.${encodeURIComponent(workoutType)}`
+      + `&location=ilike.${encodeURIComponent('%' + locKey + '%')}`
       + `&order=workout_date.desc&limit=30`
       + `&select=workout_date,exercises`;
     const res = await fetch(url, {
@@ -2447,24 +2491,27 @@ function startTimerForEx(exId, type) {
   const allExes = workout.sections.flatMap(s => s.exercises);
   let exName = '', nextName = null, ex = null;
   for (const e of allExes) {
-    if (e.id === exId) { exName = e.name; ex = e; }
+    if (e.id === exId) { exName = swapOverrides[exId] || e.name; ex = e; }
   }
-  // Find next INCOMPLETE exercise
+  // Find next INCOMPLETE exercise — use swap name if applicable
   let foundCurrent = false;
   for (const e of allExes) {
     if (e.id === exId) { foundCurrent = true; continue; }
-    if (foundCurrent && !sessionState[e.id]?.done) { nextName = e.name; break; }
+    if (foundCurrent && !sessionState[e.id]?.done) { nextName = swapOverrides[e.id] || e.name; break; }
   }
   // If none after, check before
   if (!nextName) {
     for (const e of allExes) {
-      if (e.id !== exId && !sessionState[e.id]?.done) { nextName = e.name; break; }
+      if (e.id !== exId && !sessionState[e.id]?.done) { nextName = swapOverrides[e.id] || e.name; break; }
     }
   }
-  const protocol = ex?.hassan ? 'Hassan Protocol' : 'Straight Sets';
-  const totalSets = ex?.sets?.length || 0;
+  // Use swapped exercise metadata for rest time if available
+  const effectiveEx = swapOverrides[exId] ? (findExByNameAnywhere(swapOverrides[exId]) || ex) : ex;
+  const protocol = effectiveEx?.hassan ? 'Hassan Protocol' : 'Straight Sets';
+  const totalSets = effectiveEx?.sets?.length || ex?.sets?.length || 0;
+  const restTime = restOverrides[exId] || getSmartRestTime(effectiveEx || ex, (totalSets || 1) - 1);
   const setInfo = `All sets complete · ${totalSets} sets · ${protocol}`;
-  startTimer(exName, nextName, 90, setInfo, null, null);
+  startTimer(exName, nextName, restTime, setInfo, null, null);
 }
 
 // ============================================================
@@ -2489,11 +2536,12 @@ function completeSet(exId, setIdx, type) {
   if (btn) { btn.textContent = '✓'; btn.classList.add('set-completed'); }
   saveSession();
 
-  // Get exercise data and smart rest time
+  // Get exercise data and smart rest time — use swapped exercise config if applicable
   const ex = getExById(exId);
   if (!ex) return;
+  const effectiveEx = swapOverrides[exId] ? (findExByNameAnywhere(swapOverrides[exId]) || ex) : ex;
 
-  const restTime = restOverrides[exId] || getSmartRestTime(ex, setIdx);
+  const restTime = restOverrides[exId] || getSmartRestTime(effectiveEx, setIdx);
   const set = ex.sets[setIdx];
   const setLabel = set?.note || `Set ${setIdx + 1}`;
   const nextSetIdx = setIdx + 1;
@@ -2508,7 +2556,7 @@ function completeSet(exId, setIdx, type) {
     const nextReps = nextSet.reps;
     // Get the current logged weight for the next set (or fallback to default)
     const nextWeight = sessionState[exId]?.weights?.[nextSetIdx] ?? nextSet.wt;
-    nextInfo = `Next: <strong>${ex.name} — ${nextLabel}</strong>`;
+    nextInfo = `Next: <strong>${swapOverrides[exId] || ex.name} — ${nextLabel}</strong>`;
     // Build next target pill
     const protocolTag = ex.hassan ? 'Hassan' : 'Straight';
     const burnoutTag = (nextSet.note === 'Burnout' || String(nextReps).toLowerCase().includes('burn')) ? ' · Burnout' : '';
@@ -2555,10 +2603,10 @@ function completeSet(exId, setIdx, type) {
     }
   }
 
-  const protocol = ex.hassan ? 'Hassan' : 'Straight Sets';
+  const protocol = effectiveEx.hassan ? 'Hassan' : 'Straight Sets';
   const burnoutLabel = (set.note === 'Burnout') ? ' · Burnout' : '';
-  const setInfoLine = `${setLabel} of ${ex.sets.length} · ${protocol}${burnoutLabel}`;
-  startTimer(ex.name, null, restTime, setInfoLine, nextInfo, nextTargetText);
+  const setInfoLine = `${setLabel} of ${effectiveEx.sets?.length || ex.sets.length} · ${protocol}${burnoutLabel}`;
+  startTimer(swapOverrides[exId] || ex.name, null, restTime, setInfoLine, nextInfo, nextTargetText);
 }
 
 async function setRestOverride(exId, seconds) {
@@ -2659,8 +2707,9 @@ async function saveWorkout(type, dayKey) {
       if (state.done) {
         exerciseFreq[ex.id] = (exerciseFreq[ex.id] || 0) + 1;
       }
+      const exSaveName = (swapOverrides[ex.id] || ex.name) + ' [' + sessionLocation + ']';
       exercises.push({
-        name: ex.name, muscle: ex.muscle,
+        name: exSaveName, muscle: ex.muscle,
         done: state.done || false,
         sets: ex.sets.map((s, i) => ({ weight: weights[i] || s.wt, reps: s.reps }))
       });
