@@ -2075,10 +2075,14 @@ function toggleClassMode() {
   classMode = !classMode;
   // Persist choice for today so page reload remembers
   const key = `class-mode-${getDateStr()}`;
-  if (classMode) {
-    window.storage.set(key, '1').catch(()=>{});
-  } else {
-    window.storage.delete(key).catch(()=>{});
+  try {
+    if (classMode) {
+      window.storage.set(key, '1').catch(()=>{ try { localStorage.setItem(key, '1'); } catch(e){} });
+    } else {
+      window.storage.delete(key).catch(()=>{ try { localStorage.removeItem(key); } catch(e){} });
+    }
+  } catch(e) {
+    try { if (classMode) { localStorage.setItem(key, '1'); } else { localStorage.removeItem(key); } } catch(e2){}
   }
   renderWorkoutView();
 }
