@@ -604,6 +604,7 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
     <div class="day-scroll" id="dayScroll"></div>
     <div class="g-progress"><div class="g-progress-fill" id="gBar"></div></div>
     <div id="recoveryModePill" class="rehab-mode-pill"></div>
+    <div id="vacationModePill" class="rehab-mode-pill"></div>
   </div>
 
   <div class="scroll-area" id="mainScroll"></div>
@@ -1011,6 +1012,88 @@ const WORKOUTS = {
   },
 };
 
+// FEAT-1 & FEAT-2: Mobility exercises for Wed/Sat recovery
+const MOBILITY_EXERCISES = {
+  wed: {
+    title: '🧘 WEDNESDAY MOBILITY (Optional)',
+    emoji: '🧘',
+    sections: [{
+      label: 'Hip Flexor & Activation', exercises: [
+        { id: 'm-wed-couch', name: 'Couch Stretch (Hip Flexor)', muscle: 'hips',
+          sets: [{wt:0,reps:'90s L'},{wt:0,reps:'90s R'}],
+          chips: {sets:'2 Sides', reps:'90 sec each'},
+          cue: 'One foot elevated on couch behind you, one knee forward on ground. Lean forward into hip flexor stretch. Keep torso upright. Breathe.' },
+        { id: 'm-wed-kneelunge', name: 'Kneeling Lunge Stretch', muscle: 'hips',
+          sets: [{wt:0,reps:'60s L'},{wt:0,reps:'60s R'}],
+          chips: {sets:'2 Sides', reps:'60 sec each'},
+          cue: 'Kneeling position. Back knee on ground. Front foot forward. Lean pelvis forward to feel hip flexor stretch. Optional: lift arms overhead.' },
+        { id: 'm-wed-clamshell', name: 'Banded Clamshells (Glute Activation)', muscle: 'glutes',
+          sets: [{wt:0,reps:'15 L'},{wt:0,reps:'15 R'}],
+          chips: {sets:'2 Sides', reps:'15 reps each'},
+          cue: 'Lying on side, band above knees. Keep feet together, open top knee. Feel glute medius working. Return controlled. No hip rolling.' },
+        { id: 'm-wed-90-90', name: '90/90 Stretch', muscle: 'hips',
+          sets: [{wt:0,reps:'90s L'},{wt:0,reps:'90s R'}],
+          chips: {sets:'2 Sides', reps:'90 sec each'},
+          cue: 'Sitting, both legs at 90°. Lean forward over front leg. Feel deep hip/glute stretch. Breathe and relax into it.' }
+      ]},
+      {
+        label: 'Thoracic Spine & Ankle Work', exercises: [
+        { id: 'm-wed-thoracic', name: 'Thoracic Spine Foam Roll', muscle: 'spine',
+          sets: [{wt:0,reps:'2 min'}],
+          chips: {sets:'1 Set', reps:'2 minutes'},
+          cue: 'Foam roller perpendicular across upper back. Support head with hands. Gently roll from mid-back to lower neck. Avoid rolling directly on spine.' },
+        { id: 'm-wed-threadneedle', name: 'Thread the Needle (Thoracic Rotation)', muscle: 'spine',
+          sets: [{wt:0,reps:'10 L'},{wt:0,reps:'10 R'}],
+          chips: {sets:'2 Sides', reps:'10 reps each'},
+          cue: 'Hands and knees. Slide one arm under body and across. Rotate torso to look back. Feel thoracic rotation. Return. Alternate sides.' },
+        { id: 'm-wed-ankledrill', name: 'Ankle Dorsiflexion Drill', muscle: 'calves',
+          sets: [{wt:0,reps:'30 sec'}],
+          chips: {sets:'1 Set', reps:'30 seconds'},
+          cue: 'Standing, lean forward with shins against a wall or edge. Keep heels down, dorsi-flex ankles (toes toward shins). Feel front of shin working.' }
+      ]}
+    ]
+  },
+  sat: {
+    title: '🧘 SATURDAY MOBILITY (Optional)',
+    emoji: '🧘',
+    sections: [{
+      label: 'Lower Body Depth & Flexibility', exercises: [
+        { id: 'm-sat-deepghd', name: 'Deep Goblet Squat Hold (Depth Work)', muscle: 'hips',
+          sets: [{wt:0,reps:'2 min'}],
+          chips: {sets:'1 Hold', reps:'2 minutes'},
+          cue: 'Hold light dumbbell at chest. Squat as deep as possible. Relax in the bottom position. Let gravity open hips. Upright torso. Breathe.' },
+        { id: 'm-sat-hamstretch', name: 'Seated Hamstring Stretch', muscle: 'hamstrings',
+          sets: [{wt:0,reps:'90s L'},{wt:0,reps:'90s R'}],
+          chips: {sets:'2 Sides', reps:'90 sec each'},
+          cue: 'Sitting, one leg extended, one bent. Lean forward from hips toward extended leg. Feel hamstring. Spine stays neutral.' },
+        { id: 'm-sat-hipflexor', name: 'Hip Flexor Release (Low Lunge)', muscle: 'hips',
+          sets: [{wt:0,reps:'90s L'},{wt:0,reps:'90s R'}],
+          chips: {sets:'2 Sides', reps:'90 sec each'},
+          cue: 'Low lunge, back knee down. Lean pelvis forward and down. Front leg stays vertical. Deep hip flexor stretch for tomorrow\'s leg day.' },
+        { id: 'm-sat-ankledrill2', name: 'Ankle Mobility Circles', muscle: 'calves',
+          sets: [{wt:0,reps:'20 circles each direction'}],
+          chips: {sets:'1 Set', reps:'20 each direction'},
+          cue: 'Standing. Lift one foot slightly. Rotate ankle in slow circles — 10 clockwise, 10 counter-clockwise. Both directions. Ankle prep for squats.' }
+      ]},
+      {
+        label: 'Upper Body Mobility (Recover from Friday Pull)', exercises: [
+        { id: 'm-sat-shoulderpass', name: 'Shoulder Pass-Through (Band)', muscle: 'shoulders',
+          sets: [{wt:0,reps:'15 reps'}],
+          chips: {sets:'1 Set', reps:'15 reps'},
+          cue: 'Light resistance band. Arms extended in front. Pass band overhead and behind, then forward. Focus on relaxed shoulders, full range.' },
+        { id: 'm-sat-chestopener', name: 'Chest Opener Stretch', muscle: 'chest',
+          sets: [{wt:0,reps:'60s'}],
+          chips: {sets:'1 Hold', reps:'60 seconds'},
+          cue: 'Standing in doorway or holding door frame at shoulder height. Step forward to feel chest stretch. Relax shoulders down.' },
+        { id: 'm-sat-backextension', name: 'Gentle Back Extension', muscle: 'spine',
+          sets: [{wt:0,reps:'10 reps'}],
+          chips: {sets:'1 Set', reps:'10 reps'},
+          cue: 'Standing, hands on lower back. Gently lean backward. Feel anterior chain opening. Not aggressive — just gentle decompression.' }
+      ]}
+    ]
+  }
+};
+
 const REST_CONTENT = {
   wed:{ title:'SPRINT DAY ⚡', icon:'⚡', sub:'Visceral fat weapon. 90-min/wk HIIT target.', tips:[
     {icon:'🚶',text:'AM fasted incline walk FIRST: 6% grade, 3.0 mph, 30–45 min. Zone 2 (108–128 bpm). Fasted keto state = maximum fat oxidation.'},
@@ -1275,6 +1358,159 @@ const RECOVERY_WORKOUTS = {
   }
 };
 
+// FEAT-8: Vacation Mode — gym-free maintenance routine
+const VACATION_WORKOUTS = {
+  daily: {
+    title: '🏖️ VACATION DAY', emoji: '🏖️', chips: ['Gym-free','Maintenance','Fat Loss'],
+    sections: [{
+      label: '🚶 Morning Fasted Movement (Non-negotiable)', exercises: [
+        { id: 'v-walk', name: 'Fasted Morning Walk/Run', muscle: 'cardio',
+          sets: [{wt:0,reps:'20-30 min'}],
+          chips: {sets:'1 Session', reps:'20-30 minutes'},
+          cue: 'No breakfast yet. Walk briskly or light jog for 20–30 minutes. Zone 2 (conversational pace). Empty stomach = maximum fat oxidation. Use this to offset higher eating.' },
+        { id: 'v-coffee', name: 'Black Coffee + Electrolytes', muscle: 'nutrition',
+          sets: [{wt:0,reps:'Optional'}],
+          chips: {sets:'', reps:'Optional'},
+          cue: 'Black coffee before walk (optional). Post-walk: electrolytes + water. Breakfast can wait 2–3 hours post-activity for better adherence.' }
+      ]},
+      {
+        label: '💪 Bodyweight Circuit (Choose One)', exercises: [
+        { id: 'v-bw', name: 'Hotel Room Bodyweight Circuit', muscle: 'full body',
+          sets: [{wt:0,reps:'4–6 rounds'}],
+          chips: {sets:'4-6 Rounds', reps:'40-60 minutes'},
+          cue: 'Rounds: 15 push-ups, 25 squats, 15 reverse lunges, 15 glute bridges, 30-sec plank. 60-90 sec rest between rounds. No equipment needed. Focus on perfect form and constant tension.' },
+        { id: 'v-hii t', name: 'Hotel HIIT (If Energized)', muscle: 'cardio',
+          sets: [{wt:0,reps:'4-6 rounds'}],
+          chips: {sets:'4-6 Rounds', reps:'20-30 minutes'},
+          cue: 'Alternating: 30-sec work / 30-sec rest. Rounds: jumping jacks, mountain climbers, burpees. High intensity = visceral fat loss. Lay towel down. Lower impact variation if needed.' }
+      ]},
+      {
+        label: '🧘 Recovery & Mobility', exercises: [
+        { id: 'v-yoga', name: 'Yoga or Stretching Session', muscle: 'flexibility',
+          sets: [{wt:0,reps:'15-20 min'}],
+          chips: {sets:'1 Session', reps:'15-20 minutes'},
+          cue: 'YouTube yoga class or just 20 min of stretching. Focus on hips, hamstrings, shoulders, lower back. Reduces stress, improves mobility for next day.' },
+        { id: 'v-walk2', name: 'Evening Zone 1 Walk (Optional)', muscle: 'cardio',
+          sets: [{wt:0,reps:'30-60 min'}],
+          chips: {sets:'Optional', reps:'30-60 minutes'},
+          cue: 'Easy evening stroll. Great conversation pace. Hit step count goal. Active recovery.' }
+      ]},
+      {
+        label: '🎯 Daily Nutrition (Keto adherence)', exercises: [
+        { id: 'v-protein', name: 'Hit Protein Target (175-200g)', muscle: 'nutrition',
+          sets: [{wt:0,reps:'Spread across meals'}],
+          chips: {sets:'', reps:'175-200g'},
+          cue: 'Protein at every meal. Vacation eating = ad-lib fat and carbs. Protein prevents lean mass loss and keeps you satiated. Prioritize this.' },
+        { id: 'v-hydration', name: 'Water + Electrolyte Goal', muscle: 'nutrition',
+          sets: [{wt:0,reps:'4-6 liters'}],
+          chips: {sets:'', reps:'4-6L water'},
+          cue: 'Drinking more than usual. Social meals, sun, activity = dehydration. Electrolytes matter more than you think. LMNT packets work.' }
+      ]}
+    ]
+  }
+};
+
+// FEAT-4: Alternative activities for Wed/Sat recovery days (instead of sprint)
+const ALTERNATIVE_ACTIVITIES = {
+  sprint: {
+    id: 'sprint',
+    title: '⚡ Sprint Timer',
+    emoji: '⚡',
+    description: 'High-intensity interval training on treadmill. 6 rounds × 30-sec max effort.',
+    type: 'timer'
+  },
+  yoga: {
+    id: 'yoga',
+    title: '🧘 Yoga Session',
+    emoji: '🧘',
+    description: 'Full-body flexibility, balance, and mindfulness. Peaceful recovery.',
+    type: 'timed',
+    duration: 45,
+    exercises: [
+      { id: 'a-yoga-warmup', name: 'Cat-Cow Stretches + Shoulder Rolls', muscle: 'warmup', sets: [{reps:'2 min'}], optional: true, cue: 'Loosen up joints.' },
+      { id: 'a-yoga-flow1', name: 'Sun Salutation Flow (5–8 rounds)', muscle: 'flow', sets: [{reps:'10 min'}], cue: 'Smooth, connected movement. Focus on breath.' },
+      { id: 'a-yoga-stand', name: 'Standing Poses (Warrior I, II, Triangle, Half Moon)', muscle: 'balance', sets: [{reps:'15 min'}], cue: 'Hold each for 5–8 breaths. Root your feet.' },
+      { id: 'a-yoga-hip', name: 'Hip Openers (Pigeon, Low Lunge, Butterfly)', muscle: 'hips', sets: [{reps:'10 min'}], cue: 'Breathe into tightness. No forcing.' },
+      { id: 'a-yoga-cool', name: 'Cool-Down (Child\'s Pose, Savasana)', muscle: 'cooldown', sets: [{reps:'8 min'}], optional: true, cue: 'Let your mind settle. Perfect stillness.' }
+    ]
+  },
+  pilates: {
+    id: 'pilates',
+    title: '💪 Pilates Session',
+    emoji: '💪',
+    description: 'Core-focused strength and stability. Mat-based or reformer.',
+    type: 'timed',
+    duration: 45,
+    exercises: [
+      { id: 'a-pilates-warmup', name: 'Breathing + Neutral Spine Awareness', muscle: 'warmup', sets: [{reps:'3 min'}], optional: true, cue: 'Deep lateral breathing. Engage your core.' },
+      { id: 'a-pilates-core', name: 'Core Circuit (Crunch, Scissors, Leg Lowers)', muscle: 'core', sets: [{reps:'15 min'}], cue: '2 sets × 10–15 reps each. Slow, controlled.' },
+      { id: 'a-pilates-stability', name: 'Stability Work (Plank Variations, Bridges)', muscle: 'stability', sets: [{reps:'15 min'}], cue: 'Side plank, single-leg bridge. Hold 30–60 sec.' },
+      { id: 'a-pilates-stretch', name: 'Pilates Stretching (Spine Stretch, Hip Flexor)', muscle: 'flexibility', sets: [{reps:'10 min'}], cue: 'Lengthen. Release tension.' },
+      { id: 'a-pilates-cool', name: 'Cool-Down + Roll Down', muscle: 'cooldown', sets: [{reps:'2 min'}], optional: true, cue: 'Vertebra by vertebra. Relax.' }
+    ]
+  },
+  dance: {
+    id: 'dance',
+    title: '💃 Dance Cardio',
+    emoji: '💃',
+    description: 'Fun, high-energy cardio through dance. Music-driven movement.',
+    type: 'timed',
+    duration: 45,
+    exercises: [
+      { id: 'a-dance-warmup', name: 'Music Warmup + Groove Finding', muscle: 'warmup', sets: [{reps:'5 min'}], optional: true, cue: 'Feel the beat. Light movement to get loose.' },
+      { id: 'a-dance-hiphop', name: 'Hip-Hop Cardio Combos', muscle: 'cardio', sets: [{reps:'12 min'}], cue: 'Fast-paced, fun. Follow along or freestyle. Keep moving.' },
+      { id: 'a-dance-belly', name: 'Belly Dance or Latin Flow', muscle: 'cardio', sets: [{reps:'10 min'}], cue: 'Isolate your hips and core. Rhythmic, controlled.' },
+      { id: 'a-dance-freeflow', name: 'Free-Style Dance (Your Favorite Song)', muscle: 'cardio', sets: [{reps:'12 min'}], cue: 'No choreography. Just feel the music and move your body.' },
+      { id: 'a-dance-cool', name: 'Cool-Down Walk to Slower Song', muscle: 'cooldown', sets: [{reps:'6 min'}], optional: true, cue: 'Bring heart rate down. Smile.' }
+    ]
+  },
+  boxing: {
+    id: 'boxing',
+    title: '🥊 Boxing/Kickboxing',
+    emoji: '🥊',
+    description: 'Heavy bag, mitt work, or shadowboxing. Stress relief + cardio.',
+    type: 'timed',
+    duration: 45,
+    exercises: [
+      { id: 'a-box-warmup', name: 'Joint Mobility + Light Shadowboxing', muscle: 'warmup', sets: [{reps:'5 min'}], optional: true, cue: 'Loosen shoulders, hips. Practice footwork.' },
+      { id: 'a-box-combos', name: 'Heavy Bag Combos (3 min on / 1 min rest)', muscle: 'cardio', sets: [{reps:'12 min'}], cue: '4 rounds. Jab-cross, hooks, uppercuts. Explosive.' },
+      { id: 'a-box-speed', name: 'Speed Ball or Mitt Work', muscle: 'cardio', sets: [{reps:'10 min'}], cue: 'Hand speed, timing, precision. Stay sharp.' },
+      { id: 'a-box-kicks', name: 'Kickboxing (Kicks + Punches)', muscle: 'cardio', sets: [{reps:'12 min'}], cue: 'Front kicks, roundhouse kicks, knees. Core engaged.' },
+      { id: 'a-box-cool', name: 'Cool-Down + Stretch (Shoulders, Hips, Legs)', muscle: 'cooldown', sets: [{reps:'6 min'}], optional: true, cue: 'Release tension. Breathe.' }
+    ]
+  }
+};
+
+let selectedActivity = 'sprint'; // FEAT-4: Track which activity is selected for the day
+
+// FEAT-7: Back Recovery Mode safety and auto-substitution rules
+const BACK_RECOVERY_RULES = {
+  risky_patterns: ['deadlift', 'barbell row', 'squat', 'bend over', 'spinal load', 'rotation'],
+  safe_substitutions: {
+    'deadlift': 'Trap Bar RDL (lighter load, neutral grip)',
+    'Barbell Bent Over Row': 'Supported T-Bar Row (chest-supported)',
+    'Barbell Squat': 'Goblet Squat or Leg Press (back support)',
+    'Dumbbell Row': 'Landmine Row (neutral angle)',
+    'Power Clean': 'Trapbar Deadlift (lighter weight)',
+    'Hack Squat': 'Leg Press (back support)',
+    'Leg Press': 'Machine Squat (guided path)',
+    'Cable Crunch': 'Pallof Press (anti-rotation)',
+    'V-Taper Lat Pulldown': 'Chest-Supported Row'
+  }
+};
+
+function checkBackRecoverySafety(exName) {
+  const lower = exName.toLowerCase();
+  for (let pattern of BACK_RECOVERY_RULES.risky_patterns) {
+    if (lower.includes(pattern)) return false;
+  }
+  return true;
+}
+
+function getBackRecoverySuggestion(exName) {
+  return BACK_RECOVERY_RULES.safe_substitutions[exName] || null;
+}
+
 function toggleBackRecoveryMode() {
   backRecoveryMode = !backRecoveryMode;
   try { localStorage.setItem('back-recovery-mode', backRecoveryMode ? '1' : ''); } catch(e) {}
@@ -1287,10 +1523,92 @@ function updateRecoveryModePill() {
   if (!pill) return;
   if (backRecoveryMode) {
     pill.className = 'rehab-mode-pill rehab-active';
-    pill.innerHTML = `<span class="rehab-pill-label">🦴 BACK RECOVERY MODE ON</span><button class="rehab-pill-toggle" onclick="toggleBackRecoveryMode()">Deactivate</button>`;
+    pill.innerHTML = `<span class="rehab-pill-label">🦴 BACK RECOVERY MODE ON</span>
+      <button class="rehab-pill-toggle" onclick="toggleBackRecoveryMode()">Deactivate</button>
+      <button class="rehab-pill-toggle" onclick="showBackRecoveryGuide()" style="background:rgba(100,150,255,0.3);color:#64b6ff;margin-left:6px;">?</button>`;
   } else {
     pill.className = 'rehab-mode-pill';
     pill.innerHTML = `<button class="rehab-activate-btn" onclick="toggleBackRecoveryMode()">🦴 Back Recovery Mode</button>`;
+  }
+}
+
+// FEAT-7: Show Back Recovery Mode guidelines and safety info
+function showBackRecoveryGuide() {
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.style.cssText = `
+    position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);
+    display:flex;align-items:center;justify-content:center;z-index:10000;padding:20px;
+  `;
+
+  const content = document.createElement('div');
+  content.style.cssText = `
+    background:var(--bg);color:var(--white);border-radius:8px;padding:20px;
+    max-width:500px;max-height:80vh;overflow-y:auto;
+    border:1px solid var(--dim1);
+  `;
+
+  content.innerHTML = `
+    <div style="font-size:18px;font-weight:bold;margin-bottom:12px;">🦴 Back Recovery Mode Guide</div>
+    <div style="font-size:12px;color:var(--dim2);line-height:1.6;margin-bottom:16px;">
+      <div style="margin-bottom:12px;">
+        <strong>Purpose:</strong> Protects your spine during recovery by:
+        <ul style="margin:6px 0;padding-left:20px;">
+          <li>Avoiding spinal compression exercises</li>
+          <li>Preventing loaded trunk rotation</li>
+          <li>Minimizing heavy forward bends with load</li>
+          <li>Suggesting spine-safe alternatives</li>
+        </ul>
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <strong>Exercises to Avoid:</strong><br>
+        Deadlifts, Barbell Rows, Barbell Squats, Power Cleans, Heavy Rotational exercises
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <strong>Safe Alternatives:</strong><br>
+        Trap Bar RDL, Supported Rows, Leg Press, Anti-rotation work (Pallof), Isometric holds
+      </div>
+
+      <div>
+        <strong>Tips:</strong>
+        <ul style="margin:6px 0;padding-left:20px;">
+          <li>Yellow alerts show risky exercises with suggestions</li>
+          <li>Reduce loads by 40-50% during early recovery</li>
+          <li>Prioritize form over intensity</li>
+          <li>Log pain/stiffness in session notes</li>
+        </ul>
+      </div>
+    </div>
+    <button onclick="this.closest('.modal-overlay').remove()" style="
+      width:100%;padding:10px;background:var(--accent);color:var(--black);
+      border:none;border-radius:4px;font-weight:bold;cursor:pointer;
+    ">Got it</button>
+  `;
+
+  modal.appendChild(content);
+  modal.onclick = (e) => e.target === modal && modal.remove();
+  document.body.appendChild(modal);
+}
+
+// FEAT-8: Vacation Mode toggle and pill
+function toggleVacationMode() {
+  vacationMode = !vacationMode;
+  try { localStorage.setItem('vacation-mode', vacationMode ? '1' : ''); } catch(e) {}
+  updateVacationModePill();
+  renderWorkoutView();
+}
+
+function updateVacationModePill() {
+  const pill = document.getElementById('vacationModePill');
+  if (!pill) return;
+  if (vacationMode) {
+    pill.className = 'rehab-mode-pill rehab-active';
+    pill.innerHTML = `<span class="rehab-pill-label">🏖️ VACATION MODE ON</span><button class="rehab-pill-toggle" onclick="toggleVacationMode()">Deactivate</button>`;
+  } else {
+    pill.className = 'rehab-mode-pill';
+    pill.innerHTML = `<button class="rehab-activate-btn" onclick="toggleVacationMode()">🏖️ Vacation Mode</button>`;
   }
 }
 
@@ -1317,6 +1635,7 @@ let prStreaks = {};     // { exId: count } — consecutive sessions with new PRs
 let notesStore = {};   // { exId: { todayNote, lastWeekNote, weekCount } }
 let fortCancelled = false;
 let backRecoveryMode = false;
+let vacationMode = false; // FEAT-8: Gym-free maintenance routine
 let dayTypeOverride = {}; // { dateStr: 'upper'|'push'|'pull'|'legs'|'fort'|'flex' }
 let prReadyFlags = new Set(); // exercise names flagged pr_ready=true in Supabase
 let sessionLocation = 'HG'; // 'HG' = Home Gym, 'LT' = Lifetime Fitness
@@ -1446,6 +1765,19 @@ async function loadAll() {
     backRecoveryMode = !!(v);
   } catch(e) { backRecoveryMode = false; }
   updateRecoveryModePill();
+
+  // FEAT-8: Restore vacation mode
+  try {
+    const v = localStorage.getItem('vacation-mode');
+    vacationMode = !!(v);
+  } catch(e) { vacationMode = false; }
+  updateVacationModePill();
+
+  // FEAT-4: Restore selected activity preference
+  try {
+    const a = localStorage.getItem('selected-activity');
+    selectedActivity = a || 'sprint';
+  } catch(e) { selectedActivity = 'sprint'; }
 
   // Restore day type overrides
   try {
@@ -1646,6 +1978,11 @@ function renderWorkoutView() {
   const day = WEEK[currentDayIdx];
   const scroll = document.getElementById('mainScroll');
 
+  // FEAT-8: Vacation Mode — gym-free routine every day
+  if (vacationMode) {
+    renderVacationDay(); return;
+  }
+
   // Back Recovery Mode override — intercept rest days (Wed/Sat) and normal workout days
   if (backRecoveryMode && RECOVERY_WORKOUTS[day.key]) {
     renderRecoveryDay(day.key); return;
@@ -1825,6 +2162,30 @@ function renderWorkoutView() {
 
   // Notes + Save
   const savedNotes = (sessionState['__notes__'] || {}).notes || '';
+  const watch = sessionState['__watch__'] || {};
+  // FEAT-5: Add Galaxy Watch data entry to all days
+  html += `<div class="watch-widget">
+    <div class="watch-title">⌚ GALAXY WATCH DATA (Optional)</div>
+    <div class="watch-fields">
+      <div class="watch-field">
+        <div class="wf-label">Avg HR (bpm)</div>
+        <input class="wf-input" type="number" placeholder="—" value="${watch.avgHr||''}" inputmode="numeric" onchange="updateWatch('avgHr',this.value)">
+      </div>
+      <div class="watch-field">
+        <div class="wf-label">Max HR (bpm)</div>
+        <input class="wf-input" type="number" placeholder="—" value="${watch.maxHr||''}" inputmode="numeric" onchange="updateWatch('maxHr',this.value)">
+      </div>
+      <div class="watch-field">
+        <div class="wf-label">Calories</div>
+        <input class="wf-input" type="number" placeholder="—" value="${watch.calories||''}" inputmode="numeric" onchange="updateWatch('calories',this.value)">
+      </div>
+      <div class="watch-field">
+        <div class="wf-label">Duration (min)</div>
+        <input class="wf-input" type="number" placeholder="—" value="${watch.duration||''}" inputmode="numeric" onchange="updateWatch('duration',this.value)">
+      </div>
+    </div>
+  </div>`;
+
   html += `<div class="notes-section">
     <div class="notes-label">Session Notes</div>
     <textarea class="notes-input" id="sessionNotes" placeholder="How did it feel? Any PRs? Energy? Pain?" oninput="saveNotes(this.value)">${savedNotes}</textarea>
@@ -1887,6 +2248,20 @@ function buildExCard(ex, isDone, savedWeights, hasPR, type) {
 
   let detail = '';
   if (ex.warnSpinal) detail += `<div class="warn-spinal-tag">⚠️ SPINAL LOAD — Monitor form closely</div>`;
+
+  // FEAT-7: Back Recovery Mode safety warnings and suggestions
+  if (backRecoveryMode && !checkBackRecoverySafety(ex.name)) {
+    const suggestion = getBackRecoverySuggestion(ex.name);
+    let warningHtml = `<div style="background:rgba(255,100,100,0.15);border:1px solid rgba(255,100,100,0.4);border-radius:4px;padding:10px;margin-bottom:10px;color:#ff6464;">
+      <div style="font-weight:bold;margin-bottom:6px;">🚫 Back Recovery Alert</div>
+      <div>This exercise may stress your spine during recovery mode.</div>`;
+    if (suggestion) {
+      warningHtml += `<div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,100,100,0.4);">✓ Consider: <strong>${suggestion}</strong></div>`;
+    }
+    warningHtml += `</div>`;
+    detail += warningHtml;
+  }
+
   if (ex.hassan) detail += `<div class="hassan-tag">⚡ Hassan Protocol — To Failure</div>`;
   if (ex.ladder?.length) {
     detail += `<div class="ladder-display">${ex.ladder.map((s,i) => `<span class="ladder-step">${s}</span>${i<ex.ladder.length-1?'<span class="ladder-arrow">→</span>':''}`).join('')}</div>`;
@@ -1951,6 +2326,14 @@ function buildExCard(ex, isDone, savedWeights, hasPR, type) {
   const btnState = isDone ? 'done-state' : '';
   const btnText = isDone ? '✓ COMPLETED' : 'MARK COMPLETE + START REST TIMER';
   detail += `<button class="complete-btn ${btnState}" id="btn-${ex.id}" onclick="completeExBtn('${ex.id}','${type}')">${btnText}</button>`;
+
+  // FEAT-6: Add skip button for optional exercises
+  if (ex.optional) {
+    const isSkipped = sessionState[ex.id]?.skipped || false;
+    const skipBtnState = isSkipped ? 'skip-state' : '';
+    const skipBtnText = isSkipped ? '⊘ SKIPPED' : 'SKIP EXERCISE';
+    detail += `<button class="skip-btn ${skipBtnState}" id="skip-${ex.id}" onclick="skipExercise('${ex.id}','${type}')" style="background:var(--dim1);color:var(--dim2);margin-top:8px;">${skipBtnText}</button>`;
+  }
 
   return `<div class="ex-card ${doneClass} ${prCardClass} ${prReadyClass}" id="card-${ex.id}" data-exid="${ex.id}">
     <div class="ex-hdr" onclick="toggleCard('${ex.id}')">
@@ -2232,6 +2615,27 @@ function completeExBtn(exId, type) {
     updateDayProgressDOM(type);
     startTimerForEx(exId, type);
   }
+}
+
+// FEAT-6: Skip optional exercise without requiring completion
+function skipExercise(exId, type) {
+  const card = document.getElementById(`card-${exId}`);
+  if (!sessionState[exId]) sessionState[exId] = {};
+
+  const alreadySkipped = sessionState[exId].skipped;
+  if (alreadySkipped) {
+    // Toggle off (un-skip)
+    sessionState[exId].skipped = false;
+    const btn = document.getElementById(`skip-${exId}`);
+    if (btn) { btn.textContent = 'SKIP EXERCISE'; btn.classList.remove('skip-state'); }
+  } else {
+    // Mark as skipped
+    sessionState[exId].skipped = true;
+    const btn = document.getElementById(`skip-${exId}`);
+    if (btn) { btn.textContent = '⊘ SKIPPED'; btn.classList.add('skip-state'); }
+  }
+  saveSession();
+  updateDayProgressDOM(type);
 }
 
 function updateWeight(exId, setIdx, val) {
@@ -2725,7 +3129,7 @@ async function saveWorkout(type, dayKey) {
     emoji: workout.emoji,
     exercises, newPRs,
     notes: (sessionState['__notes__']||{}).notes || '',
-    watch: { avgHr: watch.avgHr||null, maxHr: watch.maxHr||null, calories: watch.calories||null, zones: watch.zones||null, peakTiming: watch.peakTiming||null, pattern: watch.pattern||null },
+    watch: { avgHr: watch.avgHr||null, maxHr: watch.maxHr||null, calories: watch.calories||null, duration: watch.duration||null, zones: watch.zones||null, peakTiming: watch.peakTiming||null, pattern: watch.pattern||null },
     duration: getSessionDuration(),
     savedAt: new Date().toISOString()
   };
@@ -2934,6 +3338,14 @@ function resetDay() {
 function saveNotes(val) {
   if (!sessionState['__notes__']) sessionState['__notes__'] = {};
   sessionState['__notes__'].notes = val;
+  saveSession();
+}
+
+// FEAT-5: Update Galaxy Watch data
+function updateWatch(field, val) {
+  if (!sessionState['__watch__']) sessionState['__watch__'] = {};
+  const numVal = val ? parseInt(val) : null;
+  sessionState['__watch__'][field] = numVal;
   saveSession();
 }
 
@@ -3768,12 +4180,75 @@ function renderRecoveryDay(dayKey) {
   if (ws.maxHr) updateZoneLabel('zone-max', ws.maxHr);
 }
 
+// FEAT-8: Render vacation mode workout (gym-free routine)
+function renderVacationDay() {
+  const vacation = VACATION_WORKOUTS.daily;
+  const scroll = document.getElementById('mainScroll');
+  let html = `
+  <div style="padding:13px">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1px;margin-bottom:8px;color:var(--white);">${vacation.title}</div>
+    <div style="font-size:11px;color:var(--dim2);margin-bottom:14px;">🏖️ Gym-free maintenance routine. Hit protein, move daily, maintain muscle.</div>
+  </div>`;
+
+  // Watch data for vacation days
+  const watch = sessionState['__watch__'] || {};
+  html += `<div class="watch-widget">
+    <div class="watch-title">⌚ GALAXY WATCH DATA (Optional)</div>
+    <div class="watch-fields">
+      <div class="watch-field">
+        <div class="wf-label">Avg HR (bpm)</div>
+        <input class="wf-input" type="number" placeholder="—" value="${watch.avgHr||''}" inputmode="numeric" onchange="updateWatch('avgHr',this.value)">
+      </div>
+      <div class="watch-field">
+        <div class="wf-label">Max HR (bpm)</div>
+        <input class="wf-input" type="number" placeholder="—" value="${watch.maxHr||''}" inputmode="numeric" onchange="updateWatch('maxHr',this.value)">
+      </div>
+      <div class="watch-field">
+        <div class="wf-label">Calories</div>
+        <input class="wf-input" type="number" placeholder="—" value="${watch.calories||''}" inputmode="numeric" onchange="updateWatch('calories',this.value)">
+      </div>
+      <div class="watch-field">
+        <div class="wf-label">Duration (min)</div>
+        <input class="wf-input" type="number" placeholder="—" value="${watch.duration||''}" inputmode="numeric" onchange="updateWatch('duration',this.value)">
+      </div>
+    </div>
+  </div>`;
+
+  // Render vacation exercises
+  vacation.sections.forEach(section => {
+    html += `<div style="padding:0 13px;"><div class="sec-label">${section.label}</div></div>`;
+    section.exercises.forEach(ex => {
+      const isDone = sessionState[ex.id]?.done || false;
+      const savedWeights = sessionState[ex.id]?.weights || ex.sets.map(s => s.wt);
+      html += buildExCard(ex, isDone, savedWeights, false, 'rest');
+    });
+  });
+
+  // Save button for vacation day
+  const savedNotes = (sessionState['__notes__'] || {}).notes || '';
+  html += `
+  <div class="notes-section" style="padding:0 13px">
+    <div class="notes-label">Session Notes</div>
+    <textarea class="notes-input" id="sessionNotes" placeholder="How did it feel? Any observations?" oninput="saveNotes(this.value)">${savedNotes}</textarea>
+    <button class="save-btn" id="saveBtn" onclick="saveWorkout('rest','vacation')">💾 SAVE VACATION SESSION</button>
+  </div>
+  <button class="reset-btn" onclick="resetDay()">↺ Reset Vacation Day</button>`;
+
+  scroll.innerHTML = html;
+  scroll.scrollTop = 0;
+}
+
 function renderRestDay(dayKey) {
   const content = REST_CONTENT[dayKey] || REST_CONTENT.wed;
   const isSprint = (dayKey === 'wed' || dayKey === 'sat');
 
   if (isSprint) {
-    renderSprintDay(dayKey, content);
+    // FEAT-4: Show activity selector for sprint days
+    if (!selectedActivity || selectedActivity === 'sprint') {
+      renderSprintDay(dayKey, content);
+    } else {
+      renderAlternativeActivity(selectedActivity);
+    }
   } else {
     document.getElementById('mainScroll').innerHTML = `
     <div class="rest-card">
@@ -3898,7 +4373,101 @@ function renderSprintDay(dayKey, content) {
 
   <button class="save-btn" id="sprintSaveBtn" onclick="saveSprintWorkout('${dayKey}')" style="margin:13px; display:none">💾 SAVE SPRINT SESSION</button>`;
 
+  // FEAT-1 & FEAT-2: Add mobility exercises for Wed/Sat
+  const mobilityContent = MOBILITY_EXERCISES[dayKey];
+  if (mobilityContent) {
+    document.getElementById('mainScroll').innerHTML += `
+    <div style="padding:13px">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px;margin:16px 0 8px;color:var(--white);">${mobilityContent.title}</div>
+      <div style="font-size:10px;color:var(--dim2);margin-bottom:12px;">Optional — mobility is always shown but never required. Helps recovery and feeds next day's training.</div>
+    </div>`;
+
+    mobilityContent.sections.forEach(section => {
+      document.getElementById('mainScroll').innerHTML += `<div style="padding:0 13px;"><div class="sec-label">${section.label}</div></div>`;
+      section.exercises.forEach(ex => {
+        const isDone = sessionState[ex.id]?.done || false;
+        const savedWeights = sessionState[ex.id]?.weights || ex.sets.map(s => s.wt);
+        document.getElementById('mainScroll').innerHTML += buildExCard(ex, isDone, savedWeights, false, 'rest');
+      });
+    });
+  }
+
   buildRoundDots();
+}
+
+// FEAT-4: Render selected alternative activity (yoga, pilates, dance, boxing)
+function renderAlternativeActivity(activityId) {
+  const activity = ALTERNATIVE_ACTIVITIES[activityId];
+  if (!activity) return renderSprintDay('wed', REST_CONTENT.wed);
+
+  const scroll = document.getElementById('mainScroll');
+  const isDone = sessionState['activity_done'] || false;
+
+  let html = `
+  <div style="padding:13px">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1px;margin-bottom:8px;color:var(--white);">${activity.emoji} ${activity.title.toUpperCase()}</div>
+    <div style="font-size:11px;color:var(--dim2);margin-bottom:14px;">${activity.description}</div>
+  </div>`;
+
+  // Activity selector pill
+  html += `<div style="padding:0 13px;margin-bottom:8px;display:flex;gap:6px;flex-wrap:wrap;justify-content:center;">`;
+  Object.values(ALTERNATIVE_ACTIVITIES).forEach(a => {
+    const active = a.id === activityId ? 'style="background:var(--accent);color:var(--black);font-weight:bold"' : '';
+    html += `<button class="pill" ${active} onclick="selectActivity('${a.id}')" style="padding:6px 12px;border-radius:4px;border:1px solid var(--dim1);background:var(--dim3);cursor:pointer;">${a.emoji} ${a.id.toUpperCase()}</button>`;
+  });
+  html += `</div>`;
+
+  // Watch data
+  const watch = sessionState['__watch__'] || {};
+  html += `<div class="watch-widget">
+    <div class="watch-title">⌚ GALAXY WATCH DATA (Optional)</div>
+    <div class="watch-fields">
+      <div class="watch-field">
+        <div class="wf-label">Avg HR (bpm)</div>
+        <input class="wf-input" type="number" placeholder="—" value="${watch.avgHr||''}" inputmode="numeric" onchange="updateWatch('avgHr',this.value)">
+      </div>
+      <div class="watch-field">
+        <div class="wf-label">Max HR (bpm)</div>
+        <input class="wf-input" type="number" placeholder="—" value="${watch.maxHr||''}" inputmode="numeric" onchange="updateWatch('maxHr',this.value)">
+      </div>
+      <div class="watch-field">
+        <div class="wf-label">Calories</div>
+        <input class="wf-input" type="number" placeholder="—" value="${watch.calories||''}" inputmode="numeric" onchange="updateWatch('calories',this.value)">
+      </div>
+      <div class="watch-field">
+        <div class="wf-label">Duration (min)</div>
+        <input class="wf-input" type="number" placeholder="—" value="${watch.duration||''}" inputmode="numeric" onchange="updateWatch('duration',this.value)">
+      </div>
+    </div>
+  </div>`;
+
+  // Render activity exercises as checklist
+  if (activity.exercises) {
+    html += `<div style="padding:0 13px;"><div class="sec-label">📋 Activity Breakdown</div></div>`;
+    activity.exercises.forEach(ex => {
+      const isDone = sessionState[ex.id]?.done || false;
+      html += buildExCard(ex, isDone, [], false, 'rest');
+    });
+  }
+
+  // Save and reset buttons
+  const savedNotes = (sessionState['__notes__'] || {}).notes || '';
+  html += `
+  <div class="notes-section" style="padding:0 13px">
+    <div class="notes-label">Session Notes</div>
+    <textarea class="notes-input" id="sessionNotes" placeholder="How did it feel?" oninput="saveNotes(this.value)">${savedNotes}</textarea>
+    <button class="save-btn" id="saveBtn" onclick="saveWorkout('rest','${activityId}')">💾 SAVE ${activity.title.toUpperCase()}</button>
+  </div>
+  <button class="reset-btn" onclick="resetDay()">↺ Reset Activity</button>`;
+
+  scroll.innerHTML = html;
+  scroll.scrollTop = 0;
+}
+
+function selectActivity(activityId) {
+  selectedActivity = activityId;
+  try { localStorage.setItem('selected-activity', activityId); } catch(e) {}
+  renderWorkoutView();
 }
 
 function buildRoundDots() {
