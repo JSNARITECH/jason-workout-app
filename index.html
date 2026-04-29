@@ -604,6 +604,7 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
     <div class="day-scroll" id="dayScroll"></div>
     <div class="g-progress"><div class="g-progress-fill" id="gBar"></div></div>
     <div id="recoveryModePill" class="rehab-mode-pill"></div>
+    <div id="vacationModePill" class="rehab-mode-pill"></div>
   </div>
 
   <div class="scroll-area" id="mainScroll"></div>
@@ -1357,6 +1358,58 @@ const RECOVERY_WORKOUTS = {
   }
 };
 
+// FEAT-8: Vacation Mode — gym-free maintenance routine
+const VACATION_WORKOUTS = {
+  daily: {
+    title: '🏖️ VACATION DAY', emoji: '🏖️', chips: ['Gym-free','Maintenance','Fat Loss'],
+    sections: [{
+      label: '🚶 Morning Fasted Movement (Non-negotiable)', exercises: [
+        { id: 'v-walk', name: 'Fasted Morning Walk/Run', muscle: 'cardio',
+          sets: [{wt:0,reps:'20-30 min'}],
+          chips: {sets:'1 Session', reps:'20-30 minutes'},
+          cue: 'No breakfast yet. Walk briskly or light jog for 20–30 minutes. Zone 2 (conversational pace). Empty stomach = maximum fat oxidation. Use this to offset higher eating.' },
+        { id: 'v-coffee', name: 'Black Coffee + Electrolytes', muscle: 'nutrition',
+          sets: [{wt:0,reps:'Optional'}],
+          chips: {sets:'', reps:'Optional'},
+          cue: 'Black coffee before walk (optional). Post-walk: electrolytes + water. Breakfast can wait 2–3 hours post-activity for better adherence.' }
+      ]},
+      {
+        label: '💪 Bodyweight Circuit (Choose One)', exercises: [
+        { id: 'v-bw', name: 'Hotel Room Bodyweight Circuit', muscle: 'full body',
+          sets: [{wt:0,reps:'4–6 rounds'}],
+          chips: {sets:'4-6 Rounds', reps:'40-60 minutes'},
+          cue: 'Rounds: 15 push-ups, 25 squats, 15 reverse lunges, 15 glute bridges, 30-sec plank. 60-90 sec rest between rounds. No equipment needed. Focus on perfect form and constant tension.' },
+        { id: 'v-hii t', name: 'Hotel HIIT (If Energized)', muscle: 'cardio',
+          sets: [{wt:0,reps:'4-6 rounds'}],
+          chips: {sets:'4-6 Rounds', reps:'20-30 minutes'},
+          cue: 'Alternating: 30-sec work / 30-sec rest. Rounds: jumping jacks, mountain climbers, burpees. High intensity = visceral fat loss. Lay towel down. Lower impact variation if needed.' }
+      ]},
+      {
+        label: '🧘 Recovery & Mobility', exercises: [
+        { id: 'v-yoga', name: 'Yoga or Stretching Session', muscle: 'flexibility',
+          sets: [{wt:0,reps:'15-20 min'}],
+          chips: {sets:'1 Session', reps:'15-20 minutes'},
+          cue: 'YouTube yoga class or just 20 min of stretching. Focus on hips, hamstrings, shoulders, lower back. Reduces stress, improves mobility for next day.' },
+        { id: 'v-walk2', name: 'Evening Zone 1 Walk (Optional)', muscle: 'cardio',
+          sets: [{wt:0,reps:'30-60 min'}],
+          chips: {sets:'Optional', reps:'30-60 minutes'},
+          cue: 'Easy evening stroll. Great conversation pace. Hit step count goal. Active recovery.' }
+      ]},
+      {
+        label: '🎯 Daily Nutrition (Keto adherence)', exercises: [
+        { id: 'v-protein', name: 'Hit Protein Target (175-200g)', muscle: 'nutrition',
+          sets: [{wt:0,reps:'Spread across meals'}],
+          chips: {sets:'', reps:'175-200g'},
+          cue: 'Protein at every meal. Vacation eating = ad-lib fat and carbs. Protein prevents lean mass loss and keeps you satiated. Prioritize this.' },
+        { id: 'v-hydration', name: 'Water + Electrolyte Goal', muscle: 'nutrition',
+          sets: [{wt:0,reps:'4-6 liters'}],
+          chips: {sets:'', reps:'4-6L water'},
+          cue: 'Drinking more than usual. Social meals, sun, activity = dehydration. Electrolytes matter more than you think. LMNT packets work.' }
+      ]}
+    ]
+  }
+};
+
 function toggleBackRecoveryMode() {
   backRecoveryMode = !backRecoveryMode;
   try { localStorage.setItem('back-recovery-mode', backRecoveryMode ? '1' : ''); } catch(e) {}
@@ -1373,6 +1426,26 @@ function updateRecoveryModePill() {
   } else {
     pill.className = 'rehab-mode-pill';
     pill.innerHTML = `<button class="rehab-activate-btn" onclick="toggleBackRecoveryMode()">🦴 Back Recovery Mode</button>`;
+  }
+}
+
+// FEAT-8: Vacation Mode toggle and pill
+function toggleVacationMode() {
+  vacationMode = !vacationMode;
+  try { localStorage.setItem('vacation-mode', vacationMode ? '1' : ''); } catch(e) {}
+  updateVacationModePill();
+  renderWorkoutView();
+}
+
+function updateVacationModePill() {
+  const pill = document.getElementById('vacationModePill');
+  if (!pill) return;
+  if (vacationMode) {
+    pill.className = 'rehab-mode-pill rehab-active';
+    pill.innerHTML = `<span class="rehab-pill-label">🏖️ VACATION MODE ON</span><button class="rehab-pill-toggle" onclick="toggleVacationMode()">Deactivate</button>`;
+  } else {
+    pill.className = 'rehab-mode-pill';
+    pill.innerHTML = `<button class="rehab-activate-btn" onclick="toggleVacationMode()">🏖️ Vacation Mode</button>`;
   }
 }
 
@@ -1399,6 +1472,7 @@ let prStreaks = {};     // { exId: count } — consecutive sessions with new PRs
 let notesStore = {};   // { exId: { todayNote, lastWeekNote, weekCount } }
 let fortCancelled = false;
 let backRecoveryMode = false;
+let vacationMode = false; // FEAT-8: Gym-free maintenance routine
 let dayTypeOverride = {}; // { dateStr: 'upper'|'push'|'pull'|'legs'|'fort'|'flex' }
 let prReadyFlags = new Set(); // exercise names flagged pr_ready=true in Supabase
 let sessionLocation = 'HG'; // 'HG' = Home Gym, 'LT' = Lifetime Fitness
@@ -1528,6 +1602,13 @@ async function loadAll() {
     backRecoveryMode = !!(v);
   } catch(e) { backRecoveryMode = false; }
   updateRecoveryModePill();
+
+  // FEAT-8: Restore vacation mode
+  try {
+    const v = localStorage.getItem('vacation-mode');
+    vacationMode = !!(v);
+  } catch(e) { vacationMode = false; }
+  updateVacationModePill();
 
   // Restore day type overrides
   try {
@@ -1727,6 +1808,11 @@ function renderCurrentView() {
 function renderWorkoutView() {
   const day = WEEK[currentDayIdx];
   const scroll = document.getElementById('mainScroll');
+
+  // FEAT-8: Vacation Mode — gym-free routine every day
+  if (vacationMode) {
+    renderVacationDay(); return;
+  }
 
   // Back Recovery Mode override — intercept rest days (Wed/Sat) and normal workout days
   if (backRecoveryMode && RECOVERY_WORKOUTS[day.key]) {
@@ -3880,6 +3966,64 @@ function renderRecoveryDay(dayKey) {
   startSessionTimer();
   if (ws.avgHr) updateZoneLabel('zone-avg', ws.avgHr);
   if (ws.maxHr) updateZoneLabel('zone-max', ws.maxHr);
+}
+
+// FEAT-8: Render vacation mode workout (gym-free routine)
+function renderVacationDay() {
+  const vacation = VACATION_WORKOUTS.daily;
+  const scroll = document.getElementById('mainScroll');
+  let html = `
+  <div style="padding:13px">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1px;margin-bottom:8px;color:var(--white);">${vacation.title}</div>
+    <div style="font-size:11px;color:var(--dim2);margin-bottom:14px;">🏖️ Gym-free maintenance routine. Hit protein, move daily, maintain muscle.</div>
+  </div>`;
+
+  // Watch data for vacation days
+  const watch = sessionState['__watch__'] || {};
+  html += `<div class="watch-widget">
+    <div class="watch-title">⌚ GALAXY WATCH DATA (Optional)</div>
+    <div class="watch-fields">
+      <div class="watch-field">
+        <div class="wf-label">Avg HR (bpm)</div>
+        <input class="wf-input" type="number" placeholder="—" value="${watch.avgHr||''}" inputmode="numeric" onchange="updateWatch('avgHr',this.value)">
+      </div>
+      <div class="watch-field">
+        <div class="wf-label">Max HR (bpm)</div>
+        <input class="wf-input" type="number" placeholder="—" value="${watch.maxHr||''}" inputmode="numeric" onchange="updateWatch('maxHr',this.value)">
+      </div>
+      <div class="watch-field">
+        <div class="wf-label">Calories</div>
+        <input class="wf-input" type="number" placeholder="—" value="${watch.calories||''}" inputmode="numeric" onchange="updateWatch('calories',this.value)">
+      </div>
+      <div class="watch-field">
+        <div class="wf-label">Duration (min)</div>
+        <input class="wf-input" type="number" placeholder="—" value="${watch.duration||''}" inputmode="numeric" onchange="updateWatch('duration',this.value)">
+      </div>
+    </div>
+  </div>`;
+
+  // Render vacation exercises
+  vacation.sections.forEach(section => {
+    html += `<div style="padding:0 13px;"><div class="sec-label">${section.label}</div></div>`;
+    section.exercises.forEach(ex => {
+      const isDone = sessionState[ex.id]?.done || false;
+      const savedWeights = sessionState[ex.id]?.weights || ex.sets.map(s => s.wt);
+      html += buildExCard(ex, isDone, savedWeights, false, 'rest');
+    });
+  });
+
+  // Save button for vacation day
+  const savedNotes = (sessionState['__notes__'] || {}).notes || '';
+  html += `
+  <div class="notes-section" style="padding:0 13px">
+    <div class="notes-label">Session Notes</div>
+    <textarea class="notes-input" id="sessionNotes" placeholder="How did it feel? Any observations?" oninput="saveNotes(this.value)">${savedNotes}</textarea>
+    <button class="save-btn" id="saveBtn" onclick="saveWorkout('rest','vacation')">💾 SAVE VACATION SESSION</button>
+  </div>
+  <button class="reset-btn" onclick="resetDay()">↺ Reset Vacation Day</button>`;
+
+  scroll.innerHTML = html;
+  scroll.scrollTop = 0;
 }
 
 function renderRestDay(dayKey) {
