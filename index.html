@@ -1011,6 +1011,88 @@ const WORKOUTS = {
   },
 };
 
+// FEAT-1 & FEAT-2: Mobility exercises for Wed/Sat recovery
+const MOBILITY_EXERCISES = {
+  wed: {
+    title: '🧘 WEDNESDAY MOBILITY (Optional)',
+    emoji: '🧘',
+    sections: [{
+      label: 'Hip Flexor & Activation', exercises: [
+        { id: 'm-wed-couch', name: 'Couch Stretch (Hip Flexor)', muscle: 'hips',
+          sets: [{wt:0,reps:'90s L'},{wt:0,reps:'90s R'}],
+          chips: {sets:'2 Sides', reps:'90 sec each'},
+          cue: 'One foot elevated on couch behind you, one knee forward on ground. Lean forward into hip flexor stretch. Keep torso upright. Breathe.' },
+        { id: 'm-wed-kneelunge', name: 'Kneeling Lunge Stretch', muscle: 'hips',
+          sets: [{wt:0,reps:'60s L'},{wt:0,reps:'60s R'}],
+          chips: {sets:'2 Sides', reps:'60 sec each'},
+          cue: 'Kneeling position. Back knee on ground. Front foot forward. Lean pelvis forward to feel hip flexor stretch. Optional: lift arms overhead.' },
+        { id: 'm-wed-clamshell', name: 'Banded Clamshells (Glute Activation)', muscle: 'glutes',
+          sets: [{wt:0,reps:'15 L'},{wt:0,reps:'15 R'}],
+          chips: {sets:'2 Sides', reps:'15 reps each'},
+          cue: 'Lying on side, band above knees. Keep feet together, open top knee. Feel glute medius working. Return controlled. No hip rolling.' },
+        { id: 'm-wed-90-90', name: '90/90 Stretch', muscle: 'hips',
+          sets: [{wt:0,reps:'90s L'},{wt:0,reps:'90s R'}],
+          chips: {sets:'2 Sides', reps:'90 sec each'},
+          cue: 'Sitting, both legs at 90°. Lean forward over front leg. Feel deep hip/glute stretch. Breathe and relax into it.' }
+      ]},
+      {
+        label: 'Thoracic Spine & Ankle Work', exercises: [
+        { id: 'm-wed-thoracic', name: 'Thoracic Spine Foam Roll', muscle: 'spine',
+          sets: [{wt:0,reps:'2 min'}],
+          chips: {sets:'1 Set', reps:'2 minutes'},
+          cue: 'Foam roller perpendicular across upper back. Support head with hands. Gently roll from mid-back to lower neck. Avoid rolling directly on spine.' },
+        { id: 'm-wed-threadneedle', name: 'Thread the Needle (Thoracic Rotation)', muscle: 'spine',
+          sets: [{wt:0,reps:'10 L'},{wt:0,reps:'10 R'}],
+          chips: {sets:'2 Sides', reps:'10 reps each'},
+          cue: 'Hands and knees. Slide one arm under body and across. Rotate torso to look back. Feel thoracic rotation. Return. Alternate sides.' },
+        { id: 'm-wed-ankledrill', name: 'Ankle Dorsiflexion Drill', muscle: 'calves',
+          sets: [{wt:0,reps:'30 sec'}],
+          chips: {sets:'1 Set', reps:'30 seconds'},
+          cue: 'Standing, lean forward with shins against a wall or edge. Keep heels down, dorsi-flex ankles (toes toward shins). Feel front of shin working.' }
+      ]}
+    ]
+  },
+  sat: {
+    title: '🧘 SATURDAY MOBILITY (Optional)',
+    emoji: '🧘',
+    sections: [{
+      label: 'Lower Body Depth & Flexibility', exercises: [
+        { id: 'm-sat-deepghd', name: 'Deep Goblet Squat Hold (Depth Work)', muscle: 'hips',
+          sets: [{wt:0,reps:'2 min'}],
+          chips: {sets:'1 Hold', reps:'2 minutes'},
+          cue: 'Hold light dumbbell at chest. Squat as deep as possible. Relax in the bottom position. Let gravity open hips. Upright torso. Breathe.' },
+        { id: 'm-sat-hamstretch', name: 'Seated Hamstring Stretch', muscle: 'hamstrings',
+          sets: [{wt:0,reps:'90s L'},{wt:0,reps:'90s R'}],
+          chips: {sets:'2 Sides', reps:'90 sec each'},
+          cue: 'Sitting, one leg extended, one bent. Lean forward from hips toward extended leg. Feel hamstring. Spine stays neutral.' },
+        { id: 'm-sat-hipflexor', name: 'Hip Flexor Release (Low Lunge)', muscle: 'hips',
+          sets: [{wt:0,reps:'90s L'},{wt:0,reps:'90s R'}],
+          chips: {sets:'2 Sides', reps:'90 sec each'},
+          cue: 'Low lunge, back knee down. Lean pelvis forward and down. Front leg stays vertical. Deep hip flexor stretch for tomorrow\'s leg day.' },
+        { id: 'm-sat-ankledrill2', name: 'Ankle Mobility Circles', muscle: 'calves',
+          sets: [{wt:0,reps:'20 circles each direction'}],
+          chips: {sets:'1 Set', reps:'20 each direction'},
+          cue: 'Standing. Lift one foot slightly. Rotate ankle in slow circles — 10 clockwise, 10 counter-clockwise. Both directions. Ankle prep for squats.' }
+      ]},
+      {
+        label: 'Upper Body Mobility (Recover from Friday Pull)', exercises: [
+        { id: 'm-sat-shoulderpass', name: 'Shoulder Pass-Through (Band)', muscle: 'shoulders',
+          sets: [{wt:0,reps:'15 reps'}],
+          chips: {sets:'1 Set', reps:'15 reps'},
+          cue: 'Light resistance band. Arms extended in front. Pass band overhead and behind, then forward. Focus on relaxed shoulders, full range.' },
+        { id: 'm-sat-chestopener', name: 'Chest Opener Stretch', muscle: 'chest',
+          sets: [{wt:0,reps:'60s'}],
+          chips: {sets:'1 Hold', reps:'60 seconds'},
+          cue: 'Standing in doorway or holding door frame at shoulder height. Step forward to feel chest stretch. Relax shoulders down.' },
+        { id: 'm-sat-backextension', name: 'Gentle Back Extension', muscle: 'spine',
+          sets: [{wt:0,reps:'10 reps'}],
+          chips: {sets:'1 Set', reps:'10 reps'},
+          cue: 'Standing, hands on lower back. Gently lean backward. Feel anterior chain opening. Not aggressive — just gentle decompression.' }
+      ]}
+    ]
+  }
+};
+
 const REST_CONTENT = {
   wed:{ title:'SPRINT DAY ⚡', icon:'⚡', sub:'Visceral fat weapon. 90-min/wk HIIT target.', tips:[
     {icon:'🚶',text:'AM fasted incline walk FIRST: 6% grade, 3.0 mph, 30–45 min. Zone 2 (108–128 bpm). Fasted keto state = maximum fat oxidation.'},
@@ -1825,6 +1907,30 @@ function renderWorkoutView() {
 
   // Notes + Save
   const savedNotes = (sessionState['__notes__'] || {}).notes || '';
+  const watch = sessionState['__watch__'] || {};
+  // FEAT-5: Add Galaxy Watch data entry to all days
+  html += `<div class="watch-widget">
+    <div class="watch-title">⌚ GALAXY WATCH DATA (Optional)</div>
+    <div class="watch-fields">
+      <div class="watch-field">
+        <div class="wf-label">Avg HR (bpm)</div>
+        <input class="wf-input" type="number" placeholder="—" value="${watch.avgHr||''}" inputmode="numeric" onchange="updateWatch('avgHr',this.value)">
+      </div>
+      <div class="watch-field">
+        <div class="wf-label">Max HR (bpm)</div>
+        <input class="wf-input" type="number" placeholder="—" value="${watch.maxHr||''}" inputmode="numeric" onchange="updateWatch('maxHr',this.value)">
+      </div>
+      <div class="watch-field">
+        <div class="wf-label">Calories</div>
+        <input class="wf-input" type="number" placeholder="—" value="${watch.calories||''}" inputmode="numeric" onchange="updateWatch('calories',this.value)">
+      </div>
+      <div class="watch-field">
+        <div class="wf-label">Duration (min)</div>
+        <input class="wf-input" type="number" placeholder="—" value="${watch.duration||''}" inputmode="numeric" onchange="updateWatch('duration',this.value)">
+      </div>
+    </div>
+  </div>`;
+
   html += `<div class="notes-section">
     <div class="notes-label">Session Notes</div>
     <textarea class="notes-input" id="sessionNotes" placeholder="How did it feel? Any PRs? Energy? Pain?" oninput="saveNotes(this.value)">${savedNotes}</textarea>
@@ -2725,7 +2831,7 @@ async function saveWorkout(type, dayKey) {
     emoji: workout.emoji,
     exercises, newPRs,
     notes: (sessionState['__notes__']||{}).notes || '',
-    watch: { avgHr: watch.avgHr||null, maxHr: watch.maxHr||null, calories: watch.calories||null, zones: watch.zones||null, peakTiming: watch.peakTiming||null, pattern: watch.pattern||null },
+    watch: { avgHr: watch.avgHr||null, maxHr: watch.maxHr||null, calories: watch.calories||null, duration: watch.duration||null, zones: watch.zones||null, peakTiming: watch.peakTiming||null, pattern: watch.pattern||null },
     duration: getSessionDuration(),
     savedAt: new Date().toISOString()
   };
@@ -2934,6 +3040,14 @@ function resetDay() {
 function saveNotes(val) {
   if (!sessionState['__notes__']) sessionState['__notes__'] = {};
   sessionState['__notes__'].notes = val;
+  saveSession();
+}
+
+// FEAT-5: Update Galaxy Watch data
+function updateWatch(field, val) {
+  if (!sessionState['__watch__']) sessionState['__watch__'] = {};
+  const numVal = val ? parseInt(val) : null;
+  sessionState['__watch__'][field] = numVal;
   saveSession();
 }
 
@@ -3897,6 +4011,25 @@ function renderSprintDay(dayKey, content) {
   </div>
 
   <button class="save-btn" id="sprintSaveBtn" onclick="saveSprintWorkout('${dayKey}')" style="margin:13px; display:none">💾 SAVE SPRINT SESSION</button>`;
+
+  // FEAT-1 & FEAT-2: Add mobility exercises for Wed/Sat
+  const mobilityContent = MOBILITY_EXERCISES[dayKey];
+  if (mobilityContent) {
+    document.getElementById('mainScroll').innerHTML += `
+    <div style="padding:13px">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px;margin:16px 0 8px;color:var(--white);">${mobilityContent.title}</div>
+      <div style="font-size:10px;color:var(--dim2);margin-bottom:12px;">Optional — mobility is always shown but never required. Helps recovery and feeds next day's training.</div>
+    </div>`;
+
+    mobilityContent.sections.forEach(section => {
+      document.getElementById('mainScroll').innerHTML += `<div style="padding:0 13px;"><div class="sec-label">${section.label}</div></div>`;
+      section.exercises.forEach(ex => {
+        const isDone = sessionState[ex.id]?.done || false;
+        const savedWeights = sessionState[ex.id]?.weights || ex.sets.map(s => s.wt);
+        document.getElementById('mainScroll').innerHTML += buildExCard(ex, isDone, savedWeights, false, 'rest');
+      });
+    });
+  }
 
   buildRoundDots();
 }
