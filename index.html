@@ -3087,9 +3087,32 @@ function updateDayProgress(allExIds) {
 // ============================================================
 async function saveWorkout(type, dayKey) {
   // Recovery mode uses RECOVERY_WORKOUTS instead of WORKOUTS
-  const workout = (type === 'recovery' && dayKey && RECOVERY_WORKOUTS[dayKey])
-    ? RECOVERY_WORKOUTS[dayKey]
-    : WORKOUTS[type];
+  let workout = null;
+
+  if (type === 'recovery' && dayKey && RECOVERY_WORKOUTS[dayKey]) {
+    workout = RECOVERY_WORKOUTS[dayKey];
+  } else if (type === 'rest' && dayKey === 'vacation') {
+    // Vacation mode uses VACATION_WORKOUTS
+    workout = VACATION_WORKOUTS.daily;
+  } else if (type === 'rest' && ALTERNATIVE_ACTIVITIES[dayKey]) {
+    // Alternative activities (yoga, pilates, dance, boxing)
+    const activity = ALTERNATIVE_ACTIVITIES[dayKey];
+    workout = {
+      title: activity.title,
+      emoji: activity.emoji,
+      sections: [{ label: activity.description, exercises: activity.exercises || [] }]
+    };
+  } else if (type === 'rest') {
+    // Standard rest day
+    workout = REST_CONTENT[dayKey];
+    if (!workout) {
+      // Create a minimal workout object for rest days
+      workout = { title: 'REST DAY', emoji: '⏸️', sections: [] };
+    }
+  } else {
+    workout = WORKOUTS[type];
+  }
+
   if (!workout) return;
 
   const exercises = [];
