@@ -930,14 +930,14 @@ const WORKOUTS = {
     sections:[
       { label:'Pre-Exhaust', exercises:[
         { id:'l-curl', name:'Lying Leg Curl', muscle:'hams',
-          sets:[{wt:110,reps:'15'},{wt:132,reps:'FAIL'}],
-          chips:{sets:'2 Sets',reps:'To Failure',pr:'PR: 121×12',target:'Target: 132 lbs',tag:'Hassan'},
-          hassan:true, ladder:['110×warm','132×FAIL'],
+          sets:[{wt:110,reps:'6'},{wt:132,reps:'FAIL'}],
+          chips:{sets:'2 Sets',reps:'6 reps',pr:'PR: 121×12',target:'Target: 132 lbs',tag:'Hassan'},
+          hassan:true, ladder:['110×6','132×FAIL'],
           cue:'Squeeze hamstrings. Don\'t let hips rise off pad.' },
         { id:'l-ext', name:'Leg Extension', muscle:'quads',
-          sets:[{wt:99,reps:'15'},{wt:121,reps:'FAIL'}],
-          chips:{sets:'2 Sets',reps:'To Failure',pr:'PR: 110×15',target:'Target: 121 lbs',tag:'Hassan'},
-          hassan:true, ladder:['99×warm','121×FAIL'],
+          sets:[{wt:99,reps:'6'},{wt:121,reps:'FAIL'}],
+          chips:{sets:'2 Sets',reps:'6 reps',pr:'PR: 110×12',target:'Target: 121 lbs',tag:'Hassan'},
+          hassan:true, ladder:['99×6','121×FAIL'],
           cue:'Squeeze quads to move weight. 1-sec pause at peak.' }
       ]},
       { label:'Main Compound', exercises:[
@@ -981,8 +981,8 @@ const WORKOUTS = {
       ]},
       { label:'If Lower Day (Home Sub)', exercises:[
         { id:'f-ext', name:'Leg Extension', muscle:'quads',
-          sets:[{wt:99,reps:'15'},{wt:121,reps:'FAIL'}],
-          chips:{sets:'2 Sets',reps:'To Failure',pr:'PR: 121 lbs',tag:'Hassan'},
+          sets:[{wt:99,reps:'6'},{wt:121,reps:'FAIL'}],
+          chips:{sets:'2 Sets',reps:'6 reps',pr:'PR: 121 lbs',tag:'Hassan'},
           hassan:true, cue:'Quad squeeze. Pause at peak.' },
         { id:'f-squat', name:'Smith Machine Squat', muscle:'quads',
           sets:[{wt:145,reps:'8'},{wt:165,reps:'8-10'}],
@@ -993,8 +993,8 @@ const WORKOUTS = {
           chips:{sets:'2 Sets',reps:'20 reps/leg',pr:'PR: 35 lb DBs',target:'Target: 40 lb DBs'},
           cue:'Medium strides. Minimize rear leg push. Knee tracks toes.' },
         { id:'f-curl', name:'Lying Leg Curl', muscle:'hams',
-          sets:[{wt:121,reps:'15'},{wt:143,reps:'FAIL'}],
-          chips:{sets:'2 Sets',reps:'To Failure',pr:'PR: 132 lbs',target:'Target: 143 lbs',tag:'Hassan'},
+          sets:[{wt:121,reps:'6'},{wt:143,reps:'FAIL'}],
+          chips:{sets:'2 Sets',reps:'6 reps',pr:'PR: 132 lbs',target:'Target: 143 lbs',tag:'Hassan'},
           hassan:true, cue:'Hamstrings squeeze. No hip rise. Control the negative.' },
         { id:'f-abduct', name:'Hip Abduction Machine', muscle:'glutes',
           sets:[{wt:55,reps:'15-20'},{wt:66,reps:'15-20'}],
@@ -1256,8 +1256,8 @@ const RECOVERY_WORKOUTS = {
       ]},
       { label:'✅ Seated / Machine Work (Spine-Safe — No Axial Load)', exercises:[
         { id:'r-su-legext', name:'Leg Extension (Seated Machine)', muscle:'quads',
-          sets:[{wt:99,reps:'15'},{wt:121,reps:'FAIL'}],
-          chips:{sets:'2 Sets', reps:'To Failure', tag:'Hassan ✅'},
+          sets:[{wt:99,reps:'6'},{wt:121,reps:'FAIL'}],
+          chips:{sets:'2 Sets', reps:'6 reps', tag:'Hassan ✅'},
           note:'Source: Existing app protocol. SEATED = zero spinal compression.',
           cue:'Seated machine. Quad squeeze at peak. ZERO spinal load — fully spine-safe.' },
         { id:'r-su-hipabduct', name:'Hip Abduction Machine (Seated)', muscle:'glutes',
@@ -1266,8 +1266,8 @@ const RECOVERY_WORKOUTS = {
           note:'Source: Existing app. SEATED = spine-safe. Critical for pelvic stability.',
           cue:'LEAN FORWARD 30°. Glute medius activation. Seated position — spine-safe. Critical for maintaining pelvic correction.' },
         { id:'r-su-legcurl', name:'Seated Leg Curl (Machine)', muscle:'hams',
-          sets:[{wt:121,reps:'15'},{wt:143,reps:'FAIL'}],
-          chips:{sets:'2 Sets', reps:'To Failure', tag:'Hassan ✅'},
+          sets:[{wt:121,reps:'6'},{wt:143,reps:'FAIL'}],
+          chips:{sets:'2 Sets', reps:'6 reps', tag:'Hassan ✅'},
           note:'Source: Existing app. SEATED (not lying) to minimize disc pressure.',
           cue:'SEATED curl machine — NOT lying curl. Hamstring squeeze. No hip rise. Control negative. Seated position maintains neutral spine.' },
       ]}
@@ -1425,7 +1425,9 @@ async function loadAll() {
   }
 
   try { const v = await getStored('workout-history'); if (v) historyStore = JSON.parse(v); } catch(e) { historyStore = []; }
-  try { const v = await getStored('pr-store'); if (v) prStore = JSON.parse(v); } catch(e) { prStore = {}; }
+  // BUG-4 FIX: Don't load prStore from localStorage on init — Supabase is the source of truth
+  // try { const v = await getStored('pr-store'); if (v) prStore = JSON.parse(v); } catch(e) { prStore = {}; }
+  prStore = {};
   try { const v = await getStored('exercise-freq'); if (v) exerciseFreq = JSON.parse(v); } catch(e) { exerciseFreq = {}; }
   try { const v = await getStored('rest-overrides'); if (v) restOverrides = JSON.parse(v); } catch(e) { restOverrides = {}; }
   try { const v = await getStored('swap-overrides'); if (v) swapOverrides = JSON.parse(v); } catch(e) { swapOverrides = {}; }
@@ -2767,6 +2769,54 @@ async function saveWorkout(type, dayKey) {
   }
 }
 
+// BUG-6, BUG-8: Save sprint session with Galaxy Watch data
+async function saveSprintWorkout(dayKey) {
+  const entry = {
+    id: Date.now(),
+    date: getDateStr(),
+    dayKey,
+    type: 'rest',
+    title: '⚡ SPRINT SESSION',
+    emoji: '⚡',
+    rounds: sprintState.totalRounds,
+    exercises: [],
+    watch: {
+      avgHr: parseInt(document.getElementById('spHrAvg')?.value || 0) || null,
+      maxHr: parseInt(document.getElementById('spHrMax')?.value || 0) || null,
+      calories: null,
+      zones: null,
+      peakTiming: null,
+      pattern: null
+    },
+    duration: getSessionDuration(),
+    savedAt: new Date().toISOString()
+  };
+
+  historyStore.unshift(entry);
+  if (historyStore.length > 100) historyStore = historyStore.slice(0, 100);
+
+  let saved = false;
+  try {
+    localStorage.setItem('workout-history', JSON.stringify(historyStore));
+    saved = true;
+  } catch(e) { console.warn('localStorage save failed', e); }
+
+  try {
+    await window.storage.set('workout-history', JSON.stringify(historyStore));
+    saved = true;
+  } catch(e) {}
+
+  if (saved) {
+    showToast(`⚡ Sprint session saved · ${getDateStr()}`);
+    const btn = document.getElementById('sprintSaveBtn');
+    if (btn) { btn.textContent = '✓ SAVED'; btn.style.background = '#2a3d00'; btn.style.color = 'var(--accent)'; }
+    invalidateHistoryCache();
+    buildDayPills();
+  } else {
+    alert('Save failed — storage unavailable.');
+  }
+}
+
 // ── SESSION SUMMARY SHARE (Build 4) ─────────────────────────
 function generateSessionSummary(type) {
   const day = WEEK[currentDayIdx];
@@ -3844,7 +3894,9 @@ function renderSprintDay(dayKey, content) {
     <div class="rest-tips" style="margin-top:0">
       ${tipsHtml}
     </div>
-  </div>`;
+  </div>
+
+  <button class="save-btn" id="sprintSaveBtn" onclick="saveSprintWorkout('${dayKey}')" style="margin:13px; display:none">💾 SAVE SPRINT SESSION</button>`;
 
   buildRoundDots();
 }
@@ -3908,6 +3960,7 @@ function advanceSprintPhase() {
     vibrateDevice([200, 100, 200]);
   } else if (sprintState.phase === 'sprint') {
     if (sprintState.round >= sprintState.totalRounds) {
+      sprintState.round++; // BUG-5 FIX: Increment round so last bubble registers as done
       sprintState.phase = 'cooldown';
       sprintState.phaseDuration = SPRINT_PHASES.cooldown.secs;
       vibrateDevice([100, 50, 100, 50, 100]);
@@ -3974,6 +4027,7 @@ function completeSprint() {
   const btn = document.getElementById('spMainBtn');
   const doneBanner = document.getElementById('spDoneBanner');
   const hrCard = document.getElementById('spHrCard');
+  const saveBtn = document.getElementById('sprintSaveBtn');
 
   if (timeEl) { timeEl.textContent = '0:00'; timeEl.className = 'sprint-time phase-done'; }
   if (labelEl) { labelEl.textContent = 'SESSION COMPLETE ✓'; labelEl.className = 'sprint-phase-label phase-done'; }
@@ -3982,6 +4036,7 @@ function completeSprint() {
   if (btn) { btn.textContent = 'RESET'; btn.className = 'sprint-btn sprint-btn-main'; }
   if (doneBanner) doneBanner.style.display = 'block';
   if (hrCard) hrCard.style.display = 'block';
+  if (saveBtn) saveBtn.style.display = 'block'; // BUG-6, BUG-8: Show save button
   buildRoundDots();
   vibrateDevice([300, 100, 300, 100, 300]);
 }
