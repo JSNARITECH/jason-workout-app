@@ -1483,6 +1483,34 @@ const ALTERNATIVE_ACTIVITIES = {
 
 let selectedActivity = 'sprint'; // FEAT-4: Track which activity is selected for the day
 
+// FEAT-7: Back Recovery Mode safety and auto-substitution rules
+const BACK_RECOVERY_RULES = {
+  risky_patterns: ['deadlift', 'barbell row', 'squat', 'bend over', 'spinal load', 'rotation'],
+  safe_substitutions: {
+    'deadlift': 'Trap Bar RDL (lighter load, neutral grip)',
+    'Barbell Bent Over Row': 'Supported T-Bar Row (chest-supported)',
+    'Barbell Squat': 'Goblet Squat or Leg Press (back support)',
+    'Dumbbell Row': 'Landmine Row (neutral angle)',
+    'Power Clean': 'Trapbar Deadlift (lighter weight)',
+    'Hack Squat': 'Leg Press (back support)',
+    'Leg Press': 'Machine Squat (guided path)',
+    'Cable Crunch': 'Pallof Press (anti-rotation)',
+    'V-Taper Lat Pulldown': 'Chest-Supported Row'
+  }
+};
+
+function checkBackRecoverySafety(exName) {
+  const lower = exName.toLowerCase();
+  for (let pattern of BACK_RECOVERY_RULES.risky_patterns) {
+    if (lower.includes(pattern)) return false;
+  }
+  return true;
+}
+
+function getBackRecoverySuggestion(exName) {
+  return BACK_RECOVERY_RULES.safe_substitutions[exName] || null;
+}
+
 function toggleBackRecoveryMode() {
   backRecoveryMode = !backRecoveryMode;
   try { localStorage.setItem('back-recovery-mode', backRecoveryMode ? '1' : ''); } catch(e) {}
@@ -1495,11 +1523,73 @@ function updateRecoveryModePill() {
   if (!pill) return;
   if (backRecoveryMode) {
     pill.className = 'rehab-mode-pill rehab-active';
-    pill.innerHTML = `<span class="rehab-pill-label">🦴 BACK RECOVERY MODE ON</span><button class="rehab-pill-toggle" onclick="toggleBackRecoveryMode()">Deactivate</button>`;
+    pill.innerHTML = `<span class="rehab-pill-label">🦴 BACK RECOVERY MODE ON</span>
+      <button class="rehab-pill-toggle" onclick="toggleBackRecoveryMode()">Deactivate</button>
+      <button class="rehab-pill-toggle" onclick="showBackRecoveryGuide()" style="background:rgba(100,150,255,0.3);color:#64b6ff;margin-left:6px;">?</button>`;
   } else {
     pill.className = 'rehab-mode-pill';
     pill.innerHTML = `<button class="rehab-activate-btn" onclick="toggleBackRecoveryMode()">🦴 Back Recovery Mode</button>`;
   }
+}
+
+// FEAT-7: Show Back Recovery Mode guidelines and safety info
+function showBackRecoveryGuide() {
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.style.cssText = `
+    position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);
+    display:flex;align-items:center;justify-content:center;z-index:10000;padding:20px;
+  `;
+
+  const content = document.createElement('div');
+  content.style.cssText = `
+    background:var(--bg);color:var(--white);border-radius:8px;padding:20px;
+    max-width:500px;max-height:80vh;overflow-y:auto;
+    border:1px solid var(--dim1);
+  `;
+
+  content.innerHTML = `
+    <div style="font-size:18px;font-weight:bold;margin-bottom:12px;">🦴 Back Recovery Mode Guide</div>
+    <div style="font-size:12px;color:var(--dim2);line-height:1.6;margin-bottom:16px;">
+      <div style="margin-bottom:12px;">
+        <strong>Purpose:</strong> Protects your spine during recovery by:
+        <ul style="margin:6px 0;padding-left:20px;">
+          <li>Avoiding spinal compression exercises</li>
+          <li>Preventing loaded trunk rotation</li>
+          <li>Minimizing heavy forward bends with load</li>
+          <li>Suggesting spine-safe alternatives</li>
+        </ul>
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <strong>Exercises to Avoid:</strong><br>
+        Deadlifts, Barbell Rows, Barbell Squats, Power Cleans, Heavy Rotational exercises
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <strong>Safe Alternatives:</strong><br>
+        Trap Bar RDL, Supported Rows, Leg Press, Anti-rotation work (Pallof), Isometric holds
+      </div>
+
+      <div>
+        <strong>Tips:</strong>
+        <ul style="margin:6px 0;padding-left:20px;">
+          <li>Yellow alerts show risky exercises with suggestions</li>
+          <li>Reduce loads by 40-50% during early recovery</li>
+          <li>Prioritize form over intensity</li>
+          <li>Log pain/stiffness in session notes</li>
+        </ul>
+      </div>
+    </div>
+    <button onclick="this.closest('.modal-overlay').remove()" style="
+      width:100%;padding:10px;background:var(--accent);color:var(--black);
+      border:none;border-radius:4px;font-weight:bold;cursor:pointer;
+    ">Got it</button>
+  `;
+
+  modal.appendChild(content);
+  modal.onclick = (e) => e.target === modal && modal.remove();
+  document.body.appendChild(modal);
 }
 
 // FEAT-8: Vacation Mode toggle and pill
@@ -2158,6 +2248,20 @@ function buildExCard(ex, isDone, savedWeights, hasPR, type) {
 
   let detail = '';
   if (ex.warnSpinal) detail += `<div class="warn-spinal-tag">⚠️ SPINAL LOAD — Monitor form closely</div>`;
+
+  // FEAT-7: Back Recovery Mode safety warnings and suggestions
+  if (backRecoveryMode && !checkBackRecoverySafety(ex.name)) {
+    const suggestion = getBackRecoverySuggestion(ex.name);
+    let warningHtml = `<div style="background:rgba(255,100,100,0.15);border:1px solid rgba(255,100,100,0.4);border-radius:4px;padding:10px;margin-bottom:10px;color:#ff6464;">
+      <div style="font-weight:bold;margin-bottom:6px;">🚫 Back Recovery Alert</div>
+      <div>This exercise may stress your spine during recovery mode.</div>`;
+    if (suggestion) {
+      warningHtml += `<div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,100,100,0.4);">✓ Consider: <strong>${suggestion}</strong></div>`;
+    }
+    warningHtml += `</div>`;
+    detail += warningHtml;
+  }
+
   if (ex.hassan) detail += `<div class="hassan-tag">⚡ Hassan Protocol — To Failure</div>`;
   if (ex.ladder?.length) {
     detail += `<div class="ladder-display">${ex.ladder.map((s,i) => `<span class="ladder-step">${s}</span>${i<ex.ladder.length-1?'<span class="ladder-arrow">→</span>':''}`).join('')}</div>`;
