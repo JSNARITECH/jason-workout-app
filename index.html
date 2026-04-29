@@ -1410,6 +1410,79 @@ const VACATION_WORKOUTS = {
   }
 };
 
+// FEAT-4: Alternative activities for Wed/Sat recovery days (instead of sprint)
+const ALTERNATIVE_ACTIVITIES = {
+  sprint: {
+    id: 'sprint',
+    title: '⚡ Sprint Timer',
+    emoji: '⚡',
+    description: 'High-intensity interval training on treadmill. 6 rounds × 30-sec max effort.',
+    type: 'timer'
+  },
+  yoga: {
+    id: 'yoga',
+    title: '🧘 Yoga Session',
+    emoji: '🧘',
+    description: 'Full-body flexibility, balance, and mindfulness. Peaceful recovery.',
+    type: 'timed',
+    duration: 45,
+    exercises: [
+      { id: 'a-yoga-warmup', name: 'Cat-Cow Stretches + Shoulder Rolls', muscle: 'warmup', sets: [{reps:'2 min'}], cue: 'Loosen up joints.' },
+      { id: 'a-yoga-flow1', name: 'Sun Salutation Flow (5–8 rounds)', muscle: 'flow', sets: [{reps:'10 min'}], cue: 'Smooth, connected movement. Focus on breath.' },
+      { id: 'a-yoga-stand', name: 'Standing Poses (Warrior I, II, Triangle, Half Moon)', muscle: 'balance', sets: [{reps:'15 min'}], cue: 'Hold each for 5–8 breaths. Root your feet.' },
+      { id: 'a-yoga-hip', name: 'Hip Openers (Pigeon, Low Lunge, Butterfly)', muscle: 'hips', sets: [{reps:'10 min'}], cue: 'Breathe into tightness. No forcing.' },
+      { id: 'a-yoga-cool', name: 'Cool-Down (Child\'s Pose, Savasana)', muscle: 'cooldown', sets: [{reps:'8 min'}], cue: 'Let your mind settle. Perfect stillness.' }
+    ]
+  },
+  pilates: {
+    id: 'pilates',
+    title: '💪 Pilates Session',
+    emoji: '💪',
+    description: 'Core-focused strength and stability. Mat-based or reformer.',
+    type: 'timed',
+    duration: 45,
+    exercises: [
+      { id: 'a-pilates-warmup', name: 'Breathing + Neutral Spine Awareness', muscle: 'warmup', sets: [{reps:'3 min'}], cue: 'Deep lateral breathing. Engage your core.' },
+      { id: 'a-pilates-core', name: 'Core Circuit (Crunch, Scissors, Leg Lowers)', muscle: 'core', sets: [{reps:'15 min'}], cue: '2 sets × 10–15 reps each. Slow, controlled.' },
+      { id: 'a-pilates-stability', name: 'Stability Work (Plank Variations, Bridges)', muscle: 'stability', sets: [{reps:'15 min'}], cue: 'Side plank, single-leg bridge. Hold 30–60 sec.' },
+      { id: 'a-pilates-stretch', name: 'Pilates Stretching (Spine Stretch, Hip Flexor)', muscle: 'flexibility', sets: [{reps:'10 min'}], cue: 'Lengthen. Release tension.' },
+      { id: 'a-pilates-cool', name: 'Cool-Down + Roll Down', muscle: 'cooldown', sets: [{reps:'2 min'}], cue: 'Vertebra by vertebra. Relax.' }
+    ]
+  },
+  dance: {
+    id: 'dance',
+    title: '💃 Dance Cardio',
+    emoji: '💃',
+    description: 'Fun, high-energy cardio through dance. Music-driven movement.',
+    type: 'timed',
+    duration: 45,
+    exercises: [
+      { id: 'a-dance-warmup', name: 'Music Warmup + Groove Finding', muscle: 'warmup', sets: [{reps:'5 min'}], cue: 'Feel the beat. Light movement to get loose.' },
+      { id: 'a-dance-hiphop', name: 'Hip-Hop Cardio Combos', muscle: 'cardio', sets: [{reps:'12 min'}], cue: 'Fast-paced, fun. Follow along or freestyle. Keep moving.' },
+      { id: 'a-dance-belly', name: 'Belly Dance or Latin Flow', muscle: 'cardio', sets: [{reps:'10 min'}], cue: 'Isolate your hips and core. Rhythmic, controlled.' },
+      { id: 'a-dance-freeflow', name: 'Free-Style Dance (Your Favorite Song)', muscle: 'cardio', sets: [{reps:'12 min'}], cue: 'No choreography. Just feel the music and move your body.' },
+      { id: 'a-dance-cool', name: 'Cool-Down Walk to Slower Song', muscle: 'cooldown', sets: [{reps:'6 min'}], cue: 'Bring heart rate down. Smile.' }
+    ]
+  },
+  boxing: {
+    id: 'boxing',
+    title: '🥊 Boxing/Kickboxing',
+    emoji: '🥊',
+    description: 'Heavy bag, mitt work, or shadowboxing. Stress relief + cardio.',
+    type: 'timed',
+    duration: 45,
+    exercises: [
+      { id: 'a-box-warmup', name: 'Joint Mobility + Light Shadowboxing', muscle: 'warmup', sets: [{reps:'5 min'}], cue: 'Loosen shoulders, hips. Practice footwork.' },
+      { id: 'a-box-combos', name: 'Heavy Bag Combos (3 min on / 1 min rest)', muscle: 'cardio', sets: [{reps:'12 min'}], cue: '4 rounds. Jab-cross, hooks, uppercuts. Explosive.' },
+      { id: 'a-box-speed', name: 'Speed Ball or Mitt Work', muscle: 'cardio', sets: [{reps:'10 min'}], cue: 'Hand speed, timing, precision. Stay sharp.' },
+      { id: 'a-box-kicks', name: 'Kickboxing (Kicks + Punches)', muscle: 'cardio', sets: [{reps:'12 min'}], cue: 'Front kicks, roundhouse kicks, knees. Core engaged.' },
+      { id: 'a-box-cool', name: 'Cool-Down + Stretch (Shoulders, Hips, Legs)', muscle: 'cooldown', sets: [{reps:'6 min'}], cue: 'Release tension. Breathe.' }
+    ]
+  }
+};
+
+let selectedActivity = 'sprint'; // FEAT-4: Track which activity is selected for the day
+
 function toggleBackRecoveryMode() {
   backRecoveryMode = !backRecoveryMode;
   try { localStorage.setItem('back-recovery-mode', backRecoveryMode ? '1' : ''); } catch(e) {}
@@ -1609,6 +1682,12 @@ async function loadAll() {
     vacationMode = !!(v);
   } catch(e) { vacationMode = false; }
   updateVacationModePill();
+
+  // FEAT-4: Restore selected activity preference
+  try {
+    const a = localStorage.getItem('selected-activity');
+    selectedActivity = a || 'sprint';
+  } catch(e) { selectedActivity = 'sprint'; }
 
   // Restore day type overrides
   try {
@@ -4031,7 +4110,12 @@ function renderRestDay(dayKey) {
   const isSprint = (dayKey === 'wed' || dayKey === 'sat');
 
   if (isSprint) {
-    renderSprintDay(dayKey, content);
+    // FEAT-4: Show activity selector for sprint days
+    if (!selectedActivity || selectedActivity === 'sprint') {
+      renderSprintDay(dayKey, content);
+    } else {
+      renderAlternativeActivity(selectedActivity);
+    }
   } else {
     document.getElementById('mainScroll').innerHTML = `
     <div class="rest-card">
@@ -4176,6 +4260,81 @@ function renderSprintDay(dayKey, content) {
   }
 
   buildRoundDots();
+}
+
+// FEAT-4: Render selected alternative activity (yoga, pilates, dance, boxing)
+function renderAlternativeActivity(activityId) {
+  const activity = ALTERNATIVE_ACTIVITIES[activityId];
+  if (!activity) return renderSprintDay('wed', REST_CONTENT.wed);
+
+  const scroll = document.getElementById('mainScroll');
+  const isDone = sessionState['activity_done'] || false;
+
+  let html = `
+  <div style="padding:13px">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1px;margin-bottom:8px;color:var(--white);">${activity.emoji} ${activity.title.toUpperCase()}</div>
+    <div style="font-size:11px;color:var(--dim2);margin-bottom:14px;">${activity.description}</div>
+  </div>`;
+
+  // Activity selector pill
+  html += `<div style="padding:0 13px;margin-bottom:8px;display:flex;gap:6px;flex-wrap:wrap;justify-content:center;">`;
+  Object.values(ALTERNATIVE_ACTIVITIES).forEach(a => {
+    const active = a.id === activityId ? 'style="background:var(--accent);color:var(--black);font-weight:bold"' : '';
+    html += `<button class="pill" ${active} onclick="selectActivity('${a.id}')" style="padding:6px 12px;border-radius:4px;border:1px solid var(--dim1);background:var(--dim3);cursor:pointer;">${a.emoji} ${a.id.toUpperCase()}</button>`;
+  });
+  html += `</div>`;
+
+  // Watch data
+  const watch = sessionState['__watch__'] || {};
+  html += `<div class="watch-widget">
+    <div class="watch-title">⌚ GALAXY WATCH DATA (Optional)</div>
+    <div class="watch-fields">
+      <div class="watch-field">
+        <div class="wf-label">Avg HR (bpm)</div>
+        <input class="wf-input" type="number" placeholder="—" value="${watch.avgHr||''}" inputmode="numeric" onchange="updateWatch('avgHr',this.value)">
+      </div>
+      <div class="watch-field">
+        <div class="wf-label">Max HR (bpm)</div>
+        <input class="wf-input" type="number" placeholder="—" value="${watch.maxHr||''}" inputmode="numeric" onchange="updateWatch('maxHr',this.value)">
+      </div>
+      <div class="watch-field">
+        <div class="wf-label">Calories</div>
+        <input class="wf-input" type="number" placeholder="—" value="${watch.calories||''}" inputmode="numeric" onchange="updateWatch('calories',this.value)">
+      </div>
+      <div class="watch-field">
+        <div class="wf-label">Duration (min)</div>
+        <input class="wf-input" type="number" placeholder="—" value="${watch.duration||''}" inputmode="numeric" onchange="updateWatch('duration',this.value)">
+      </div>
+    </div>
+  </div>`;
+
+  // Render activity exercises as checklist
+  if (activity.exercises) {
+    html += `<div style="padding:0 13px;"><div class="sec-label">📋 Activity Breakdown</div></div>`;
+    activity.exercises.forEach(ex => {
+      const isDone = sessionState[ex.id]?.done || false;
+      html += buildExCard(ex, isDone, [], false, 'rest');
+    });
+  }
+
+  // Save and reset buttons
+  const savedNotes = (sessionState['__notes__'] || {}).notes || '';
+  html += `
+  <div class="notes-section" style="padding:0 13px">
+    <div class="notes-label">Session Notes</div>
+    <textarea class="notes-input" id="sessionNotes" placeholder="How did it feel?" oninput="saveNotes(this.value)">${savedNotes}</textarea>
+    <button class="save-btn" id="saveBtn" onclick="saveWorkout('rest','${activityId}')">💾 SAVE ${activity.title.toUpperCase()}</button>
+  </div>
+  <button class="reset-btn" onclick="resetDay()">↺ Reset Activity</button>`;
+
+  scroll.innerHTML = html;
+  scroll.scrollTop = 0;
+}
+
+function selectActivity(activityId) {
+  selectedActivity = activityId;
+  try { localStorage.setItem('selected-activity', activityId); } catch(e) {}
+  renderWorkoutView();
 }
 
 function buildRoundDots() {
