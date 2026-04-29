@@ -1427,11 +1427,11 @@ const ALTERNATIVE_ACTIVITIES = {
     type: 'timed',
     duration: 45,
     exercises: [
-      { id: 'a-yoga-warmup', name: 'Cat-Cow Stretches + Shoulder Rolls', muscle: 'warmup', sets: [{reps:'2 min'}], cue: 'Loosen up joints.' },
+      { id: 'a-yoga-warmup', name: 'Cat-Cow Stretches + Shoulder Rolls', muscle: 'warmup', sets: [{reps:'2 min'}], optional: true, cue: 'Loosen up joints.' },
       { id: 'a-yoga-flow1', name: 'Sun Salutation Flow (5–8 rounds)', muscle: 'flow', sets: [{reps:'10 min'}], cue: 'Smooth, connected movement. Focus on breath.' },
       { id: 'a-yoga-stand', name: 'Standing Poses (Warrior I, II, Triangle, Half Moon)', muscle: 'balance', sets: [{reps:'15 min'}], cue: 'Hold each for 5–8 breaths. Root your feet.' },
       { id: 'a-yoga-hip', name: 'Hip Openers (Pigeon, Low Lunge, Butterfly)', muscle: 'hips', sets: [{reps:'10 min'}], cue: 'Breathe into tightness. No forcing.' },
-      { id: 'a-yoga-cool', name: 'Cool-Down (Child\'s Pose, Savasana)', muscle: 'cooldown', sets: [{reps:'8 min'}], cue: 'Let your mind settle. Perfect stillness.' }
+      { id: 'a-yoga-cool', name: 'Cool-Down (Child\'s Pose, Savasana)', muscle: 'cooldown', sets: [{reps:'8 min'}], optional: true, cue: 'Let your mind settle. Perfect stillness.' }
     ]
   },
   pilates: {
@@ -1442,11 +1442,11 @@ const ALTERNATIVE_ACTIVITIES = {
     type: 'timed',
     duration: 45,
     exercises: [
-      { id: 'a-pilates-warmup', name: 'Breathing + Neutral Spine Awareness', muscle: 'warmup', sets: [{reps:'3 min'}], cue: 'Deep lateral breathing. Engage your core.' },
+      { id: 'a-pilates-warmup', name: 'Breathing + Neutral Spine Awareness', muscle: 'warmup', sets: [{reps:'3 min'}], optional: true, cue: 'Deep lateral breathing. Engage your core.' },
       { id: 'a-pilates-core', name: 'Core Circuit (Crunch, Scissors, Leg Lowers)', muscle: 'core', sets: [{reps:'15 min'}], cue: '2 sets × 10–15 reps each. Slow, controlled.' },
       { id: 'a-pilates-stability', name: 'Stability Work (Plank Variations, Bridges)', muscle: 'stability', sets: [{reps:'15 min'}], cue: 'Side plank, single-leg bridge. Hold 30–60 sec.' },
       { id: 'a-pilates-stretch', name: 'Pilates Stretching (Spine Stretch, Hip Flexor)', muscle: 'flexibility', sets: [{reps:'10 min'}], cue: 'Lengthen. Release tension.' },
-      { id: 'a-pilates-cool', name: 'Cool-Down + Roll Down', muscle: 'cooldown', sets: [{reps:'2 min'}], cue: 'Vertebra by vertebra. Relax.' }
+      { id: 'a-pilates-cool', name: 'Cool-Down + Roll Down', muscle: 'cooldown', sets: [{reps:'2 min'}], optional: true, cue: 'Vertebra by vertebra. Relax.' }
     ]
   },
   dance: {
@@ -1457,11 +1457,11 @@ const ALTERNATIVE_ACTIVITIES = {
     type: 'timed',
     duration: 45,
     exercises: [
-      { id: 'a-dance-warmup', name: 'Music Warmup + Groove Finding', muscle: 'warmup', sets: [{reps:'5 min'}], cue: 'Feel the beat. Light movement to get loose.' },
+      { id: 'a-dance-warmup', name: 'Music Warmup + Groove Finding', muscle: 'warmup', sets: [{reps:'5 min'}], optional: true, cue: 'Feel the beat. Light movement to get loose.' },
       { id: 'a-dance-hiphop', name: 'Hip-Hop Cardio Combos', muscle: 'cardio', sets: [{reps:'12 min'}], cue: 'Fast-paced, fun. Follow along or freestyle. Keep moving.' },
       { id: 'a-dance-belly', name: 'Belly Dance or Latin Flow', muscle: 'cardio', sets: [{reps:'10 min'}], cue: 'Isolate your hips and core. Rhythmic, controlled.' },
       { id: 'a-dance-freeflow', name: 'Free-Style Dance (Your Favorite Song)', muscle: 'cardio', sets: [{reps:'12 min'}], cue: 'No choreography. Just feel the music and move your body.' },
-      { id: 'a-dance-cool', name: 'Cool-Down Walk to Slower Song', muscle: 'cooldown', sets: [{reps:'6 min'}], cue: 'Bring heart rate down. Smile.' }
+      { id: 'a-dance-cool', name: 'Cool-Down Walk to Slower Song', muscle: 'cooldown', sets: [{reps:'6 min'}], optional: true, cue: 'Bring heart rate down. Smile.' }
     ]
   },
   boxing: {
@@ -1472,11 +1472,11 @@ const ALTERNATIVE_ACTIVITIES = {
     type: 'timed',
     duration: 45,
     exercises: [
-      { id: 'a-box-warmup', name: 'Joint Mobility + Light Shadowboxing', muscle: 'warmup', sets: [{reps:'5 min'}], cue: 'Loosen shoulders, hips. Practice footwork.' },
+      { id: 'a-box-warmup', name: 'Joint Mobility + Light Shadowboxing', muscle: 'warmup', sets: [{reps:'5 min'}], optional: true, cue: 'Loosen shoulders, hips. Practice footwork.' },
       { id: 'a-box-combos', name: 'Heavy Bag Combos (3 min on / 1 min rest)', muscle: 'cardio', sets: [{reps:'12 min'}], cue: '4 rounds. Jab-cross, hooks, uppercuts. Explosive.' },
       { id: 'a-box-speed', name: 'Speed Ball or Mitt Work', muscle: 'cardio', sets: [{reps:'10 min'}], cue: 'Hand speed, timing, precision. Stay sharp.' },
       { id: 'a-box-kicks', name: 'Kickboxing (Kicks + Punches)', muscle: 'cardio', sets: [{reps:'12 min'}], cue: 'Front kicks, roundhouse kicks, knees. Core engaged.' },
-      { id: 'a-box-cool', name: 'Cool-Down + Stretch (Shoulders, Hips, Legs)', muscle: 'cooldown', sets: [{reps:'6 min'}], cue: 'Release tension. Breathe.' }
+      { id: 'a-box-cool', name: 'Cool-Down + Stretch (Shoulders, Hips, Legs)', muscle: 'cooldown', sets: [{reps:'6 min'}], optional: true, cue: 'Release tension. Breathe.' }
     ]
   }
 };
@@ -2223,6 +2223,14 @@ function buildExCard(ex, isDone, savedWeights, hasPR, type) {
   const btnText = isDone ? '✓ COMPLETED' : 'MARK COMPLETE + START REST TIMER';
   detail += `<button class="complete-btn ${btnState}" id="btn-${ex.id}" onclick="completeExBtn('${ex.id}','${type}')">${btnText}</button>`;
 
+  // FEAT-6: Add skip button for optional exercises
+  if (ex.optional) {
+    const isSkipped = sessionState[ex.id]?.skipped || false;
+    const skipBtnState = isSkipped ? 'skip-state' : '';
+    const skipBtnText = isSkipped ? '⊘ SKIPPED' : 'SKIP EXERCISE';
+    detail += `<button class="skip-btn ${skipBtnState}" id="skip-${ex.id}" onclick="skipExercise('${ex.id}','${type}')" style="background:var(--dim1);color:var(--dim2);margin-top:8px;">${skipBtnText}</button>`;
+  }
+
   return `<div class="ex-card ${doneClass} ${prCardClass} ${prReadyClass}" id="card-${ex.id}" data-exid="${ex.id}">
     <div class="ex-hdr" onclick="toggleCard('${ex.id}')">
       <button class="check-btn" onclick="toggleDone(event,'${ex.id}','${type}')">✓</button>
@@ -2503,6 +2511,27 @@ function completeExBtn(exId, type) {
     updateDayProgressDOM(type);
     startTimerForEx(exId, type);
   }
+}
+
+// FEAT-6: Skip optional exercise without requiring completion
+function skipExercise(exId, type) {
+  const card = document.getElementById(`card-${exId}`);
+  if (!sessionState[exId]) sessionState[exId] = {};
+
+  const alreadySkipped = sessionState[exId].skipped;
+  if (alreadySkipped) {
+    // Toggle off (un-skip)
+    sessionState[exId].skipped = false;
+    const btn = document.getElementById(`skip-${exId}`);
+    if (btn) { btn.textContent = 'SKIP EXERCISE'; btn.classList.remove('skip-state'); }
+  } else {
+    // Mark as skipped
+    sessionState[exId].skipped = true;
+    const btn = document.getElementById(`skip-${exId}`);
+    if (btn) { btn.textContent = '⊘ SKIPPED'; btn.classList.add('skip-state'); }
+  }
+  saveSession();
+  updateDayProgressDOM(type);
 }
 
 function updateWeight(exId, setIdx, val) {
