@@ -4378,11 +4378,11 @@ function renderSprintDay(dayKey, content) {
     <div class="sprint-hr-row">
       <div class="sprint-hr-field">
         <div class="sprint-hr-label">Avg HR (bpm)</div>
-        <input class="sprint-hr-input" id="spHrAvg" type="number" placeholder="—" inputmode="numeric">
+        <input class="sprint-hr-input" id="spHrAvg" type="number" placeholder="—" inputmode="numeric" oninput="saveWatch('avgHr',this.value)">
       </div>
       <div class="sprint-hr-field">
         <div class="sprint-hr-label">Max HR (bpm)</div>
-        <input class="sprint-hr-input" id="spHrMax" type="number" placeholder="—" inputmode="numeric">
+        <input class="sprint-hr-input" id="spHrMax" type="number" placeholder="—" inputmode="numeric" oninput="saveWatch('maxHr',this.value)">
       </div>
     </div>
     <div style="font-size:10px;color:var(--dim2);text-align:center">Zone 4–5 target: 140–165+ bpm max</div>
