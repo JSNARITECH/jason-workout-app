@@ -4368,6 +4368,15 @@ function renderSprintDay(dayKey, content) {
       </div>
     </div>
     <div style="font-size:10px;color:var(--dim2);text-align:center">Zone 4–5 target: 140–165+ bpm max. Log before, during, or after sprint.</div>
+    <button class="bpm-import-btn" onclick="toggleBpmImport()" style="margin-top:10px;width:100%;">📥 Import BPM from Screenshot</button>
+    <div class="bpm-import-area" id="bpmImportArea">
+      <input type="file" id="bpmImageInput" accept="image/*" style="display:none" onchange="scanBpmScreenshot(this)">
+      <button class="bpm-scan-btn" id="bpmScanBtn" onclick="document.getElementById('bpmImageInput').click()">📸 Scan Samsung Health Screenshot</button>
+      <div class="bpm-scan-status" id="bpmScanStatus"></div>
+      <div class="bpm-divider">or paste JSON manually</div>
+      <textarea class="bpm-paste" id="bpmPasteField" placeholder='Paste JSON from Claude chat here...'></textarea>
+      <button class="bpm-parse-btn" onclick="importWatchData()">Parse &amp; Apply</button>
+    </div>
   </div>
 
   <div class="rest-card" style="padding:14px 14px 18px">
