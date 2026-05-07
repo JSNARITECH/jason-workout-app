@@ -823,15 +823,15 @@ const WORKOUTS = {
           chips:{sets:'2 Sets',reps:'12-15 reps',pr:'PR: 15×15'},
           cue:'Lean away from cable. Pinky up first. Lead with elbows.' },
         { id:'u-bicep', name:'Cable Bicep Curl', muscle:'biceps',
-          sets:[{wt:40,reps:'12'},{wt:50,reps:'FAIL'}],
-          chips:{sets:'2 Sets',reps:'12-15 reps',pr:'PR: 50×12',tag:'Hassan'},
-          hassan:true,
-          cue:'Drive pinky toward lateral delt at top. Full supination.' },
+          sets:[{wt:40,reps:'6'},{wt:50,reps:'FAIL'},{wt:40,reps:'20',note:'Burnout'}],
+          chips:{sets:'2 Sets',reps:'6 reps',pr:'PR: 50×FAIL',tag:'Hassan',target:'Target: 50 lbs'},
+          hassan:true, ladder:['40×6','50×FAIL'], burnout:'40 lbs × 20 reps',
+          cue:'Drive pinky toward lateral delt at top. Full supination. Ladder: 40×6, 50 to failure, then 40×20 burnout.' },
         { id:'u-tricep', name:'Tricep Rope Pushdown', muscle:'triceps',
-          sets:[{wt:55,reps:'FAIL'},{wt:55,reps:'FAIL'}],
-          chips:{sets:'2 Sets',reps:'12-15 reps',pr:'PR: 55×15',tag:'Hassan'},
-          hassan:true,
-          cue:'Elbows locked at sides. Spread rope at bottom. 1-sec squeeze.' }
+          sets:[{wt:40,reps:'6'},{wt:55,reps:'FAIL'},{wt:40,reps:'20',note:'Burnout'}],
+          chips:{sets:'2 Sets',reps:'6 reps',pr:'PR: 55×FAIL',tag:'Hassan',target:'Target: 55 lbs'},
+          hassan:true, ladder:['40×6','55×FAIL'], burnout:'40 lbs × 20 reps',
+          cue:'Elbows locked at sides. Spread rope at bottom. 1-sec squeeze. Ladder: 40×6, 55 to failure, then 40×20 burnout.' }
       ]},
       { label:'Ab Finisher 🎯', exercises:[
         { id:'u-cable-crunch', name:'Cable Crunch', muscle:'abs',
@@ -847,10 +847,10 @@ const WORKOUTS = {
     sections:[
       { label:'Pre-Exhaust', exercises:[
         { id:'p-pecdeck', name:'Pec Deck / Machine Fly', muscle:'chest',
-          sets:[{wt:70,reps:'Warm'},{wt:90,reps:'FAIL'}],
-          chips:{sets:'2 Sets',reps:'15-20 reps',pr:'PR: 90 lbs',tag:'Hassan'},
-          hassan:true, ladder:['70×warm','90×FAIL'], burnout:'Drop 20%, 20 reps',
-          cue:'Lead with elbows not hands. Feel the deep stretch at the bottom. Squeeze hard at peak — chest only, no shoulder creep. This is your chest activation, not a shoulder warm-up.' }
+          sets:[{wt:70,reps:'6'},{wt:90,reps:'FAIL'},{wt:70,reps:'20',note:'Burnout'}],
+          chips:{sets:'2 Sets',reps:'6 reps',pr:'PR: 90×FAIL',tag:'Hassan',target:'Target: 90 lbs'},
+          hassan:true, ladder:['70×6','90×FAIL'], burnout:'70 lbs × 20 reps',
+          cue:'Lead with elbows not hands. Feel the deep stretch at the bottom. Squeeze hard at peak — chest only, no shoulder creep. Ladder: 70×6, 90 to failure, then 70×20 burnout.' }
       ]},
       { label:'Main Movement', exercises:[
         { id:'p-chest', name:'Machine Chest Press', muscle:'chest',
@@ -876,8 +876,9 @@ const WORKOUTS = {
           chips:{sets:'2 Sets',reps:'15-20 reps',pr:'PR: 50×20'},
           cue:'Lean away from cable. Pinky up first. Lead with elbows not wrists.' },
         { id:'p-tricep-oh', name:'Overhead Rope Extension', muscle:'triceps',
-          sets:[{wt:100,reps:'FAIL'},{wt:110,reps:'20',note:'Burnout'}],
-          chips:{sets:'2 Sets',reps:'12-15 reps',pr:'PR: 100×FAIL / 110×20',tag:'Hassan'},
+          sets:[{wt:90,reps:'6'},{wt:110,reps:'FAIL'},{wt:90,reps:'20',note:'Burnout'}],
+          chips:{sets:'2 Sets',reps:'6 reps',pr:'PR: 110×FAIL',tag:'Hassan',target:'Target: 110 lbs'},
+          hassan:true, ladder:['90×6','110×FAIL'], burnout:'90 lbs × 20 reps',
           hassan:true, warnSpinal:true,
           cue:'Elbows point to ceiling — do NOT let them flare out. Drive hands apart at full extension. You\'re targeting the long head here, which the pushdown on Upper Day misses. Feel the stretch overhead.' }
       ]},
@@ -918,10 +919,10 @@ const WORKOUTS = {
           chips:{sets:'2 Sets',reps:'15-20 reps',pr:'PR: 55×20'},
           cue:'Pull elbows up and out. Retract scapulae at peak.' },
         { id:'pull-curl', name:'Cable Bicep Curl (Supinated)', muscle:'biceps',
-          sets:[{wt:40,reps:'12'},{wt:50,reps:'FAIL'}],
-          chips:{sets:'2 Sets',reps:'12-15 reps',pr:'PR: 50×12',tag:'Hassan'},
-          hassan:true,
-          cue:'Drive pinky toward lateral delt. Full supination throughout.' }
+          sets:[{wt:40,reps:'6'},{wt:50,reps:'FAIL'},{wt:40,reps:'20',note:'Burnout'}],
+          chips:{sets:'2 Sets',reps:'6 reps',pr:'PR: 50×FAIL',tag:'Hassan',target:'Target: 50 lbs'},
+          hassan:true, ladder:['40×6','50×FAIL'], burnout:'40 lbs × 20 reps',
+          cue:'Drive pinky toward lateral delt. Full supination throughout. Ladder: 40×6, 50 to failure, then 40×20 burnout.' }
       ]}
     ]
   },
