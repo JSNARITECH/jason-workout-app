@@ -1832,17 +1832,6 @@ async function loadAll() {
     }
   } catch(e) { /* non-fatal */ }
 
-  // Load PR-ready flags from Supabase
-  try {
-    const prRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/exercise_pr_flags?pr_ready=eq.true&select=exercise_name`,
-      { headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` } }
-    );
-    if (prRes.ok) {
-      const prRows = await prRes.json();
-      prReadyFlags = new Set(prRows.map(r => r.exercise_name));
-    }
-  } catch(e) { /* non-fatal */ }
 
   // Load today's session — try window.storage first, fall back to localStorage crash save
   try {
@@ -2011,9 +2000,6 @@ function renderWorkoutView() {
   const allExIds = [];
   sectionsForProgress.forEach(s => s.exercises.forEach(e => allExIds.push(e.id)));
 
-  // Check rotation alerts
-  const rotationAlerts = getRotationAlerts(effectiveType);
-
   let html = '';
 
   // FORT cancelled banner (only when scheduled type is FORT and no override)
@@ -2090,19 +2076,6 @@ function renderWorkoutView() {
     <span class="recovery-dismiss" onclick="document.getElementById('recoveryBanner').classList.remove('visible')">Dismiss</span>
   </div>`;
 
-  // Rotation alerts
-  if (rotationAlerts.length > 0) {
-    rotationAlerts.forEach(alert => {
-      html += `<div class="rotation-alert visible" id="rot-${alert.exId}">
-        <div class="rotation-title">🔄 Time to Mix It Up — ${alert.exName}</div>
-        <div class="rotation-body">You've hit this exercise ${alert.count} sessions in a row without a PR increase. Your body is adapting. Try one of these variations:</div>
-        <div class="rotation-exercises">
-          ${alert.alternatives.map(alt => `<span class="rotation-ex" onclick="swapExercise('${alert.exId}','${alt.replace(/'/g,"\\'")}','${effectiveType}')">${alt}</span>`).join('')}
-        </div>
-        <div class="rotation-dismiss" onclick="dismissAlert('rot-${alert.exId}')">Dismiss for now</div>
-      </div>`;
-    });
-  }
 
   // Galaxy Watch
   const ws = sessionState['__watch__'] || {};
@@ -2197,22 +2170,20 @@ function renderWorkoutView() {
 
 function buildExCard(ex, isDone, savedWeights, hasPR, type) {
   const doneClass = isDone ? 'done' : '';
-  const prCardClass = hasPR ? 'pr-card' : '';
-  const isPRReady = prReadyFlags.has(ex.name);
-  const prReadyClass = isPRReady ? 'pr-ready' : '';
+  const freq = exerciseFreq[ex.id] || 0;
+  const timeToIncrease = freq >= 3;
+  const prCardClass = (hasPR || timeToIncrease) ? 'pr-card' : '';
   const c = ex.chips || {};
   let chipsHtml = '';
   if (c.sets) chipsHtml += `<span class="chip chip-sets">${c.sets}</span>`;
   if (c.reps) chipsHtml += `<span class="chip chip-reps">${c.reps}</span>`;
   if (hasPR) chipsHtml += `<span class="chip chip-pr-badge">🏆 PR SESSION</span>`;
   else if (c.pr) chipsHtml += `<span class="chip chip-pr">${c.pr}</span>`;
-  if (isPRReady) chipsHtml += `<span class="chip" style="background:rgba(255,140,0,0.15);color:#ff8c00;border:1px solid rgba(255,140,0,0.4);">🔥 PR READY</span>`;
+  if (timeToIncrease && !hasPR) chipsHtml += `<span class="chip" style="background:rgba(255,140,0,0.15);color:#ff8c00;border:1px solid rgba(255,140,0,0.4);">🔥 TIME TO INCREASE</span>`;
   if (c.target) chipsHtml += `<span class="chip chip-target">${c.target}</span>`;
   if (c.tag) chipsHtml += `<span class="chip chip-hassan">${c.tag}</span>`;
 
   const prBadgeHtml = hasPR ? `<span class="pr-badge">🏆 NEW PR</span>` : '';
-  const isRotation = exerciseFreq[ex.id] >= 3;
-  const rotFlagHtml = isRotation ? `<span class="rotation-flag">🔄 Vary soon</span>` : '';
 
   // Swap override: use alternate name if set
   const isSwapped = !!swapOverrides[ex.id];
@@ -2249,6 +2220,7 @@ function buildExCard(ex, isDone, savedWeights, hasPR, type) {
     detail += `<div class="ladder-display">${ex.ladder.map((s,i) => `<span class="ladder-step">${s}</span>${i<ex.ladder.length-1?'<span class="ladder-arrow">→</span>':''}`).join('')}</div>`;
   }
   if (ex.burnout) detail += `<div class="burnout-badge">🔥 Burnout: ${ex.burnout}</div>`;
+  const rotFlagHtml = '';
 
   detail += `<table class="set-table">
     <tr><th>Set</th><th>Weight (lbs)</th><th>Target</th><th></th><th></th></tr>`;
