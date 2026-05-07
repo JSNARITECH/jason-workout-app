@@ -2167,29 +2167,6 @@ function renderWorkoutView() {
 
   // Notes + Save
   const savedNotes = (sessionState['__notes__'] || {}).notes || '';
-  const watch = sessionState['__watch__'] || {};
-  // FEAT-5: Add Galaxy Watch data entry to all days
-  html += `<div class="watch-widget">
-    <div class="watch-title">⌚ GALAXY WATCH DATA (Optional)</div>
-    <div class="watch-fields">
-      <div class="watch-field">
-        <div class="wf-label">Avg HR (bpm)</div>
-        <input class="wf-input" type="number" placeholder="—" value="${watch.avgHr||''}" inputmode="numeric" onchange="updateWatch('avgHr',this.value)">
-      </div>
-      <div class="watch-field">
-        <div class="wf-label">Max HR (bpm)</div>
-        <input class="wf-input" type="number" placeholder="—" value="${watch.maxHr||''}" inputmode="numeric" onchange="updateWatch('maxHr',this.value)">
-      </div>
-      <div class="watch-field">
-        <div class="wf-label">Calories</div>
-        <input class="wf-input" type="number" placeholder="—" value="${watch.calories||''}" inputmode="numeric" onchange="updateWatch('calories',this.value)">
-      </div>
-      <div class="watch-field">
-        <div class="wf-label">Duration (min)</div>
-        <input class="wf-input" type="number" placeholder="—" value="${watch.duration||''}" inputmode="numeric" onchange="updateWatch('duration',this.value)">
-      </div>
-    </div>
-  </div>`;
 
   html += `<div class="notes-section">
     <div class="notes-label">Session Notes</div>
