@@ -2796,12 +2796,38 @@ function buildExNameToIdMap() {
   const map = {};
   const sources = [WORKOUTS];
   if (typeof RECOVERY_WORKOUTS !== 'undefined') sources.push(RECOVERY_WORKOUTS);
+  if (typeof VACATION_WORKOUTS !== 'undefined') sources.push(VACATION_WORKOUTS);
+  if (typeof ALTERNATIVE_ACTIVITIES !== 'undefined') sources.push(ALTERNATIVE_ACTIVITIES);
+
   for (const src of sources) {
     if (!src) continue;
-    for (const type in src) {
-      for (const section of (src[type].sections || [])) {
-        for (const ex of (section.exercises || [])) {
+    // Handle VACATION_WORKOUTS (has 'daily' key with exercises directly)
+    if (src === VACATION_WORKOUTS) {
+      const daily = src.daily;
+      if (daily && daily.sections) {
+        for (const section of daily.sections) {
+          for (const ex of (section.exercises || [])) {
+            if (ex.name && ex.id) map[ex.name.toLowerCase()] = ex.id;
+          }
+        }
+      }
+    }
+    // Handle ALTERNATIVE_ACTIVITIES (has activity types with exercises array)
+    else if (src === ALTERNATIVE_ACTIVITIES) {
+      for (const activity in src) {
+        const act = src[activity];
+        for (const ex of (act.exercises || [])) {
           if (ex.name && ex.id) map[ex.name.toLowerCase()] = ex.id;
+        }
+      }
+    }
+    // Handle standard workout structure (WORKOUTS, RECOVERY_WORKOUTS)
+    else {
+      for (const type in src) {
+        for (const section of (src[type].sections || [])) {
+          for (const ex of (section.exercises || [])) {
+            if (ex.name && ex.id) map[ex.name.toLowerCase()] = ex.id;
+          }
         }
       }
     }
