@@ -3482,25 +3482,6 @@ function renderSummaryView() {
     html += `</div>`;
   });
 
-  // Frequency flags
-  const rotationExes = Object.entries(exerciseFreq).filter(([,c]) => c >= 3);
-  if (rotationExes.length > 0) {
-    html += `<div class="sec-label">Rotation Flags 🔄</div>
-    <div class="summary-card">
-      <div class="sc-exercises">`;
-    rotationExes.forEach(([id, count]) => {
-      const ex = getExById(id);
-      if (!ex) return;
-      const muscle = ex.muscle || 'unknown';
-      const pool = ROTATION_POOLS[muscle] || [];
-      const alt = pool.find(a => a.name !== ex.name)?.name || '';
-      html += `<div class="sc-ex-row">
-        <span class="sc-ex-name">${ex.name} <span style="color:var(--dim);font-size:10px">(${count} sessions)</span></span>
-        <span style="font-size:10px;color:var(--purple)">Try: ${alt || 'See rotation pool'}</span>
-      </div>`;
-    });
-    html += `</div></div>`;
-  }
 
   html += `</div>`;
   scroll.innerHTML = html;
