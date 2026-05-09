@@ -4468,7 +4468,7 @@ function buildRoundDots() {
   if (!container) return;
   let html = '';
   for (let i = 1; i <= sprintState.totalRounds; i++) {
-    const cls = i < sprintState.round ? 'done' : i === sprintState.round && sprintState.phase === 'sprint' ? 'active' : '';
+    const cls = i < sprintState.round || (i === sprintState.round && sprintState.phase !== 'idle' && sprintState.phase !== 'warmup') ? 'done' : i === sprintState.round && sprintState.phase === 'sprint' ? 'active' : '';
     html += `<div class="sprint-round-dot ${cls}">${i}</div>`;
   }
   container.innerHTML = html;
