@@ -796,14 +796,14 @@ const WORKOUTS = {
           cue:'Start externally rotated. Pull elbows up and in. Slight internal rotation at top.' },
         { id:'u-chest', name:'Machine Chest Press', muscle:'chest',
           sets:[{wt:121,reps:'8'},{wt:143,reps:'FAIL'},{wt:121,reps:'20',note:'Burnout'}],
-          chips:{sets:'2 Sets',reps:'8-12 reps',pr:'PR: 137×12',target:'Target: 143 lbs',tag:'Hassan'},
+          chips:{sets:'3 Sets',reps:'8-12 reps',pr:'PR: 137×12',target:'Target: 143 lbs',tag:'Hassan'},
           hassan:true, ladder:['121×6','132×4','143×FAIL'], burnout:'121 lbs × 20 reps',
           cue:'Scapulae retracted. Deep stretch. Drive through chest.' }
       ]},
       { label:'Back', exercises:[
         { id:'u-lat', name:'Lat Pulldown (Wide Grip)', muscle:'back',
           sets:[{wt:121,reps:'8'},{wt:143,reps:'FAIL'},{wt:110,reps:'20',note:'Burnout'}],
-          chips:{sets:'2 Sets',reps:'8-12 reps',pr:'PR: 143×10',tag:'Hassan'},
+          chips:{sets:'3 Sets',reps:'8-12 reps',pr:'PR: 143×10',tag:'Hassan'},
           hassan:true, ladder:['121×6','132×4','143×FAIL'], burnout:'110 lbs × 20 reps',
           cue:'Pull elbows down and in. Chest tall. No shoulder shrug.' },
         { id:'u-row', name:'Seated Cable Row', muscle:'back',
@@ -815,21 +815,21 @@ const WORKOUTS = {
       { label:'Shoulders + Arms', exercises:[
         { id:'u-shoulder', name:'Seated Shoulder Press', muscle:'shoulders',
           sets:[{wt:121,reps:'6'},{wt:143,reps:'FAIL'},{wt:121,reps:'20',note:'Burnout'}],
-          chips:{sets:'2 Sets',reps:'8-10 reps',pr:'PR: 143×10',tag:'Hassan'},
+          chips:{sets:'3 Sets',reps:'8-10 reps',pr:'PR: 143×10',tag:'Hassan'},
           hassan:true, warnSpinal:true, ladder:['121×4','132×2','143×FAIL'], burnout:'121 lbs × 20 reps',
           cue:'Torso upright. Full ROM down to shoulder level.' },
         { id:'u-lat-raise', name:'Cable Lateral Raise', muscle:'shoulders',
-          sets:[{wt:15,reps:'15'},{wt:15,reps:'15'}],
-          chips:{sets:'2 Sets',reps:'12-15 reps',pr:'PR: 15×15'},
+          sets:[{wt:40,reps:'15'},{wt:50,reps:'20'}],
+          chips:{sets:'2 Sets',reps:'15-20 reps',pr:'PR: 50×20'},
           cue:'Lean away from cable. Pinky up first. Lead with elbows.' },
         { id:'u-bicep', name:'Cable Bicep Curl', muscle:'biceps',
           sets:[{wt:40,reps:'6'},{wt:50,reps:'FAIL'},{wt:40,reps:'20',note:'Burnout'}],
-          chips:{sets:'2 Sets',reps:'6 reps',pr:'PR: 50×FAIL',tag:'Hassan',target:'Target: 50 lbs'},
+          chips:{sets:'3 Sets',reps:'6 reps',pr:'PR: 50×FAIL',tag:'Hassan',target:'Target: 50 lbs'},
           hassan:true, ladder:['40×6','50×FAIL'], burnout:'40 lbs × 20 reps',
           cue:'Drive pinky toward lateral delt at top. Full supination. Ladder: 40×6, 50 to failure, then 40×20 burnout.' },
         { id:'u-tricep', name:'Tricep Rope Pushdown', muscle:'triceps',
           sets:[{wt:40,reps:'6'},{wt:55,reps:'FAIL'},{wt:40,reps:'20',note:'Burnout'}],
-          chips:{sets:'2 Sets',reps:'6 reps',pr:'PR: 55×FAIL',tag:'Hassan',target:'Target: 55 lbs'},
+          chips:{sets:'3 Sets',reps:'6 reps',pr:'PR: 55×FAIL',tag:'Hassan',target:'Target: 55 lbs'},
           hassan:true, ladder:['40×6','55×FAIL'], burnout:'40 lbs × 20 reps',
           cue:'Elbows locked at sides. Spread rope at bottom. 1-sec squeeze. Ladder: 40×6, 55 to failure, then 40×20 burnout.' }
       ]},
@@ -848,19 +848,19 @@ const WORKOUTS = {
       { label:'Pre-Exhaust', exercises:[
         { id:'p-pecdeck', name:'Pec Deck / Machine Fly', muscle:'chest',
           sets:[{wt:70,reps:'6'},{wt:90,reps:'FAIL'},{wt:70,reps:'20',note:'Burnout'}],
-          chips:{sets:'2 Sets',reps:'6 reps',pr:'PR: 90×FAIL',tag:'Hassan',target:'Target: 90 lbs'},
+          chips:{sets:'3 Sets',reps:'6 reps',pr:'PR: 90×FAIL',tag:'Hassan',target:'Target: 90 lbs'},
           hassan:true, ladder:['70×6','90×FAIL'], burnout:'70 lbs × 20 reps',
           cue:'Lead with elbows not hands. Feel the deep stretch at the bottom. Squeeze hard at peak — chest only, no shoulder creep. Ladder: 70×6, 90 to failure, then 70×20 burnout.' }
       ]},
       { label:'Main Movement', exercises:[
         { id:'p-chest', name:'Machine Chest Press', muscle:'chest',
           sets:[{wt:121,reps:'6'},{wt:143,reps:'FAIL'},{wt:121,reps:'20',note:'Burnout'}],
-          chips:{sets:'2 Sets',reps:'8-12 reps',pr:'PR: 137×12',target:'Target: 143 lbs',tag:'Hassan'},
+          chips:{sets:'3 Sets',reps:'8-12 reps',pr:'PR: 137×12',target:'Target: 143 lbs',tag:'Hassan'},
           hassan:true, ladder:['121×6','132×4','143×FAIL'], burnout:'121 lbs × 20 reps',
           cue:'Scapulae retracted and depressed. Drive through chest, not shoulders. Chest should be pre-fatigued from Pec Deck — good.' },
         { id:'p-shoulder', name:'Seated Shoulder Press', muscle:'shoulders',
           sets:[{wt:121,reps:'4'},{wt:143,reps:'FAIL'},{wt:121,reps:'20',note:'Burnout'}],
-          chips:{sets:'2 Sets',reps:'8-10 reps',pr:'PR: 143×10',target:'Target: 143×11',tag:'Hassan'},
+          chips:{sets:'3 Sets',reps:'8-10 reps',pr:'PR: 143×10',target:'Target: 143×11',tag:'Hassan'},
           hassan:true, warnSpinal:true, ladder:['121×4','132×2','143×FAIL'], burnout:'121 lbs × 20 reps',
           cue:'Torso upright. Full ROM to shoulder level every rep. This is your main shoulder strength builder — different emphasis from Upper Day.' }
       ]},
@@ -877,7 +877,7 @@ const WORKOUTS = {
           cue:'Lean away from cable. Pinky up first. Lead with elbows not wrists.' },
         { id:'p-tricep-oh', name:'Overhead Rope Extension', muscle:'triceps',
           sets:[{wt:90,reps:'6'},{wt:110,reps:'FAIL'},{wt:90,reps:'20',note:'Burnout'}],
-          chips:{sets:'2 Sets',reps:'6 reps',pr:'PR: 110×FAIL',tag:'Hassan',target:'Target: 110 lbs'},
+          chips:{sets:'3 Sets',reps:'6 reps',pr:'PR: 110×FAIL',tag:'Hassan',target:'Target: 110 lbs'},
           hassan:true, ladder:['90×6','110×FAIL'], burnout:'90 lbs × 20 reps',
           hassan:true, warnSpinal:true,
           cue:'Elbows point to ceiling — do NOT let them flare out. Drive hands apart at full extension. You\'re targeting the long head here, which the pushdown on Upper Day misses. Feel the stretch overhead.' }
@@ -920,7 +920,7 @@ const WORKOUTS = {
           cue:'Pull elbows up and out. Retract scapulae at peak.' },
         { id:'pull-curl', name:'Cable Bicep Curl (Supinated)', muscle:'biceps',
           sets:[{wt:40,reps:'6'},{wt:50,reps:'FAIL'},{wt:40,reps:'20',note:'Burnout'}],
-          chips:{sets:'2 Sets',reps:'6 reps',pr:'PR: 50×FAIL',tag:'Hassan',target:'Target: 50 lbs'},
+          chips:{sets:'3 Sets',reps:'6 reps',pr:'PR: 50×FAIL',tag:'Hassan',target:'Target: 50 lbs'},
           hassan:true, ladder:['40×6','50×FAIL'], burnout:'40 lbs × 20 reps',
           cue:'Drive pinky toward lateral delt. Full supination throughout. Ladder: 40×6, 50 to failure, then 40×20 burnout.' }
       ]}
@@ -1803,11 +1803,12 @@ async function loadAll() {
     }
   } catch(e) { /* non-fatal — dots just won't show */ }
 
-  // Load exercise notes from last 4 weeks
+  // Load exercise notes from last 4 weeks (location-scoped)
   try {
     const since = new Date(Date.now() - 28 * 86400000).toISOString().split('T')[0];
+    const locValue = sessionLocation === 'HG' ? 'Home Gym' : 'Lifetime Fitness';
     const nRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/exercise_notes?note_date=gte.${since}&select=exercise_id,note_date,note&order=note_date.desc`,
+      `${SUPABASE_URL}/rest/v1/exercise_notes?note_date=gte.${since}&location=eq.${encodeURIComponent(locValue)}&select=exercise_id,note_date,note&order=note_date.desc`,
       { headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` } }
     );
     if (nRes.ok) {
@@ -3298,8 +3299,9 @@ async function saveExerciseNote(exId, exName, type) {
   notesStore[exId].todayNote = note;
   if (!note) return; // don't write empty rows
   try {
+    const locValue = sessionLocation === 'HG' ? 'Home Gym' : 'Lifetime Fitness';
     await fetch(
-      `${SUPABASE_URL}/rest/v1/exercise_notes?on_conflict=exercise_id,note_date`,
+      `${SUPABASE_URL}/rest/v1/exercise_notes?on_conflict=exercise_id,note_date,location`,
       {
         method: 'POST',
         headers: {
@@ -3312,6 +3314,7 @@ async function saveExerciseNote(exId, exName, type) {
           exercise_id:   exId,
           exercise_name: exName,
           workout_type:  type,
+          location:      locValue,
           note_date:     getDateStr(),
           note:          note,
           updated_at:    new Date().toISOString(),
