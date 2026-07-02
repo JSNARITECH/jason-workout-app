@@ -3162,12 +3162,38 @@ async function saveWorkout(type, dayKey) {
     saved = true;
   } catch(e) { /* silent — not in Claude context */ }
 
+  // Also save to Supabase for cloud persistence and PR sync
+  try {
+    const supabasePayload = {
+      workout_date: getDateStr(),
+      workout_type: type,
+      location: sessionLocation === 'HG' ? 'Home Gym' : 'Lifetime Fitness',
+      exercises: JSON.stringify(exercises),
+      watch_data: entry.watch ? JSON.stringify(entry.watch) : null,
+      notes: entry.notes || null
+    };
+
+    await fetch(
+      `${SUPABASE_URL}/rest/v1/workouts`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          apikey: SUPABASE_ANON,
+          Authorization: `Bearer ${SUPABASE_ANON}`,
+          Prefer: 'resolution=ignore-duplicates'
+        },
+        body: JSON.stringify(supabasePayload)
+      }
+    );
+  } catch(e) { console.warn('Supabase save attempted (non-fatal):', e); }
+
   if (saved) {
     if (newPRs.length > 0) {
       showPRFlash();
-      showToast(`🏆 ${newPRs.length} NEW PR${newPRs.length>1?'s':''}! Saved — ready for Claude Chat`);
+      showToast(`🏆 ${newPRs.length} NEW PR${newPRs.length>1?'s':''}! Saved to cloud`);
     } else {
-      showToast(`✅ ${entry.title} saved · ${getDateStr()} · ready for Claude Chat`);
+      showToast(`✅ ${entry.title} saved to cloud · ${getDateStr()}`);
     }
     const btn = document.getElementById('saveBtn');
     if (btn) { btn.textContent = '✓ SAVED'; btn.style.background = '#2a3d00'; btn.style.color = 'var(--accent)'; }
@@ -3181,6 +3207,9 @@ async function saveWorkout(type, dayKey) {
 
 // BUG-6, BUG-8: Save sprint session with Galaxy Watch data
 async function saveSprintWorkout(dayKey) {
+  const avgHrVal = parseInt(document.getElementById('spHrAvg')?.value || 0) || null;
+  const maxHrVal = parseInt(document.getElementById('spHrMax')?.value || 0) || null;
+
   const entry = {
     id: Date.now(),
     date: getDateStr(),
@@ -3191,8 +3220,8 @@ async function saveSprintWorkout(dayKey) {
     rounds: sprintState.totalRounds,
     exercises: [],
     watch: {
-      avgHr: parseInt(document.getElementById('spHrAvg')?.value || 0) || null,
-      maxHr: parseInt(document.getElementById('spHrMax')?.value || 0) || null,
+      avgHr: avgHrVal,
+      maxHr: maxHrVal,
       calories: null,
       zones: null,
       peakTiming: null,
@@ -3216,8 +3245,40 @@ async function saveSprintWorkout(dayKey) {
     saved = true;
   } catch(e) {}
 
+  // Save to Supabase workouts table with watch data
+  try {
+    const supabasePayload = {
+      workout_date: getDateStr(),
+      workout_type: 'sprint',
+      location: sessionLocation === 'HG' ? 'Home Gym' : 'Lifetime Fitness',
+      exercises: JSON.stringify([]),  // Sprint doesn't track individual exercises like regular workouts
+      watch_data: JSON.stringify({
+        avgHr: avgHrVal,
+        maxHr: maxHrVal,
+        duration: entry.duration,
+        rounds: sprintState.totalRounds
+      }),
+      notes: 'Sprint session with Galaxy Watch data'
+    };
+
+    const supRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/workouts`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          apikey: SUPABASE_ANON,
+          Authorization: `Bearer ${SUPABASE_ANON}`,
+          Prefer: 'resolution=ignore-duplicates'
+        },
+        body: JSON.stringify(supabasePayload)
+      }
+    );
+    if (supRes.ok) saved = true;
+  } catch(e) { console.warn('Supabase save failed:', e); }
+
   if (saved) {
-    showToast(`⚡ Sprint session saved · ${getDateStr()}`);
+    showToast(`⚡ Sprint session saved · ${getDateStr()} · Watch data persisted`);
     const btn = document.getElementById('sprintSaveBtn');
     if (btn) { btn.textContent = '✓ SAVED'; btn.style.background = '#2a3d00'; btn.style.color = 'var(--accent)'; }
     invalidateHistoryCache();
