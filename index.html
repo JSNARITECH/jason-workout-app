@@ -239,6 +239,8 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .save-btn{width:100%;margin-top:9px;padding:12px;border-radius:11px;border:none;background:var(--accent);color:var(--black);font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:2px;cursor:pointer;transition:opacity 0.2s;display:flex;align-items:center;justify-content:center;gap:6px;}
 .save-btn:active{opacity:0.8;}
 .save-btn.saved-state{background:var(--green);}
+#sprintSaveBtn{font-weight:900;border:2px solid var(--accent);box-shadow:0 0 12px rgba(232,255,71,0.3);}
+#sprintSaveBtn:hover{opacity:0.9;box-shadow:0 0 18px rgba(232,255,71,0.5);}
 .reset-btn{display:block;width:100%;padding:9px;margin-top:9px;border-radius:9px;border:1px solid var(--border2);background:none;color:var(--dim2);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;cursor:pointer;}
 
 /* REST DAY */
@@ -4449,7 +4451,7 @@ function renderSprintDay(dayKey, content) {
     </div>
   </div>
 
-  <button class="save-btn" id="sprintSaveBtn" onclick="saveSprintWorkout('${dayKey}')" style="margin:13px; display:none">💾 SAVE SPRINT SESSION</button>`;
+  <button class="save-btn" id="sprintSaveBtn" onclick="saveSprintWorkout('${dayKey}')" style="margin:13px; display:none">💾 SAVE TO SUPABASE</button>`;
 
   // FEAT-1 & FEAT-2: Add mobility exercises for Wed/Sat
   const mobilityContent = MOBILITY_EXERCISES[dayKey];
@@ -4683,7 +4685,10 @@ function completeSprint() {
   if (btn) { btn.textContent = 'RESET'; btn.className = 'sprint-btn sprint-btn-main'; }
   if (doneBanner) doneBanner.style.display = 'block';
   if (hrCard) hrCard.style.display = 'block';
-  if (saveBtn) saveBtn.style.display = 'block'; // BUG-6, BUG-8: Show save button
+  if (saveBtn) {
+    saveBtn.style.display = 'block';
+    console.log('Sprint save button shown');
+  }
   buildRoundDots();
   vibrateDevice([300, 100, 300, 100, 300]);
 }
