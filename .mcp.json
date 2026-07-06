@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "notebooklm": {
+      "type": "stdio",
+      "command": "/root/.local/bin/notebooklm-mcp",
+      "args": [],
+      "env": {
+        "NOTEBOOKLM_COOKIES": "${NOTEBOOKLM_COOKIES}",
+        "NOTEBOOKLM_CSRF_TOKEN": "${NOTEBOOKLM_CSRF_TOKEN}"
+      }
+    }
+  }
+}
