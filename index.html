@@ -3170,12 +3170,15 @@ async function saveWorkout(type, dayKey) {
       workout_date: getDateStr(),
       workout_type: type,
       location: sessionLocation === 'HG' ? 'Home Gym' : 'Lifetime Fitness',
-      exercises: JSON.stringify(exercises),
-      watch_data: entry.watch ? JSON.stringify(entry.watch) : null,
-      notes: entry.notes || null
+      exercises: exercises,
+      duration_minutes: sessionStart ? Math.floor((Date.now() - sessionStart) / 60000) : null,
+      avg_heart_rate: watch.avgHr || null,
+      max_heart_rate: watch.maxHr || null,
+      calories_burned: watch.calories || null,
+      session_notes: entry.notes || null
     };
 
-    await fetch(
+    const supRes = await fetch(
       `${SUPABASE_URL}/rest/v1/workouts`,
       {
         method: 'POST',
@@ -3188,6 +3191,7 @@ async function saveWorkout(type, dayKey) {
         body: JSON.stringify(supabasePayload)
       }
     );
+    if (!supRes.ok) console.warn('Supabase save rejected:', await supRes.text());
   } catch(e) { console.warn('Supabase save attempted (non-fatal):', e); }
 
   if (saved) {
@@ -3253,14 +3257,11 @@ async function saveSprintWorkout(dayKey) {
       workout_date: getDateStr(),
       workout_type: 'sprint',
       location: sessionLocation === 'HG' ? 'Home Gym' : 'Lifetime Fitness',
-      exercises: JSON.stringify([]),  // Sprint doesn't track individual exercises like regular workouts
-      watch_data: JSON.stringify({
-        avgHr: avgHrVal,
-        maxHr: maxHrVal,
-        duration: entry.duration,
-        rounds: sprintState.totalRounds
-      }),
-      notes: 'Sprint session with Galaxy Watch data'
+      exercises: [],  // Sprint doesn't track individual exercises like regular workouts
+      duration_minutes: sessionStart ? Math.floor((Date.now() - sessionStart) / 60000) : null,
+      avg_heart_rate: avgHrVal,
+      max_heart_rate: maxHrVal,
+      session_notes: `Sprint session · ${sprintState.totalRounds} rounds with Galaxy Watch data`
     };
 
     const supRes = await fetch(
