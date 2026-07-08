@@ -1,5 +1,16 @@
 # Workout App Changelog
 
+## v12.2–v12.3 — 2026-07-08
+### Fixed
+- **BUG-NEW-3:** Galaxy Watch metrics (avg/max HR, calories, duration) pre-filled from earlier in the day could not be cleared or corrected, since `sessionState.__watch__` is scoped per calendar date, not per displayed workout. A day-type swap (e.g. logging Tuesday's plan on Wednesday's date) inherited whatever watch data was already recorded for today.
+  - Added a "✕ Clear" button on every Galaxy Watch widget to wipe stale/pre-filled data in one tap.
+  - Fixed `saveWatch()` to store `null` (not `0`) when a field is cleared.
+  - Added an inline "✏️ Edit" panel on History cards so avg/max HR, calories, and duration can be corrected on an already-saved workout, PATCHing Supabase directly — no more manual SQL corrections.
+### Removed
+- **FEAT-15:** Removed FORT NYC entirely (coached-session logic, cancel/home-sub banner, `fortCancelled` state, `WORKOUTS.fort` content). Tuesday is now a fixed Lower Day using the same leg programming as Sunday.
+### Added
+- **FEAT-15:** Group class/activity swap (Boxing, Yoga, Pilates, Dance) is now available on any day of the week — not just Wed/Sat — via a "🥊 Swap to Class / Activity" button that replaces that day's planned session. A "↩ Cancel" button reverts to the day's normal plan.
+
 ## v11.1 — 2026-03-18
 ### Added
 - **Back Recovery Mode** — global toggle (🦴 pill in header) swaps all workout days to spine-safe rehab protocols when active. Persists via localStorage.

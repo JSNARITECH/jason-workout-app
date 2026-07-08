@@ -94,6 +94,8 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .watch-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--dim2);font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
 .watch-title::before{content:'⌚';font-size:12px;}
 .watch-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.watch-clear-btn{margin-left:auto;background:none;border:1px solid var(--border2);border-radius:7px;color:var(--dim2);font-size:9px;padding:3px 7px;text-transform:none;letter-spacing:0;cursor:pointer;}
+.watch-clear-btn:active{background:var(--border2);}
 .watch-field{display:flex;flex-direction:column;gap:3px;}
 .wf-label{font-size:9px;color:var(--dim2);letter-spacing:1.5px;text-transform:uppercase;font-weight:600;}
 .wf-input{background:var(--border);border:1px solid var(--border2);border-radius:8px;color:var(--white);padding:7px 10px;font-size:14px;font-weight:700;font-family:'DM Sans',sans-serif;width:100%;transition:border-color 0.2s;}
@@ -117,18 +119,15 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .rotation-ex:hover,.rotation-ex:active{background:rgba(192,132,252,0.2);}
 .rotation-dismiss{font-size:10px;color:var(--dim);margin-top:8px;cursor:pointer;text-decoration:underline;}
 
-/* FORT CANCELLED BANNER */
-.fort-cancel-banner{background:rgba(255,77,77,0.08);border:1px solid rgba(255,77,77,0.25);border-radius:14px;padding:14px 15px;margin-bottom:14px;}
-.fort-cancel-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
-.fort-cancel-title{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1px;color:var(--red);}
-.fort-cancel-sub{font-size:11px;color:var(--dim2);line-height:1.4;margin-bottom:10px;}
-.fort-cancel-btns{display:flex;gap:8px;}
-.fort-btn{flex:1;padding:9px 10px;border-radius:10px;border:none;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all 0.2s;}
-.fort-btn-go{background:var(--green);color:#000;}
-.fort-btn-go:active{background:#3ddda0;}
-.fort-btn-fort{background:var(--border2);color:var(--dim2);}
-.fort-btn-fort:active{background:var(--border);}
-.fort-mode-indicator{display:flex;align-items:center;gap:7px;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:5px 10px;border-radius:8px;background:rgba(77,255,170,0.1);color:var(--green);border:1px solid rgba(77,255,170,0.2);}
+/* ACTIVITY SWAP (FEAT-15 — group class swap, any day) */
+.activity-swap-row{margin:10px 0;}
+.activity-swap-btn{width:100%;padding:9px 10px;border-radius:10px;border:1px solid var(--border2);background:var(--card);color:var(--dim2);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;}
+.activity-swap-btn:active{background:var(--border2);}
+.activity-picker{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 14px;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--card);}
+.activity-picker .pill{padding:7px 13px;border-radius:9px;border:1px solid var(--border2);background:var(--border2);color:var(--white);font-size:11px;font-weight:600;cursor:pointer;}
+.activity-picker .pill:active{background:var(--dim);}
+.activity-cancel-btn{width:100%;padding:9px 10px;margin-top:10px;border-radius:10px;border:1px solid var(--border2);background:none;color:var(--dim2);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;}
+.activity-cancel-btn:active{background:var(--border2);}
 
 /* SECTION LABEL */
 .sec-label{font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:3px;color:var(--dim);margin:16px 0 7px;display:flex;align-items:center;gap:8px;}
@@ -368,6 +367,16 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .he-watch{display:flex;gap:8px;margin-top:7px;flex-wrap:wrap;}
 .he-watch-stat{font-size:10px;background:var(--border2);padding:2px 8px;border-radius:7px;color:var(--dim2);}
 .he-watch-stat strong{color:var(--white);}
+.he-edit-btn{background:none;border:1px solid var(--border2);border-radius:7px;color:var(--dim2);font-size:11px;padding:3px 7px;margin-top:6px;cursor:pointer;}
+.he-edit-btn:active{background:var(--border2);}
+.he-edit-panel{margin-top:9px;padding-top:9px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px;}
+.he-edit-row{display:flex;gap:8px;}
+.he-edit-row label{flex:1;font-size:9px;color:var(--dim2);text-transform:uppercase;letter-spacing:0.5px;display:flex;flex-direction:column;gap:3px;}
+.he-edit-row input{background:var(--bg2,rgba(255,255,255,0.04));border:1px solid var(--border2);border-radius:8px;color:var(--white);padding:6px 8px;font-size:13px;font-family:'DM Sans',sans-serif;}
+.he-edit-btns{display:flex;gap:8px;}
+.he-edit-save,.he-edit-cancel{flex:1;padding:8px;border-radius:8px;border:none;font-size:11px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;cursor:pointer;}
+.he-edit-save{background:var(--green);color:#000;}
+.he-edit-cancel{background:var(--border2);color:var(--dim2);}
 
 /* PROGRESS TAB */
 .prog-header{margin-bottom:16px;}
@@ -497,11 +506,11 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 
 /* COLORS */
 .c-push{color:var(--orange);}.c-pull{color:var(--blue);}.c-legs{color:var(--accent);}
-.c-upper{color:var(--purple);}.c-lower{color:var(--green);}.c-fort{color:var(--red);}.c-rest{color:var(--dim2);}
+.c-upper{color:var(--purple);}.c-lower{color:var(--green);}.c-rest{color:var(--dim2);}
 .bg-push{background:var(--orange-dim);}.bg-pull{background:var(--blue-dim);}.bg-legs{background:var(--accent-dim);}
-.bg-upper{background:var(--purple-dim);}.bg-lower{background:var(--green-dim);}.bg-fort{background:var(--red-dim);}
+.bg-upper{background:var(--purple-dim);}.bg-lower{background:var(--green-dim);}
 .bar-push{background:var(--orange);}.bar-pull{background:var(--blue);}.bar-legs{background:var(--accent);}
-.bar-upper{background:var(--purple);}.bar-lower{background:var(--green);}.bar-fort{background:var(--red);}
+.bar-upper{background:var(--purple);}.bar-lower{background:var(--green);}
 
 /* BPM IMPORT + ZONE BARS */
 .bpm-import-btn{width:100%;margin-top:10px;padding:8px 12px;border-radius:9px;border:1px dashed rgba(192,132,252,0.4);background:var(--purple-dim);color:var(--purple);font-size:10px;font-weight:700;letter-spacing:1.5px;cursor:pointer;font-family:'DM Sans',sans-serif;text-transform:uppercase;transition:all 0.2s;}
@@ -671,14 +680,14 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 // ============================================================
 // APP VERSION — update this on every release
 // ============================================================
-const APP_VERSION = 'v12.1';
+const APP_VERSION = 'v12.3';
 
 // ============================================================
 // WEEKLY SCHEDULE
 // ============================================================
 const WEEK = [
   { key:'mon', name:'Mon', type:'upper',  emoji:'💪', label:'UPPER' },
-  { key:'tue', name:'Tue', type:'fort',   emoji:'🥊', label:'FLEX/HIIT' },
+  { key:'tue', name:'Tue', type:'legs',   emoji:'🦵', label:'LEGS' },
   { key:'wed', name:'Wed', type:'rest',   emoji:'⚡', label:'SPRINT' },
   { key:'thu', name:'Thu', type:'push',   emoji:'🔥', label:'PUSH' },
   { key:'fri', name:'Fri', type:'pull',   emoji:'💙', label:'PULL' },
@@ -974,46 +983,6 @@ const WORKOUTS = {
           sets:[{wt:0,reps:'15-20'},{wt:0,reps:'15-20'}],
           chips:{sets:'2 Sets',reps:'15-20 reps',tag:'Nippard Abs'},
           cue:'Kneel facing cable. Hands at temples. Crunch DOWN — flex spine, not arms. Full stretch at top. Completes your 8 sets/week ab volume.' }
-      ]}
-    ]
-  },
-  fort:{
-    title:'TUESDAY FLEX DAY', emoji:'🥊',
-    chips:['Boxing · HIIT Class · Lower Body','Counts toward 90-min/wk HIIT target'],
-    sections:[
-      { label:'If At A Class (Boxing / HIIT)', exercises:[
-        { id:'f-class', name:'Boxing / HIIT Class', muscle:'full',
-          sets:[{wt:0,reps:'Full session'}],
-          chips:{sets:'Full Class',reps:'Zone 4 — 140-155 bpm'},
-          cue:'Target HR: 140–155 bpm throughout. This session = ~35-40 min toward your 90-min/week visceral fat HIIT threshold (Dr. Rhonda Patrick protocol). Log HR avg + max from Galaxy Watch after.' }
-      ]},
-      { label:'If Lower Day (Home Sub)', exercises:[
-        { id:'f-ext', name:'Leg Extension', muscle:'quads',
-          sets:[{wt:99,reps:'6'},{wt:121,reps:'FAIL'}],
-          chips:{sets:'2 Sets',reps:'6 reps',pr:'PR: 121 lbs',tag:'Hassan'},
-          hassan:true, cue:'Quad squeeze. Pause at peak.' },
-        { id:'f-squat', name:'Smith Machine Squat', muscle:'quads',
-          sets:[{wt:145,reps:'8'},{wt:165,reps:'8-10'}],
-          chips:{sets:'2 Sets',reps:'8-12 reps',pr:'PR: 155×10',target:'Target: 165 lbs'},
-          cue:'Feet forward. Sit back. Drive knees OUT. Protect lower back.' },
-        { id:'f-lunge', name:'DB Walking Lunges', muscle:'quads',
-          sets:[{wt:35,reps:'20 each'},{wt:40,reps:'20 each'}],
-          chips:{sets:'2 Sets',reps:'20 reps/leg',pr:'PR: 35 lb DBs',target:'Target: 40 lb DBs'},
-          cue:'Medium strides. Minimize rear leg push. Knee tracks toes.' },
-        { id:'f-curl', name:'Lying Leg Curl', muscle:'hams',
-          sets:[{wt:121,reps:'6'},{wt:143,reps:'FAIL'}],
-          chips:{sets:'2 Sets',reps:'6 reps',pr:'PR: 132 lbs',target:'Target: 143 lbs',tag:'Hassan'},
-          hassan:true, cue:'Hamstrings squeeze. No hip rise. Control the negative.' },
-        { id:'f-abduct', name:'Hip Abduction Machine', muscle:'glutes',
-          sets:[{wt:55,reps:'15-20'},{wt:66,reps:'15-20'}],
-          chips:{sets:'2 Sets',reps:'15-20 reps',pr:'PR: 55 lbs (NEW baseline)'},
-          cue:'LEAN FORWARD 30°. 55 lbs baseline. Feel glute medius.' }
-      ]},
-      { label:'Ab Finisher 🎯', exercises:[
-        { id:'f-cable-crunch', name:'Cable Crunch', muscle:'abs',
-          sets:[{wt:0,reps:'15-20'},{wt:0,reps:'15-20'}],
-          chips:{sets:'2 Sets',reps:'15-20 reps',tag:'Nippard Abs'},
-          cue:'🔒 BACK RECOVERY: Kneel facing cable. Hands at temples. Crunch DOWN — flex spine, not arms. Full stretch at top. Eliminates spinal loading.' }
       ]}
     ]
   },
@@ -1488,8 +1457,6 @@ const ALTERNATIVE_ACTIVITIES = {
   }
 };
 
-let selectedActivity = 'sprint'; // FEAT-4: Track which activity is selected for the day
-
 // FEAT-7: Back Recovery Mode safety and auto-substitution rules
 const BACK_RECOVERY_RULES = {
   risky_patterns: ['deadlift', 'barbell row', 'squat', 'bend over', 'spinal load', 'rotation'],
@@ -1640,15 +1607,15 @@ let restOverrides = {}; // { exId: seconds } — user-customized rest per exerci
 let swapOverrides = {}; // { exId: altName } — user-selected exercise swaps
 let prStreaks = {};     // { exId: count } — consecutive sessions with new PRs
 let notesStore = {};   // { exId: { todayNote, lastWeekNote, weekCount } }
-let fortCancelled = false;
 let backRecoveryMode = false;
 let vacationMode = false; // FEAT-8: Gym-free maintenance routine
-let dayTypeOverride = {}; // { dateStr: 'upper'|'push'|'pull'|'legs'|'fort'|'flex' }
+let dayTypeOverride = {}; // { dateStr: 'upper'|'push'|'pull'|'legs'|'flex' }
+let activityOverride = {}; // FEAT-15: { dateStr: 'yoga'|'pilates'|'dance'|'boxing' } — group class swap, any day
 let prReadyFlags = new Set(); // exercise names flagged pr_ready=true in Supabase
 let sessionLocation = 'HG'; // 'HG' = Home Gym, 'LT' = Lifetime Fitness
 
 const SUPABASE_URL  = 'https://fnjjfnsdxibjbzldfgit.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZuampmbnNkeGliamJ6bGRmZ2l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY1MDM2MjAsImV4cCI6MjA4MjA3OTYyMH0.oZYn5OXKZH2h1wGfIj_R1L8Hlk3ytGFBgDCyGqUcatk'; // true = show home lower body sub instead of FORT class
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZuampmbnNkeGliamJ6bGRmZ2l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY1MDM2MjAsImV4cCI6MjA4MjA3OTYyMH0.oZYn5OXKZH2h1wGfIj_R1L8Hlk3ytGFBgDCyGqUcatk';
 const CIRC = 2 * Math.PI * 60; // 377
 
 // ============================================================
@@ -1759,13 +1726,6 @@ async function loadAll() {
   try { const v = await getStored('swap-overrides'); if (v) swapOverrides = JSON.parse(v); } catch(e) { swapOverrides = {}; }
   try { const v = await getStored('pr-streaks'); if (v) prStreaks = JSON.parse(v); } catch(e) { prStreaks = {}; }
 
-  // Restore fort-cancelled flag for today
-  try {
-    const key = `fort-cancelled-${getDateStr()}`;
-    const v = await getStored(key);
-    fortCancelled = !!(v);
-  } catch(e) { fortCancelled = false; }
-
   // Restore back recovery mode
   try {
     const v = localStorage.getItem('back-recovery-mode');
@@ -1780,17 +1740,17 @@ async function loadAll() {
   } catch(e) { vacationMode = false; }
   updateVacationModePill();
 
-  // FEAT-4: Restore selected activity preference
-  try {
-    const a = localStorage.getItem('selected-activity');
-    selectedActivity = a || 'sprint';
-  } catch(e) { selectedActivity = 'sprint'; }
-
   // Restore day type overrides
   try {
     const v = await getStored('day-type-overrides');
     if (v) dayTypeOverride = JSON.parse(v);
   } catch(e) { dayTypeOverride = {}; }
+
+  // FEAT-15: Restore group-activity (class) swap overrides — any day, per date
+  try {
+    const v = await getStored('activity-overrides');
+    if (v) activityOverride = JSON.parse(v);
+  } catch(e) { activityOverride = {}; }
 
   // Restore session location
   try { const v = localStorage.getItem('session-location'); if (v) sessionLocation = v; } catch(e) {}
@@ -1985,6 +1945,7 @@ function renderCurrentView() {
 function renderWorkoutView() {
   const day = WEEK[currentDayIdx];
   const scroll = document.getElementById('mainScroll');
+  const todayDateStr = getDateStr();
 
   // FEAT-8: Vacation Mode — gym-free routine every day
   if (vacationMode) {
@@ -1996,8 +1957,13 @@ function renderWorkoutView() {
     renderRecoveryDay(day.key); return;
   }
 
+  // FEAT-15: Group class/activity swap — selectable any day, replaces today's planned session
+  const todayActivity = activityOverride[todayDateStr];
+  if (todayActivity && ALTERNATIVE_ACTIVITIES[todayActivity]) {
+    renderAlternativeActivity(todayActivity); return;
+  }
+
   // Compute effective workout type (may be overridden for this date)
-  const todayDateStr = getDateStr();
   const effectiveType = dayTypeOverride[todayDateStr] || day.type;
 
   if (effectiveType === 'rest') { renderRestDay(day.key); return; }
@@ -2005,45 +1971,13 @@ function renderWorkoutView() {
   const workout = WORKOUTS[effectiveType];
   if (!workout) { scroll.innerHTML = '<div class="empty-state">No workout data for this day.</div>'; return; }
 
-  const sectionsForProgress = (effectiveType === 'fort' && fortCancelled)
-    ? workout.sections.filter(s => s.label !== 'If At FORT')
-    : (effectiveType === 'fort' && !fortCancelled)
-      ? workout.sections.filter(s => s.label === 'If At FORT' || s.label.includes('Ab'))
-      : workout.sections;
-
   const allExIds = [];
-  sectionsForProgress.forEach(s => s.exercises.forEach(e => allExIds.push(e.id)));
+  workout.sections.forEach(s => s.exercises.forEach(e => allExIds.push(e.id)));
 
   // Check rotation alerts
   const rotationAlerts = getRotationAlerts(effectiveType);
 
   let html = '';
-
-  // FORT cancelled banner (only when scheduled type is FORT and no override)
-  if (day.type === 'fort' && !dayTypeOverride[todayDateStr]) {
-    if (fortCancelled) {
-      html += `<div class="fort-cancel-banner">
-        <div class="fort-cancel-top">
-          <div class="fort-cancel-title">🏠 HOME LOWER DAY</div>
-          <div class="fort-mode-indicator">✓ FORT CANCELLED</div>
-        </div>
-        <div class="fort-cancel-sub">Swapped to your full home gym lower body protocol. All the gains, none of the commute.</div>
-        <div class="fort-cancel-btns">
-          <button class="fort-btn fort-btn-fort" onclick="toggleFortCancelled()">↩ FORT Was On After All</button>
-        </div>
-      </div>`;
-    } else {
-      html += `<div class="fort-cancel-banner">
-        <div class="fort-cancel-top">
-          <div class="fort-cancel-title">📍 FORT / LOWER DAY</div>
-        </div>
-        <div class="fort-cancel-sub">Heading to FORT? Go get it. Class got cancelled? Hit the home gym lower body sub below.</div>
-        <div class="fort-cancel-btns">
-          <button class="fort-btn fort-btn-go" onclick="toggleFortCancelled()">🏠 FORT Cancelled — Home Lower Day</button>
-        </div>
-      </div>`;
-    }
-  }
 
   // Location selector
   const hgActive = sessionLocation === 'HG' ? ' loc-active' : '';
@@ -2056,8 +1990,8 @@ function renderWorkoutView() {
 
   // Workout header
   html += `<div class="w-header">
-    <div class="w-title"><span>${workout.emoji}</span>${fortCancelled && effectiveType==='fort' ? 'HOME LOWER DAY' : workout.title}</div>
-    <div class="w-chips">${(fortCancelled && effectiveType==='fort' ? ['Home Gym Lower Body','Hassan Protocol'] : workout.chips).map(c => `<span class="wchip bg-${effectiveType} c-${effectiveType}">${c}</span>`).join('')}</div>
+    <div class="w-title"><span>${workout.emoji}</span>${workout.title}</div>
+    <div class="w-chips">${workout.chips.map(c => `<span class="wchip bg-${effectiveType} c-${effectiveType}">${c}</span>`).join('')}</div>
     <div class="prog-row">
       <span class="prog-label">Progress</span>
       <div class="mini-bar"><div class="mini-bar-fill bar-${effectiveType}" id="dayProg" style="width:0%"></div></div>
@@ -2066,8 +2000,8 @@ function renderWorkoutView() {
   </div>`;
 
   // Type selector row
-  const workoutTypes = ['upper', 'push', 'pull', 'legs', 'fort'];
-  const typeLabels = { upper: 'UPPER', push: 'PUSH', pull: 'PULL', legs: 'LEGS', fort: 'FLEX' };
+  const workoutTypes = ['upper', 'push', 'pull', 'legs'];
+  const typeLabels = { upper: 'UPPER', push: 'PUSH', pull: 'PULL', legs: 'LEGS' };
   html += `<div class="w-type-selector">
     <span class="type-selector-label">Pick a type:</span>`;
   workoutTypes.forEach(wType => {
@@ -2079,8 +2013,11 @@ function renderWorkoutView() {
   }
   html += `</div>`;
 
+  // FEAT-15: Group class/activity swap — available any day
+  html += buildActivitySwapWidget();
+
   // Done banner
-  const doneBannerTitle = (fortCancelled && effectiveType==='fort') ? 'HOME LOWER DAY COMPLETE' : `${workout.title} COMPLETE`;
+  const doneBannerTitle = `${workout.title} COMPLETE`;
   html += `<div class="done-banner" id="doneBanner">
     <div class="done-emoji">${workout.emoji}</div>
     <div class="done-title">${doneBannerTitle}</div>
@@ -2111,7 +2048,7 @@ function renderWorkoutView() {
   const ws = sessionState['__watch__'] || {};
   const sessionDuration = getSessionDuration();
   html += `<div class="watch-widget">
-    <div class="watch-title">GALAXY WATCH — SESSION DATA</div>
+    <div class="watch-title">GALAXY WATCH — SESSION DATA<button class="watch-clear-btn" onclick="event.stopPropagation();clearWatchData()" title="Clear pre-filled watch data">✕ Clear</button></div>
     <div class="watch-fields">
       <div class="watch-field">
         <span class="wf-label">Avg HR (bpm)</span>
@@ -2150,14 +2087,7 @@ function renderWorkoutView() {
     </div>
   </div>`;
 
-  // Exercises — if FORT day and cancelled, skip "If At FORT" section, show only sub + abs
-  const sectionsToRender = (effectiveType === 'fort' && fortCancelled)
-    ? workout.sections.filter(s => s.label !== 'If At FORT')
-    : (effectiveType === 'fort' && !fortCancelled)
-      ? workout.sections.filter(s => s.label === 'If At FORT' || s.label.includes('Ab'))
-      : workout.sections;
-
-  sectionsToRender.forEach(section => {
+  workout.sections.forEach(section => {
     html += `<div class="sec-label">${section.label}</div>`;
     section.exercises.forEach(ex => {
       const state = sessionState[ex.id] || {};
@@ -2434,18 +2364,6 @@ function dismissAlert(id) {
   if (el) el.classList.remove('visible');
 }
 
-function toggleFortCancelled() {
-  fortCancelled = !fortCancelled;
-  // Persist choice for today so page reload remembers
-  const key = `fort-cancelled-${getDateStr()}`;
-  if (fortCancelled) {
-    window.storage.set(key, '1').catch(()=>{});
-  } else {
-    window.storage.delete(key).catch(()=>{});
-  }
-  renderWorkoutView();
-}
-
 function switchDayType(newType) {
   const todayDateStr = getDateStr();
   const day = WEEK[currentDayIdx];
@@ -2473,6 +2391,42 @@ function resetDayType() {
   try { localStorage.setItem('day-type-overrides', JSON.stringify(dayTypeOverride)); } catch(e) {}
 
   renderWorkoutView();
+}
+
+// FEAT-15: Group class/activity swap — build the entry-point widget shown on any day
+function buildActivitySwapWidget() {
+  const options = ['boxing', 'yoga', 'pilates', 'dance'];
+  return `<div class="activity-swap-row">
+    <button class="activity-swap-btn" onclick="event.stopPropagation();toggleActivityPicker()">🥊 Swap to Class / Activity</button>
+  </div>
+  <div class="activity-picker" id="activityPicker" style="display:none">
+    ${options.map(id => {
+      const a = ALTERNATIVE_ACTIVITIES[id];
+      return `<button class="pill" onclick="event.stopPropagation();chooseActivityOverride('${id}')">${a.title}</button>`;
+    }).join('')}
+  </div>`;
+}
+
+function toggleActivityPicker() {
+  const el = document.getElementById('activityPicker');
+  if (el) el.style.display = el.style.display === 'none' ? 'flex' : 'none';
+}
+
+function chooseActivityOverride(activityId) {
+  activityOverride[getDateStr()] = activityId;
+  persistActivityOverride();
+  renderWorkoutView();
+}
+
+function clearActivityOverride() {
+  delete activityOverride[getDateStr()];
+  persistActivityOverride();
+  renderWorkoutView();
+}
+
+function persistActivityOverride() {
+  try { window.storage.set('activity-overrides', JSON.stringify(activityOverride)).catch(()=>{}); } catch(e) {}
+  try { localStorage.setItem('activity-overrides', JSON.stringify(activityOverride)); } catch(e) {}
 }
 
 function setSessionLocation(loc) {
@@ -2729,7 +2683,7 @@ function importWatchData() {
 
 function saveWatch(field, val) {
   if (!sessionState['__watch__']) sessionState['__watch__'] = {};
-  sessionState['__watch__'][field] = parseFloat(val) || 0;
+  sessionState['__watch__'][field] = val !== '' ? (parseFloat(val) || 0) : null;
   if (field === 'avgHr') updateZoneLabel('zone-avg', val);
   if (field === 'maxHr') updateZoneLabel('zone-max', val);
   saveSession();
@@ -3103,12 +3057,7 @@ async function saveWorkout(type, dayKey) {
   const exercises = [];
   let newPRs = [];
 
-  // Use sections that are currently rendered (respects fort cancelled state)
-  const sectionsToSave = (type === 'fort' && fortCancelled)
-    ? workout.sections.filter(s => s.label !== 'If At FORT')
-    : (type === 'fort' && !fortCancelled)
-      ? workout.sections.filter(s => s.label === 'If At FORT' || s.label.includes('Ab'))
-      : workout.sections;
+  const sectionsToSave = workout.sections;
 
   for (const section of sectionsToSave) {
     for (const ex of section.exercises) {
@@ -3133,7 +3082,7 @@ async function saveWorkout(type, dayKey) {
   const watch = sessionState['__watch__'] || {};
   const entry = {
     id: Date.now(), date: getDateStr(), dayKey,
-    type, title: (type === 'fort' && fortCancelled) ? 'HOME LOWER DAY' : workout.title,
+    type, title: workout.title,
     emoji: workout.emoji,
     exercises, newPRs,
     notes: (sessionState['__notes__']||{}).notes || '',
@@ -3308,9 +3257,7 @@ function generateSessionSummary(type) {
   lines.push('');
   lines.push(type === 'recovery' ? '🏥 REHAB EXERCISES' : '💪 EXERCISES');
 
-  const sections = (type === 'fort' && fortCancelled)
-    ? workout.sections.filter(s => s.label !== 'If At FORT')
-    : workout.sections;
+  const sections = workout.sections;
 
   sections.forEach(section => {
     section.exercises.forEach(ex => {
@@ -3421,6 +3368,15 @@ function updateWatch(field, val) {
   saveSession();
 }
 
+// BUG-NEW-3: Wipe pre-filled/stale watch data in one tap (e.g. after a day-type
+// swap inherits an earlier, unrelated session's HR/calorie readings for today)
+function clearWatchData() {
+  sessionState['__watch__'] = {};
+  saveSession();
+  showToast('✓ Watch data cleared');
+  renderWorkoutView();
+}
+
 // ============================================================
 // SUMMARY VIEW
 // ============================================================
@@ -3468,7 +3424,7 @@ function renderSummaryView() {
   // Recent week summary
   html += `<div class="sec-label">Recent Sessions</div>`;
 
-  ['upper','push','pull','legs','fort'].forEach(type => {
+  ['upper','push','pull','legs'].forEach(type => {
     const sessions = recentByType[type];
     if (!sessions || sessions.length === 0) return;
     const cur = sessions[0];
@@ -3601,7 +3557,7 @@ async function renderHistoryView() {
         <button class="hist-search-clear ${historySearch ? 'visible' : ''}" id="histClear" onclick="clearHistorySearch()">✕</button>
       </div>
       <div class="hist-filter-row" id="histFilters">
-        ${['all','legs','push','pull','upper','fort','cardio'].map(f =>
+        ${['all','legs','push','pull','upper','cardio'].map(f =>
           `<button class="hf-btn ${historyFilter===f?'active':''}" onclick="setHistoryFilter('${f}')">${f==='all'?'All':WORKOUT_LABELS_H[f]||f}</button>`
         ).join('')}
       </div>
@@ -3742,12 +3698,73 @@ function buildHistoryCard(w, searchTerm) {
       <div class="he-right">
         ${w.duration_minutes ? `<div class="he-duration">${w.duration_minutes}<span style="font-size:11px">m</span></div>` : ''}
         ${w.calories_burned ? `<div class="he-cals">${w.calories_burned} kcal</div>` : ''}
+        <button class="he-edit-btn" onclick="event.stopPropagation();toggleHistEdit(${w.id})" title="Edit watch data">✏️ Edit</button>
       </div>
     </div>
     ${statsHtml ? `<div class="he-stats">${statsHtml}</div>` : ''}
     <div class="he-exercises">${exHtml}</div>
     ${notesHtml}
+    <div class="he-edit-panel" id="he-edit-${w.id}" style="display:none">
+      <div class="he-edit-row">
+        <label>Avg HR (bpm)<input type="number" id="he-avg-${w.id}" value="${w.avg_heart_rate||''}" placeholder="—"></label>
+        <label>Max HR (bpm)<input type="number" id="he-max-${w.id}" value="${w.max_heart_rate||''}" placeholder="—"></label>
+      </div>
+      <div class="he-edit-row">
+        <label>Calories<input type="number" id="he-cal-${w.id}" value="${w.calories_burned||''}" placeholder="—"></label>
+        <label>Duration (min)<input type="number" id="he-dur-${w.id}" value="${w.duration_minutes||''}" placeholder="—"></label>
+      </div>
+      <div class="he-edit-btns">
+        <button class="he-edit-save" onclick="event.stopPropagation();saveHistEdit(${w.id})">💾 Save Correction</button>
+        <button class="he-edit-cancel" onclick="event.stopPropagation();toggleHistEdit(${w.id})">Cancel</button>
+      </div>
+    </div>
   </div>`;
+}
+
+// BUG-NEW-3: Allow correcting watch data on an already-saved workout
+// (previously the only fix was a manual Supabase edit — day-swap entries
+// often inherit stale/incorrect pre-filled HR data from earlier in the day)
+function toggleHistEdit(id) {
+  const panel = document.getElementById(`he-edit-${id}`);
+  if (panel) panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
+}
+
+async function saveHistEdit(id) {
+  const avg = document.getElementById(`he-avg-${id}`).value;
+  const max = document.getElementById(`he-max-${id}`).value;
+  const cal = document.getElementById(`he-cal-${id}`).value;
+  const dur = document.getElementById(`he-dur-${id}`).value;
+
+  const payload = {
+    avg_heart_rate: avg !== '' ? parseInt(avg) : null,
+    max_heart_rate: max !== '' ? parseInt(max) : null,
+    calories_burned: cal !== '' ? parseInt(cal) : null,
+    duration_minutes: dur !== '' ? parseInt(dur) : null,
+  };
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/workouts?id=eq.${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: SUPABASE_ANON,
+        Authorization: `Bearer ${SUPABASE_ANON}`,
+        Prefer: 'return=minimal',
+      },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error(await res.text());
+
+    // Update local cache in place so the card re-renders with corrected values
+    if (historyCache) {
+      const entry = historyCache.find(w => w.id === id);
+      if (entry) Object.assign(entry, payload);
+    }
+    showToast('✓ Watch data corrected');
+    if (historyCache) renderHistoryContent(historyCache);
+  } catch(e) {
+    showToast('❌ Correction failed to save');
+  }
 }
 
 function setHistoryFilter(f) {
@@ -4176,7 +4193,7 @@ function renderRecoveryDay(dayKey) {
   const ws = sessionState['__watch__'] || {};
   const sessionDuration = getSessionDuration();
   html += `<div class="watch-widget">
-    <div class="watch-title">GALAXY WATCH — SESSION DATA</div>
+    <div class="watch-title">GALAXY WATCH — SESSION DATA<button class="watch-clear-btn" onclick="event.stopPropagation();clearWatchData()" title="Clear pre-filled watch data">✕ Clear</button></div>
     <div class="watch-fields">
       <div class="watch-field">
         <span class="wf-label">Avg HR (bpm)</span>
@@ -4265,7 +4282,7 @@ function renderVacationDay() {
   // Watch data for vacation days
   const watch = sessionState['__watch__'] || {};
   html += `<div class="watch-widget">
-    <div class="watch-title">⌚ GALAXY WATCH DATA (Optional)</div>
+    <div class="watch-title">⌚ GALAXY WATCH DATA (Optional)<button class="watch-clear-btn" onclick="event.stopPropagation();clearWatchData()" title="Clear pre-filled watch data">✕ Clear</button></div>
     <div class="watch-fields">
       <div class="watch-field">
         <div class="wf-label">Avg HR (bpm)</div>
@@ -4315,12 +4332,7 @@ function renderRestDay(dayKey) {
   const isSprint = (dayKey === 'wed' || dayKey === 'sat');
 
   if (isSprint) {
-    // FEAT-4: Show activity selector for sprint days
-    if (!selectedActivity || selectedActivity === 'sprint') {
-      renderSprintDay(dayKey, content);
-    } else {
-      renderAlternativeActivity(selectedActivity);
-    }
+    renderSprintDay(dayKey, content);
   } else {
     document.getElementById('mainScroll').innerHTML = `
     <div class="rest-card">
@@ -4330,7 +4342,8 @@ function renderRestDay(dayKey) {
       <div class="rest-tips">
         ${content.tips.map(t => `<div class="rest-tip"><span class="rt-icon">${t.icon}</span><span>${t.text}</span></div>`).join('')}
       </div>
-    </div>`;
+    </div>
+    ${buildActivitySwapWidget()}`;
   }
   document.getElementById('mainScroll').scrollTop = 0;
 }
@@ -4417,6 +4430,8 @@ function renderSprintDay(dayKey, content) {
     </div>
   </div>
 
+  ${buildActivitySwapWidget()}
+
   <div id="spDoneBanner" style="display:none" class="sprint-done-banner">
     <div class="sprint-done-title">⚡ SESSION COMPLETE</div>
     <div class="sprint-done-sub" id="spDoneSub">Straight to sauna — 20 min @ 175°F</div>
@@ -4486,22 +4501,26 @@ function renderAlternativeActivity(activityId) {
 
   let html = `
   <div style="padding:13px">
-    <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1px;margin-bottom:8px;color:var(--white);">${activity.emoji} ${activity.title.toUpperCase()}</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1px;margin-bottom:8px;color:var(--white);">${activity.title.toUpperCase()}</div>
     <div style="font-size:11px;color:var(--dim2);margin-bottom:14px;">${activity.description}</div>
   </div>`;
 
-  // Activity selector pill
+  // Activity selector pill — switch between classes without leaving the swap
   html += `<div style="padding:0 13px;margin-bottom:8px;display:flex;gap:6px;flex-wrap:wrap;justify-content:center;">`;
-  Object.values(ALTERNATIVE_ACTIVITIES).forEach(a => {
-    const active = a.id === activityId ? 'style="background:var(--accent);color:var(--black);font-weight:bold"' : '';
-    html += `<button class="pill" ${active} onclick="selectActivity('${a.id}')" style="padding:6px 12px;border-radius:4px;border:1px solid var(--dim1);background:var(--dim3);cursor:pointer;">${a.emoji} ${a.id.toUpperCase()}</button>`;
+  ['boxing', 'yoga', 'pilates', 'dance'].forEach(id => {
+    const a = ALTERNATIVE_ACTIVITIES[id];
+    const active = id === activityId ? 'style="background:var(--accent);color:var(--black);font-weight:bold"' : '';
+    html += `<button class="pill" ${active} onclick="chooseActivityOverride('${id}')" style="padding:6px 12px;border-radius:4px;border:1px solid var(--dim1);background:var(--dim3);cursor:pointer;">${a.emoji} ${id.toUpperCase()}</button>`;
   });
-  html += `</div>`;
+  html += `</div>
+  <div style="padding:0 13px;margin-bottom:8px;">
+    <button class="activity-cancel-btn" onclick="clearActivityOverride()">↩ Cancel — Back to Today's Plan</button>
+  </div>`;
 
   // Watch data
   const watch = sessionState['__watch__'] || {};
   html += `<div class="watch-widget">
-    <div class="watch-title">⌚ GALAXY WATCH DATA (Optional)</div>
+    <div class="watch-title">⌚ GALAXY WATCH DATA (Optional)<button class="watch-clear-btn" onclick="event.stopPropagation();clearWatchData()" title="Clear pre-filled watch data">✕ Clear</button></div>
     <div class="watch-fields">
       <div class="watch-field">
         <div class="wf-label">Avg HR (bpm)</div>
@@ -4545,11 +4564,6 @@ function renderAlternativeActivity(activityId) {
   scroll.scrollTop = 0;
 }
 
-function selectActivity(activityId) {
-  selectedActivity = activityId;
-  try { localStorage.setItem('selected-activity', activityId); } catch(e) {}
-  renderWorkoutView();
-}
 
 function buildRoundDots() {
   const container = document.getElementById('spRoundDots');
