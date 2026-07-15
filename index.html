@@ -3379,7 +3379,7 @@ function shareToClaudeChat(type) {
 }
 
 function shareSprintToClaude() {
-  const rounds = sprintState.round || sprintState.totalRounds;
+  const rounds = sprintState.totalRounds;
   const hrAvg = document.getElementById('spHrAvg')?.value || '';
   const hrMax = document.getElementById('spHrMax')?.value || '';
   const notes = document.getElementById('sprintNotes')?.value || '';
@@ -4743,7 +4743,7 @@ function completeSprint() {
   if (btn) { btn.textContent = 'RESET'; btn.className = 'sprint-btn sprint-btn-main'; }
   if (doneBanner) doneBanner.style.display = 'block';
   if (hrCard) hrCard.style.display = 'block';
-if (saveBtn) {
+  if (saveBtn) {
     saveBtn.style.display = 'block';
     console.log('Sprint save button shown');
   }
@@ -4756,7 +4756,7 @@ if (saveBtn) {
 function resetSprint() {
   clearInterval(sprintState.interval);
   releaseWakeLock();
-  sprintState = { running: false, phase: 'idle', round: 0, totalRounds: sprintState.totalRounds, elapsed: 0, phaseDuration: 0, interval: null };
+  sprintState = { running: false, phase: 'idle', round: 0, totalRounds: sprintState.totalRounds, elapsed: 0, phaseDuration: 0, interval: null, hrAvg: '', hrMax: '' };
   const btn = document.getElementById('spMainBtn');
   if (btn) { btn.textContent = 'START'; btn.className = 'sprint-btn sprint-btn-main'; }
   const doneBanner = document.getElementById('spDoneBanner');
@@ -4765,6 +4765,10 @@ function resetSprint() {
   if (hrCard) hrCard.style.display = 'none';
   const shareRow = document.getElementById('spShareRow');
   if (shareRow) shareRow.style.display = 'none';
+  const saveBtn = document.getElementById('sprintSaveBtn');
+  if (saveBtn) saveBtn.style.display = 'none';
+  const notesEl = document.getElementById('sprintNotes');
+  if (notesEl) notesEl.value = '';
   const timeEl = document.getElementById('spTime');
   if (timeEl) { timeEl.textContent = '5:00'; timeEl.className = 'sprint-time phase-warmup'; }
   const labelEl = document.getElementById('spPhaseLabel');
