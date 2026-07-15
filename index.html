@@ -1017,6 +1017,29 @@ const WORKOUTS = {
       ]}
     ]
   },
+  sat_mobility:{
+    title:'SATURDAY DYNAMIC STRETCH', emoji:'🧘',
+    chips:['Hip Mobility · Recovery · Deep Squat Position'],
+    sections:[
+      { label:'✅ Hip Mobility & Depth Work', exercises:[
+        { id:'s-counterbalance', name:'Counterbalance Squat', muscle:'hips',
+          sets:[{wt:0,reps:'8-10'},{wt:0,reps:'8-10'},{wt:0,reps:'8-10'}],
+          chips:{sets:'3 Sets', reps:'8-10 reps', tag:'Mobility ✅'},
+          note:'Source: Breaking the Plateau Through Mobility notebook. Use dumbbell, medicine ball, or kettlebell.',
+          cue:'Hold weight at chest with both hands. Squat down into a deep squat position (aim for full depth). As you squat, push the weight away from you (full arm extension toward the ground). This counterbalance takes stress off the lower back while you build deep squat comfort. Return slowly. Focus on mobility, not load.' },
+        { id:'s-couchstretch', name:'Couch Stretch (Hip Flexor)', muscle:'hips',
+          sets:[{wt:0,reps:'45s L'},{wt:0,reps:'45s R'}],
+          chips:{sets:'2 Sets', reps:'45 sec/side', tag:'Mobility ✅'},
+          note:'Source: Breaking the Plateau Through Mobility notebook.',
+          cue:'Back foot elevated on couch/bench. Push hips forward while engaging core (do NOT lean back into lower back). Hold extended position. Feel deep stretch across front of hip and quad. Counteracts desk posture throughout the day.' },
+        { id:'s-9090', name:'90/90 Stretch (Hip Rotation)', muscle:'hips',
+          sets:[{wt:0,reps:'10 each'},{wt:0,reps:'10 each'}],
+          chips:{sets:'2 Sets', reps:'10 reps/side', tag:'Mobility ✅'},
+          note:'Source: Breaking the Plateau Through Mobility notebook. Great for internal and external rotation.',
+          cue:'Sit with feet positioned almost like a glute bridge (90/90 position). Each rep: drop one hip down and push it through the movement, then alternate to the other side. This opens up internal and external hip rotation. Move slowly through full range.' },
+      ]}
+    ]
+  },
 };
 
 // FEAT-1 & FEAT-2: Mobility exercises for Wed/Sat recovery
@@ -3355,6 +3378,34 @@ function shareToClaudeChat(type) {
   }
 }
 
+function shareSprintToClaude() {
+  const rounds = sprintState.round || sprintState.totalRounds;
+  const hrAvg = document.getElementById('spHrAvg')?.value || '';
+  const hrMax = document.getElementById('spHrMax')?.value || '';
+  const notes = document.getElementById('sprintNotes')?.value || '';
+  const date = new Date().toLocaleDateString('en-US', { weekday:'long', month:'short', day:'numeric', year:'numeric' });
+  const dur = getSessionDuration ? getSessionDuration() : '';
+
+  let lines = [];
+  lines.push(`⚡ SPRINT SESSION — ${APP_VERSION}`);
+  lines.push(`${date}${dur ? ' · ' + dur : ''}`);
+  lines.push('');
+  lines.push(`Rounds: ${rounds} × 30-sec max effort sprints`);
+  if (hrAvg) lines.push(`Avg HR: ${hrAvg} bpm`);
+  if (hrMax) lines.push(`Max HR: ${hrMax} bpm`);
+  if (notes) { lines.push(''); lines.push(`📝 Notes: ${notes}`); }
+  lines.push('');
+  lines.push('---');
+  lines.push('Paste into Claude Chat → "Analyze this sprint session"');
+
+  const text = lines.join('\n');
+  if (navigator.share) {
+    navigator.share({ title: `Sprint Summary ${APP_VERSION}`, text }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(text).then(() => showToast('📋 Copied — paste into Claude Chat'));
+  }
+}
+
 async function saveExerciseNote(exId, exName, type) {
   const textarea = document.getElementById(`note-${exId}`);
   if (!textarea) return;
@@ -4452,7 +4503,13 @@ function renderSprintDay(dayKey, content) {
     </div>
   </div>
 
-  <button class="save-btn" id="sprintSaveBtn" onclick="saveSprintWorkout('${dayKey}')" style="margin:13px; display:none">💾 SAVE TO SUPABASE</button>`;
+<button class="save-btn" id="sprintSaveBtn" onclick="saveSprintWorkout('${dayKey}')" style="margin:13px; display:none">💾 SAVE TO SUPABASE</button>
+
+  <div class="rest-card" id="spShareRow" style="display:none;padding:14px;margin-top:8px">
+    <div class="notes-label" style="margin-bottom:8px">Session Notes</div>
+    <textarea class="notes-input" id="sprintNotes" placeholder="How did it feel? Energy? RPE? Any notes..." style="margin-bottom:10px"></textarea>
+    <button class="share-claude-btn" onclick="shareSprintToClaude()" style="width:100%">📤 Send to Claude Chat</button>
+  </div>`;
 
   // FEAT-1 & FEAT-2: Add mobility exercises for Wed/Sat
   const mobilityContent = MOBILITY_EXERCISES[dayKey];
@@ -4686,10 +4743,12 @@ function completeSprint() {
   if (btn) { btn.textContent = 'RESET'; btn.className = 'sprint-btn sprint-btn-main'; }
   if (doneBanner) doneBanner.style.display = 'block';
   if (hrCard) hrCard.style.display = 'block';
-  if (saveBtn) {
+if (saveBtn) {
     saveBtn.style.display = 'block';
     console.log('Sprint save button shown');
   }
+  const shareRow = document.getElementById('spShareRow');
+  if (shareRow) shareRow.style.display = 'block';
   buildRoundDots();
   vibrateDevice([300, 100, 300, 100, 300]);
 }
@@ -4704,6 +4763,8 @@ function resetSprint() {
   if (doneBanner) doneBanner.style.display = 'none';
   const hrCard = document.getElementById('spHrCard');
   if (hrCard) hrCard.style.display = 'none';
+  const shareRow = document.getElementById('spShareRow');
+  if (shareRow) shareRow.style.display = 'none';
   const timeEl = document.getElementById('spTime');
   if (timeEl) { timeEl.textContent = '5:00'; timeEl.className = 'sprint-time phase-warmup'; }
   const labelEl = document.getElementById('spPhaseLabel');
