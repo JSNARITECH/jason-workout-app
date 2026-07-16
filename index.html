@@ -4550,9 +4550,9 @@ function renderSprintDay(dayKey, content) {
     </div>
   </div>
 
-<button class="save-btn" id="sprintSaveBtn" onclick="saveSprintWorkout('${dayKey}')" style="margin:13px; display:none">💾 SAVE TO SUPABASE</button>
+<button class="save-btn" id="sprintSaveBtn" onclick="saveSprintWorkout('${dayKey}')" style="margin:13px">💾 SAVE TO SUPABASE</button>
 
-  <div class="rest-card" id="spShareRow" style="display:none;padding:14px;margin-top:8px">
+  <div class="rest-card" id="spShareRow" style="padding:14px;margin-top:8px">
     <div class="notes-label" style="margin-bottom:8px">Session Notes</div>
     <textarea class="notes-input" id="sprintNotes" placeholder="How did it feel? Energy? RPE? Any notes..." style="margin-bottom:10px"></textarea>
     <button class="share-claude-btn" onclick="shareSprintToClaude()" style="width:100%">📤 Send to Claude Chat</button>
@@ -4782,7 +4782,6 @@ function completeSprint() {
   const btn = document.getElementById('spMainBtn');
   const doneBanner = document.getElementById('spDoneBanner');
   const hrCard = document.getElementById('spHrCard');
-  const saveBtn = document.getElementById('sprintSaveBtn');
 
   if (timeEl) { timeEl.textContent = '0:00'; timeEl.className = 'sprint-time phase-done'; }
   if (labelEl) { labelEl.textContent = 'SESSION COMPLETE ✓'; labelEl.className = 'sprint-phase-label phase-done'; }
@@ -4791,12 +4790,6 @@ function completeSprint() {
   if (btn) { btn.textContent = 'RESET'; btn.className = 'sprint-btn sprint-btn-main'; }
   if (doneBanner) doneBanner.style.display = 'block';
   if (hrCard) hrCard.style.display = 'block';
-  if (saveBtn) {
-    saveBtn.style.display = 'block';
-    console.log('Sprint save button shown');
-  }
-  const shareRow = document.getElementById('spShareRow');
-  if (shareRow) shareRow.style.display = 'block';
   buildRoundDots();
   vibrateDevice([300, 100, 300, 100, 300]);
 }
@@ -4811,10 +4804,6 @@ function resetSprint() {
   if (doneBanner) doneBanner.style.display = 'none';
   const hrCard = document.getElementById('spHrCard');
   if (hrCard) hrCard.style.display = 'none';
-  const shareRow = document.getElementById('spShareRow');
-  if (shareRow) shareRow.style.display = 'none';
-  const saveBtn = document.getElementById('sprintSaveBtn');
-  if (saveBtn) saveBtn.style.display = 'none';
   const notesEl = document.getElementById('sprintNotes');
   if (notesEl) notesEl.value = '';
   const timeEl = document.getElementById('spTime');
