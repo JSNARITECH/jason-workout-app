@@ -4475,6 +4475,7 @@ const SPRINT_PHASES = {
 
 function renderSprintDay(dayKey, content) {
   sprintState = { running: false, phase: 'idle', round: 0, totalRounds: 6, elapsed: 0, phaseDuration: 0, interval: null, hrAvg: '', hrMax: '' };
+  const watch = sessionState['__watch__'] || {};
 
   const tipsHtml = content.tips.slice(2).map(t =>
     `<div class="rest-tip"><span class="rt-icon">${t.icon}</span><span>${t.text}</span></div>`
@@ -4525,11 +4526,11 @@ function renderSprintDay(dayKey, content) {
     <div class="sprint-hr-row">
       <div class="sprint-hr-field">
         <div class="sprint-hr-label">Avg HR (bpm)</div>
-        <input class="sprint-hr-input" id="spHrAvg" type="number" placeholder="—" inputmode="numeric" oninput="saveWatch('avgHr',this.value)">
+        <input class="sprint-hr-input" id="spHrAvg" type="number" placeholder="—" value="${watch.avgHr||''}" inputmode="numeric" oninput="saveWatch('avgHr',this.value)">
       </div>
       <div class="sprint-hr-field">
         <div class="sprint-hr-label">Max HR (bpm)</div>
-        <input class="sprint-hr-input" id="spHrMax" type="number" placeholder="—" inputmode="numeric" oninput="saveWatch('maxHr',this.value)">
+        <input class="sprint-hr-input" id="spHrMax" type="number" placeholder="—" value="${watch.maxHr||''}" inputmode="numeric" oninput="saveWatch('maxHr',this.value)">
       </div>
     </div>
     <div style="font-size:10px;color:var(--dim2);text-align:center">Zone 4–5 target: 140–165+ bpm max. Log before, during, or after sprint.</div>
