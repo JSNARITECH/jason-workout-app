@@ -3406,6 +3406,53 @@ function shareSprintToClaude() {
   }
 }
 
+function shareActivityToClaude(activityId) {
+  const activity = ALTERNATIVE_ACTIVITIES[activityId];
+  if (!activity) return;
+  const watch = sessionState['__watch__'] || {};
+  const notes = (document.getElementById('sessionNotes')?.value) || (sessionState['__notes__'] || {}).notes || '';
+  const date = new Date().toLocaleDateString('en-US', { weekday:'long', month:'short', day:'numeric', year:'numeric' });
+  const dur = getSessionDuration ? getSessionDuration() : '';
+
+  let lines = [];
+  lines.push(`${activity.emoji} ${activity.title.toUpperCase()} — ${APP_VERSION}`);
+  lines.push(`${date}${dur ? ' · ' + dur : ''}`);
+  lines.push('');
+  lines.push(activity.description);
+
+  if (activity.exercises && activity.exercises.length) {
+    lines.push('');
+    lines.push('📋 ACTIVITY BREAKDOWN');
+    activity.exercises.forEach(ex => {
+      const done = sessionState[ex.id]?.done ? '✓' : '–';
+      lines.push(`${done} ${ex.name}`);
+    });
+  }
+
+  if (watch.avgHr || watch.calories) {
+    lines.push('');
+    lines.push('⌚ GALAXY WATCH');
+    const w = [];
+    if (watch.avgHr) w.push(`Avg HR: ${watch.avgHr} bpm`);
+    if (watch.maxHr) w.push(`Max: ${watch.maxHr} bpm`);
+    if (watch.calories) w.push(`Calories: ${watch.calories}`);
+    lines.push(w.join(' · '));
+  }
+
+  if (notes) { lines.push(''); lines.push(`📝 Notes: ${notes}`); }
+
+  lines.push('');
+  lines.push('---');
+  lines.push('Paste into Claude Chat → "Analyze this session"');
+
+  const text = lines.join('\n');
+  if (navigator.share) {
+    navigator.share({ title: `${activity.title} Summary ${APP_VERSION}`, text }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(text).then(() => showToast('📋 Copied — paste into Claude Chat'));
+  }
+}
+
 async function saveExerciseNote(exId, exName, type) {
   const textarea = document.getElementById(`note-${exId}`);
   if (!textarea) return;
@@ -4595,6 +4642,7 @@ function renderAlternativeActivity(activityId) {
     <div class="notes-label">Session Notes</div>
     <textarea class="notes-input" id="sessionNotes" placeholder="How did it feel?" oninput="saveNotes(this.value)">${savedNotes}</textarea>
     <button class="save-btn" id="saveBtn" onclick="saveWorkout('rest','${activityId}')">💾 SAVE ${activity.title.toUpperCase()}</button>
+    <button class="share-claude-btn" onclick="shareActivityToClaude('${activityId}')">📤 Send to Claude Chat</button>
   </div>
   <button class="reset-btn" onclick="resetDay()">↺ Reset Activity</button>`;
 
