@@ -671,14 +671,14 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 // ============================================================
 // APP VERSION — update this on every release
 // ============================================================
-const APP_VERSION = 'v12.1';
+const APP_VERSION = 'v13.0';
 
 // ============================================================
 // WEEKLY SCHEDULE
 // ============================================================
 const WEEK = [
   { key:'mon', name:'Mon', type:'upper',  emoji:'💪', label:'UPPER' },
-  { key:'tue', name:'Tue', type:'fort',   emoji:'🥊', label:'FLEX/HIIT' },
+  { key:'tue', name:'Tue', type:'legs',   emoji:'🦵', label:'LEGS' },
   { key:'wed', name:'Wed', type:'rest',   emoji:'⚡', label:'SPRINT' },
   { key:'thu', name:'Thu', type:'push',   emoji:'🔥', label:'PUSH' },
   { key:'fri', name:'Fri', type:'pull',   emoji:'💙', label:'PULL' },
@@ -957,7 +957,11 @@ const WORKOUTS = {
         { id:'l-seated-curl', name:'Seated Leg Curl', muscle:'hams',
           sets:[{wt:132,reps:'10'},{wt:154,reps:'10-12'}],
           chips:{sets:'2 Sets',reps:'10-12 reps',pr:'PR: 143×10',target:'Target: 154 lbs'},
-          cue:'🔒 BACK RECOVERY: Seated position maintains neutral spine. Hamstring squeeze. Control the negative. No hip rise.' }
+          cue:'🔒 BACK RECOVERY: Seated position maintains neutral spine. Hamstring squeeze. Control the negative. No hip rise.' },
+        { id:'l-walking-lunge', name:'Walking Lunges (DB)', muscle:'quads',
+          sets:[{wt:35,reps:'20 each'},{wt:40,reps:'20 each'}],
+          chips:{sets:'2 Sets',reps:'20 reps/leg',pr:'PR: 80 lbs total (2×40 DB)',target:'Target: 90 lbs total'},
+          cue:'Medium strides. Minimize rear leg push. Knee tracks toes. Weight = combined total of both dumbbells.' }
       ]},
       { label:'Glutes + Calves', exercises:[
         { id:'l-abduct', name:'Hip Abduction Machine', muscle:'glutes',
@@ -974,46 +978,6 @@ const WORKOUTS = {
           sets:[{wt:0,reps:'15-20'},{wt:0,reps:'15-20'}],
           chips:{sets:'2 Sets',reps:'15-20 reps',tag:'Nippard Abs'},
           cue:'Kneel facing cable. Hands at temples. Crunch DOWN — flex spine, not arms. Full stretch at top. Completes your 8 sets/week ab volume.' }
-      ]}
-    ]
-  },
-  fort:{
-    title:'TUESDAY FLEX DAY', emoji:'🥊',
-    chips:['Boxing · HIIT Class · Lower Body','Counts toward 90-min/wk HIIT target'],
-    sections:[
-      { label:'If At A Class (Boxing / HIIT)', exercises:[
-        { id:'f-class', name:'Boxing / HIIT Class', muscle:'full',
-          sets:[{wt:0,reps:'Full session'}],
-          chips:{sets:'Full Class',reps:'Zone 4 — 140-155 bpm'},
-          cue:'Target HR: 140–155 bpm throughout. This session = ~35-40 min toward your 90-min/week visceral fat HIIT threshold (Dr. Rhonda Patrick protocol). Log HR avg + max from Galaxy Watch after.' }
-      ]},
-      { label:'If Lower Day (Home Sub)', exercises:[
-        { id:'f-ext', name:'Leg Extension', muscle:'quads',
-          sets:[{wt:99,reps:'6'},{wt:121,reps:'FAIL'}],
-          chips:{sets:'2 Sets',reps:'6 reps',pr:'PR: 121 lbs',tag:'Hassan'},
-          hassan:true, cue:'Quad squeeze. Pause at peak.' },
-        { id:'f-squat', name:'Smith Machine Squat', muscle:'quads',
-          sets:[{wt:145,reps:'8'},{wt:165,reps:'8-10'}],
-          chips:{sets:'2 Sets',reps:'8-12 reps',pr:'PR: 155×10',target:'Target: 165 lbs'},
-          cue:'Feet forward. Sit back. Drive knees OUT. Protect lower back.' },
-        { id:'f-lunge', name:'DB Walking Lunges', muscle:'quads',
-          sets:[{wt:35,reps:'20 each'},{wt:40,reps:'20 each'}],
-          chips:{sets:'2 Sets',reps:'20 reps/leg',pr:'PR: 35 lb DBs',target:'Target: 40 lb DBs'},
-          cue:'Medium strides. Minimize rear leg push. Knee tracks toes.' },
-        { id:'f-curl', name:'Lying Leg Curl', muscle:'hams',
-          sets:[{wt:121,reps:'6'},{wt:143,reps:'FAIL'}],
-          chips:{sets:'2 Sets',reps:'6 reps',pr:'PR: 132 lbs',target:'Target: 143 lbs',tag:'Hassan'},
-          hassan:true, cue:'Hamstrings squeeze. No hip rise. Control the negative.' },
-        { id:'f-abduct', name:'Hip Abduction Machine', muscle:'glutes',
-          sets:[{wt:55,reps:'15-20'},{wt:66,reps:'15-20'}],
-          chips:{sets:'2 Sets',reps:'15-20 reps',pr:'PR: 55 lbs (NEW baseline)'},
-          cue:'LEAN FORWARD 30°. 55 lbs baseline. Feel glute medius.' }
-      ]},
-      { label:'Ab Finisher 🎯', exercises:[
-        { id:'f-cable-crunch', name:'Cable Crunch', muscle:'abs',
-          sets:[{wt:0,reps:'15-20'},{wt:0,reps:'15-20'}],
-          chips:{sets:'2 Sets',reps:'15-20 reps',tag:'Nippard Abs'},
-          cue:'🔒 BACK RECOVERY: Kneel facing cable. Hands at temples. Crunch DOWN — flex spine, not arms. Full stretch at top. Eliminates spinal loading.' }
       ]}
     ]
   },
@@ -1663,10 +1627,9 @@ let restOverrides = {}; // { exId: seconds } — user-customized rest per exerci
 let swapOverrides = {}; // { exId: altName } — user-selected exercise swaps
 let prStreaks = {};     // { exId: count } — consecutive sessions with new PRs
 let notesStore = {};   // { exId: { todayNote, lastWeekNote, weekCount } }
-let fortCancelled = false;
 let backRecoveryMode = false;
 let vacationMode = false; // FEAT-8: Gym-free maintenance routine
-let dayTypeOverride = {}; // { dateStr: 'upper'|'push'|'pull'|'legs'|'fort'|'flex' }
+let dayTypeOverride = {}; // { dateStr: 'upper'|'push'|'pull'|'legs'|'flex' }
 let prReadyFlags = new Set(); // exercise names flagged pr_ready=true in Supabase
 let sessionLocation = 'HG'; // 'HG' = Home Gym, 'LT' = Lifetime Fitness
 
@@ -1781,13 +1744,6 @@ async function loadAll() {
   try { const v = await getStored('rest-overrides'); if (v) restOverrides = JSON.parse(v); } catch(e) { restOverrides = {}; }
   try { const v = await getStored('swap-overrides'); if (v) swapOverrides = JSON.parse(v); } catch(e) { swapOverrides = {}; }
   try { const v = await getStored('pr-streaks'); if (v) prStreaks = JSON.parse(v); } catch(e) { prStreaks = {}; }
-
-  // Restore fort-cancelled flag for today
-  try {
-    const key = `fort-cancelled-${getDateStr()}`;
-    const v = await getStored(key);
-    fortCancelled = !!(v);
-  } catch(e) { fortCancelled = false; }
 
   // Restore back recovery mode
   try {
@@ -2028,11 +1984,7 @@ function renderWorkoutView() {
   const workout = WORKOUTS[effectiveType];
   if (!workout) { scroll.innerHTML = '<div class="empty-state">No workout data for this day.</div>'; return; }
 
-  const sectionsForProgress = (effectiveType === 'fort' && fortCancelled)
-    ? workout.sections.filter(s => s.label !== 'If At FORT')
-    : (effectiveType === 'fort' && !fortCancelled)
-      ? workout.sections.filter(s => s.label === 'If At FORT' || s.label.includes('Ab'))
-      : workout.sections;
+  const sectionsForProgress = workout.sections;
 
   const allExIds = [];
   sectionsForProgress.forEach(s => s.exercises.forEach(e => allExIds.push(e.id)));
@@ -2041,32 +1993,6 @@ function renderWorkoutView() {
   const rotationAlerts = getRotationAlerts(effectiveType);
 
   let html = '';
-
-  // FORT cancelled banner (only when scheduled type is FORT and no override)
-  if (day.type === 'fort' && !dayTypeOverride[todayDateStr]) {
-    if (fortCancelled) {
-      html += `<div class="fort-cancel-banner">
-        <div class="fort-cancel-top">
-          <div class="fort-cancel-title">🏠 HOME LOWER DAY</div>
-          <div class="fort-mode-indicator">✓ FORT CANCELLED</div>
-        </div>
-        <div class="fort-cancel-sub">Swapped to your full home gym lower body protocol. All the gains, none of the commute.</div>
-        <div class="fort-cancel-btns">
-          <button class="fort-btn fort-btn-fort" onclick="toggleFortCancelled()">↩ FORT Was On After All</button>
-        </div>
-      </div>`;
-    } else {
-      html += `<div class="fort-cancel-banner">
-        <div class="fort-cancel-top">
-          <div class="fort-cancel-title">📍 FORT / LOWER DAY</div>
-        </div>
-        <div class="fort-cancel-sub">Heading to FORT? Go get it. Class got cancelled? Hit the home gym lower body sub below.</div>
-        <div class="fort-cancel-btns">
-          <button class="fort-btn fort-btn-go" onclick="toggleFortCancelled()">🏠 FORT Cancelled — Home Lower Day</button>
-        </div>
-      </div>`;
-    }
-  }
 
   // Location selector
   const hgActive = sessionLocation === 'HG' ? ' loc-active' : '';
@@ -2079,8 +2005,8 @@ function renderWorkoutView() {
 
   // Workout header
   html += `<div class="w-header">
-    <div class="w-title"><span>${workout.emoji}</span>${fortCancelled && effectiveType==='fort' ? 'HOME LOWER DAY' : workout.title}</div>
-    <div class="w-chips">${(fortCancelled && effectiveType==='fort' ? ['Home Gym Lower Body','Hassan Protocol'] : workout.chips).map(c => `<span class="wchip bg-${effectiveType} c-${effectiveType}">${c}</span>`).join('')}</div>
+    <div class="w-title"><span>${workout.emoji}</span>${workout.title}</div>
+    <div class="w-chips">${workout.chips.map(c => `<span class="wchip bg-${effectiveType} c-${effectiveType}">${c}</span>`).join('')}</div>
     <div class="prog-row">
       <span class="prog-label">Progress</span>
       <div class="mini-bar"><div class="mini-bar-fill bar-${effectiveType}" id="dayProg" style="width:0%"></div></div>
@@ -2089,8 +2015,8 @@ function renderWorkoutView() {
   </div>`;
 
   // Type selector row
-  const workoutTypes = ['upper', 'push', 'pull', 'legs', 'fort'];
-  const typeLabels = { upper: 'UPPER', push: 'PUSH', pull: 'PULL', legs: 'LEGS', fort: 'FLEX' };
+  const workoutTypes = ['upper', 'push', 'pull', 'legs'];
+  const typeLabels = { upper: 'UPPER', push: 'PUSH', pull: 'PULL', legs: 'LEGS' };
   html += `<div class="w-type-selector">
     <span class="type-selector-label">Pick a type:</span>`;
   workoutTypes.forEach(wType => {
@@ -2103,7 +2029,7 @@ function renderWorkoutView() {
   html += `</div>`;
 
   // Done banner
-  const doneBannerTitle = (fortCancelled && effectiveType==='fort') ? 'HOME LOWER DAY COMPLETE' : `${workout.title} COMPLETE`;
+  const doneBannerTitle = `${workout.title} COMPLETE`;
   html += `<div class="done-banner" id="doneBanner">
     <div class="done-emoji">${workout.emoji}</div>
     <div class="done-title">${doneBannerTitle}</div>
@@ -2173,12 +2099,7 @@ function renderWorkoutView() {
     </div>
   </div>`;
 
-  // Exercises — if FORT day and cancelled, skip "If At FORT" section, show only sub + abs
-  const sectionsToRender = (effectiveType === 'fort' && fortCancelled)
-    ? workout.sections.filter(s => s.label !== 'If At FORT')
-    : (effectiveType === 'fort' && !fortCancelled)
-      ? workout.sections.filter(s => s.label === 'If At FORT' || s.label.includes('Ab'))
-      : workout.sections;
+  const sectionsToRender = workout.sections;
 
   sectionsToRender.forEach(section => {
     html += `<div class="sec-label">${section.label}</div>`;
@@ -2455,18 +2376,6 @@ function getRotationAlerts(workoutType) {
 function dismissAlert(id) {
   const el = document.getElementById(id);
   if (el) el.classList.remove('visible');
-}
-
-function toggleFortCancelled() {
-  fortCancelled = !fortCancelled;
-  // Persist choice for today so page reload remembers
-  const key = `fort-cancelled-${getDateStr()}`;
-  if (fortCancelled) {
-    window.storage.set(key, '1').catch(()=>{});
-  } else {
-    window.storage.delete(key).catch(()=>{});
-  }
-  renderWorkoutView();
 }
 
 function switchDayType(newType) {
@@ -2961,6 +2870,22 @@ function completeSet(exId, setIdx, type) {
   const nextSetIdx = setIdx + 1;
   const hasNextSet = nextSetIdx < ex.sets.length;
 
+  // Hassan Protocol: at the failure step, prompt for the burnout weight explicitly
+  // rather than carrying forward a default that doesn't reflect what was actually lifted
+  if (ex.hassan && hasNextSet && String(set?.reps).toUpperCase() === 'FAIL') {
+    const nextSet = ex.sets[nextSetIdx];
+    if (nextSet?.note === 'Burnout') {
+      const defaultBurnout = sessionState[exId]?.weights?.[nextSetIdx] ?? nextSet.wt;
+      const entered = prompt(`Burnout weight for ${swapOverrides[exId] || ex.name}?`, defaultBurnout);
+      const parsed = parseFloat(entered);
+      if (entered !== null && !Number.isNaN(parsed)) {
+        updateWeight(exId, nextSetIdx, parsed);
+        const burnoutInput = document.getElementById(`wi-${exId}-${nextSetIdx}`);
+        if (burnoutInput) burnoutInput.value = parsed;
+      }
+    }
+  }
+
   // Determine next info and next set target
   let nextInfo = '';
   let nextTargetText = null;
@@ -3091,6 +3016,61 @@ function updateDayProgress(allExIds) {
 }
 
 // ============================================================
+// SUPABASE WORKOUT UPSERT — handles the (workout_date, workout_type)
+// unique constraint by prompting to update instead of silently
+// duplicating or failing (app bug #4 / doc requirement #4)
+// ============================================================
+async function postWorkoutToSupabase(payload) {
+  // BUG-18: a stale/runaway session timer must never write a bogus duration
+  if (payload.duration_minutes != null && (payload.duration_minutes < 1 || payload.duration_minutes > 240)) {
+    payload.duration_minutes = null;
+  }
+
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/workouts`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          apikey: SUPABASE_ANON,
+          Authorization: `Bearer ${SUPABASE_ANON}`,
+          Prefer: 'return=minimal'
+        },
+        body: JSON.stringify(payload)
+      }
+    );
+
+    if (res.ok) return true;
+
+    if (res.status === 409) {
+      const wantsUpdate = confirm('Session already logged for this date — update instead?');
+      if (!wantsUpdate) return false;
+      const patchRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/workouts?workout_date=eq.${encodeURIComponent(payload.workout_date)}&workout_type=eq.${encodeURIComponent(payload.workout_type)}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            apikey: SUPABASE_ANON,
+            Authorization: `Bearer ${SUPABASE_ANON}`,
+            Prefer: 'return=minimal'
+          },
+          body: JSON.stringify(payload)
+        }
+      );
+      return patchRes.ok;
+    }
+
+    console.warn('Supabase save rejected:', await res.text());
+    return false;
+  } catch (e) {
+    console.warn('Supabase save attempted (non-fatal):', e);
+    return false;
+  }
+}
+
+// ============================================================
 // SAVE WORKOUT
 // ============================================================
 async function saveWorkout(type, dayKey) {
@@ -3126,12 +3106,7 @@ async function saveWorkout(type, dayKey) {
   const exercises = [];
   let newPRs = [];
 
-  // Use sections that are currently rendered (respects fort cancelled state)
-  const sectionsToSave = (type === 'fort' && fortCancelled)
-    ? workout.sections.filter(s => s.label !== 'If At FORT')
-    : (type === 'fort' && !fortCancelled)
-      ? workout.sections.filter(s => s.label === 'If At FORT' || s.label.includes('Ab'))
-      : workout.sections;
+  const sectionsToSave = workout.sections;
 
   for (const section of sectionsToSave) {
     for (const ex of section.exercises) {
@@ -3144,11 +3119,22 @@ async function saveWorkout(type, dayKey) {
       if (state.done) {
         exerciseFreq[ex.id] = (exerciseFreq[ex.id] || 0) + 1;
       }
-      const exSaveName = (swapOverrides[ex.id] || ex.name) + ' [' + sessionLocation + ']';
+      // BUG-2 fix: never embed [HG]/[LT] in the name — location column is the source of truth
+      const exSaveName = swapOverrides[ex.id] || ex.name;
+      const setsData = ex.sets.map((s, i) => ({ weight: weights[i] || s.wt, reps: s.reps }));
+      const failSet = setsData.find(s => String(s.reps).toUpperCase() === 'FAIL');
+      const burnoutSet = (ex.hassan && setsData.length > 2) ? setsData[setsData.length - 1] : null;
+      const burnoutRepsNum = burnoutSet ? parseInt(burnoutSet.reps, 10) : NaN;
       exercises.push({
-        name: exSaveName, muscle: ex.muscle,
+        name: exSaveName,
+        type: ex.hassan ? 'hassan' : 'straight',
+        muscleGroup: ex.muscle,
         done: state.done || false,
-        sets: ex.sets.map((s, i) => ({ weight: weights[i] || s.wt, reps: s.reps }))
+        sets: setsData,
+        failureWeight: failSet ? failSet.weight : null,
+        burnoutWeight: burnoutSet ? burnoutSet.weight : null,
+        burnoutReps: Number.isNaN(burnoutRepsNum) ? null : burnoutRepsNum,
+        notes: (notesStore[ex.id]||{}).todayNote || null
       });
     }
   }
@@ -3156,7 +3142,7 @@ async function saveWorkout(type, dayKey) {
   const watch = sessionState['__watch__'] || {};
   const entry = {
     id: Date.now(), date: getDateStr(), dayKey,
-    type, title: (type === 'fort' && fortCancelled) ? 'HOME LOWER DAY' : workout.title,
+    type, title: workout.title,
     emoji: workout.emoji,
     exercises, newPRs,
     notes: (sessionState['__notes__']||{}).notes || '',
@@ -3188,34 +3174,17 @@ async function saveWorkout(type, dayKey) {
   } catch(e) { /* silent — not in Claude context */ }
 
   // Also save to Supabase for cloud persistence and PR sync
-  try {
-    const supabasePayload = {
-      workout_date: getDateStr(),
-      workout_type: type,
-      location: sessionLocation === 'HG' ? 'Home Gym' : 'Lifetime Fitness',
-      exercises: exercises,
-      duration_minutes: sessionStart ? Math.floor((Date.now() - sessionStart) / 60000) : null,
-      avg_heart_rate: watch.avgHr || null,
-      max_heart_rate: watch.maxHr || null,
-      calories_burned: watch.calories || null,
-      session_notes: entry.notes || null
-    };
-
-    const supRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/workouts`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          apikey: SUPABASE_ANON,
-          Authorization: `Bearer ${SUPABASE_ANON}`,
-          Prefer: 'resolution=ignore-duplicates'
-        },
-        body: JSON.stringify(supabasePayload)
-      }
-    );
-    if (!supRes.ok) console.warn('Supabase save rejected:', await supRes.text());
-  } catch(e) { console.warn('Supabase save attempted (non-fatal):', e); }
+  await postWorkoutToSupabase({
+    workout_date: getDateStr(),
+    workout_type: type,
+    location: sessionLocation === 'HG' ? 'Home Gym' : 'Lifetime Fitness',
+    exercises: exercises,
+    duration_minutes: sessionStart ? Math.floor((Date.now() - sessionStart) / 60000) : null,
+    avg_heart_rate: watch.avgHr || null,
+    max_heart_rate: watch.maxHr || null,
+    calories_burned: watch.calories || null,
+    session_notes: entry.notes || null
+  });
 
   if (saved) {
     if (newPRs.length > 0) {
@@ -3275,33 +3244,17 @@ async function saveSprintWorkout(dayKey) {
   } catch(e) {}
 
   // Save to Supabase workouts table with watch data
-  try {
-    const supabasePayload = {
-      workout_date: getDateStr(),
-      workout_type: 'sprint',
-      location: sessionLocation === 'HG' ? 'Home Gym' : 'Lifetime Fitness',
-      exercises: [],  // Sprint doesn't track individual exercises like regular workouts
-      duration_minutes: sessionStart ? Math.floor((Date.now() - sessionStart) / 60000) : null,
-      avg_heart_rate: avgHrVal,
-      max_heart_rate: maxHrVal,
-      session_notes: `Sprint session · ${sprintState.totalRounds} rounds with Galaxy Watch data`
-    };
-
-    const supRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/workouts`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          apikey: SUPABASE_ANON,
-          Authorization: `Bearer ${SUPABASE_ANON}`,
-          Prefer: 'resolution=ignore-duplicates'
-        },
-        body: JSON.stringify(supabasePayload)
-      }
-    );
-    if (supRes.ok) saved = true;
-  } catch(e) { console.warn('Supabase save failed:', e); }
+  const sprintSaved = await postWorkoutToSupabase({
+    workout_date: getDateStr(),
+    workout_type: 'sprint',
+    location: sessionLocation === 'HG' ? 'Home Gym' : 'Lifetime Fitness',
+    exercises: [],  // Sprint doesn't track individual exercises like regular workouts
+    duration_minutes: sessionStart ? Math.floor((Date.now() - sessionStart) / 60000) : null,
+    avg_heart_rate: avgHrVal,
+    max_heart_rate: maxHrVal,
+    session_notes: `Sprint session · ${sprintState.totalRounds} rounds with Galaxy Watch data`
+  });
+  if (sprintSaved) saved = true;
 
   if (saved) {
     showToast(`⚡ Sprint session saved · ${getDateStr()} · Watch data persisted`);
@@ -3331,9 +3284,7 @@ function generateSessionSummary(type) {
   lines.push('');
   lines.push(type === 'recovery' ? '🏥 REHAB EXERCISES' : '💪 EXERCISES');
 
-  const sections = (type === 'fort' && fortCancelled)
-    ? workout.sections.filter(s => s.label !== 'If At FORT')
-    : workout.sections;
+  const sections = workout.sections;
 
   sections.forEach(section => {
     section.exercises.forEach(ex => {
@@ -3566,7 +3517,7 @@ function renderSummaryView() {
   // Recent week summary
   html += `<div class="sec-label">Recent Sessions</div>`;
 
-  ['upper','push','pull','legs','fort'].forEach(type => {
+  ['upper','push','pull','legs','sprint'].forEach(type => {
     const sessions = recentByType[type];
     if (!sessions || sessions.length === 0) return;
     const cur = sessions[0];
@@ -3678,8 +3629,8 @@ function renderSummaryView() {
 // HISTORY VIEW — Live query from Supabase Edge Function
 // ============================================================
 const HISTORY_API = 'https://fnjjfnsdxibjbzldfgit.supabase.co/functions/v1/workout-history';
-const WORKOUT_EMOJIS = { legs:'🦵', push:'🔥', pull:'💙', upper:'💪', lower:'🟢', fort:'🏙️', cardio:'🏃', arms:'💪', 'full body':'⚡' };
-const WORKOUT_LABELS_H = { legs:'Legs', push:'Push Day', pull:'Pull Day', upper:'Upper Day', lower:'Lower Day', fort:'FORT / Lower', cardio:'Cardio', arms:'Arms', 'full body':'Full Body' };
+const WORKOUT_EMOJIS = { legs:'🦵', push:'🔥', pull:'💙', upper:'💪', lower:'🟢', sprint:'⚡', cardio:'🏃', arms:'💪', 'full body':'⚡' };
+const WORKOUT_LABELS_H = { legs:'Legs', push:'Push Day', pull:'Pull Day', upper:'Upper Day', lower:'Lower Day', sprint:'Sprint', cardio:'Cardio', arms:'Arms', 'full body':'Full Body' };
 
 let historyCache = null;       // full data from API
 let historyFilter = 'all';     // current type filter
@@ -3699,7 +3650,7 @@ async function renderHistoryView() {
         <button class="hist-search-clear ${historySearch ? 'visible' : ''}" id="histClear" onclick="clearHistorySearch()">✕</button>
       </div>
       <div class="hist-filter-row" id="histFilters">
-        ${['all','legs','push','pull','upper','fort','cardio'].map(f =>
+        ${['all','legs','push','pull','upper','sprint','cardio'].map(f =>
           `<button class="hf-btn ${historyFilter===f?'active':''}" onclick="setHistoryFilter('${f}')">${f==='all'?'All':WORKOUT_LABELS_H[f]||f}</button>`
         ).join('')}
       </div>

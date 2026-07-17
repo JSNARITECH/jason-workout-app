@@ -1,5 +1,51 @@
 # Workout App Changelog
 
+## v13.0 — 2026-07-17
+### Schema hardening (Supabase `workouts` + `exercise_pr_flags`)
+- Backed up `workouts` to `workouts_backup_v13` before any destructive change.
+- Deduplicated the two known `(date, sprint)` row pairs, plus two more collisions
+  surfaced by the `workout_type` normalization itself (`2026-07-08`/`legs` and
+  `2026-04-29`/`sprint`) — merged with an audit trail in `session_notes`.
+- Backfilled and constrained `workouts.id` as a real identity primary key
+  (was NULL on 75/81 rows).
+- Normalized `workout_type` to 8 canonical values (`upper/push/pull/legs/arms/flex/sprint/recovery`)
+  with a CHECK constraint; `cardio` → `sprint`, `fort` → `legs` (original value preserved in notes).
+- Normalized the 4 raw variants of `location` (`home gym`/`Home Gym`/`home_gym`/`Lifetime Fitness`)
+  down to the 2 canonical values; backfilled 3 rows still NULL where unambiguous.
+- `workout_date` TEXT → DATE; added `UNIQUE (workout_date, workout_type)`; added
+  `CHECK (duration_minutes BETWEEN 1 AND 240)` after nulling 5 bogus values (BUG-18).
+- Normalized the exercise JSONB to one canonical schema (`name/type/muscleGroup/done/sets/
+  failureWeight/burnoutWeight/burnoutReps/notes`), stripping `[HG]`/`[LT]` tags from names.
+- Added a trigger that auto-maintains `exercise_pr_flags` (current PR, weeks-at-PR, `pr_ready`)
+  on every workout insert/update, scoped per `(exercise_name, workout_type, location)` so PRs
+  never compare across gyms.
+- Removed the unrestricted anon `DELETE` policy on `workouts`. Full `auth.uid()`-scoped RLS
+  (requires wiring Supabase Auth into the client) is intentionally deferred — see summary.
+
+### App fixes
+- BUG-2: exercise names no longer get `[HG]`/`[LT]` appended on save; `location` column is
+  the only source of truth.
+- App bug: workout saves now emit the canonical exercise schema (type/failureWeight/
+  burnoutWeight/burnoutReps/notes) instead of the stripped-down `{name,muscle,done,sets}` shape.
+- App bug: duplicate `(date, type)` saves now prompt "update instead?" and PATCH by
+  `workout_date`+`workout_type` rather than silently no-op'ing (was `resolution=ignore-duplicates`).
+- BUG-18: a session timer reading over 240 minutes is sent as NULL, not the raw value.
+- Hassan Protocol: prompt for the burnout weight explicitly at the failure step instead of
+  carrying forward a stale default.
+- Added "Walking Lunges (DB)" to the Leg Day exercise library (previously missing, which is
+  why it kept getting mislabeled as Seated Leg Curl in exports).
+- BUG-LEGCURL-SWAP: corrected the July 14 session where Lying/Seated Leg Curl were logged
+  under each other's names; scanned the rest of history and found no other occurrence with
+  the same clear structural signature.
+- FEAT-15: removed FORT NYC (the Tuesday cancel/home-sub toggle, `fortCancelled` state, and
+  `WORKOUTS.fort`). Tuesday is now a fixed Lower Day using the same leg program as Sunday.
+  Note: this branch does **not** include the "swap to a class on any day" widget — see summary.
+
+### Tests
+- Added `tests/regression.test.js` (Node's built-in test runner) covering the 6 required
+  cases from the hardening doc, wired into CI via `.github/workflows/tests.yml` on every
+  push to main and on pull requests.
+
 ## v11.1 — 2026-03-18
 ### Added
 - **Back Recovery Mode** — global toggle (🦴 pill in header) swaps all workout days to spine-safe rehab protocols when active. Persists via localStorage.
