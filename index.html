@@ -671,7 +671,7 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 // ============================================================
 // APP VERSION — update this on every release
 // ============================================================
-const APP_VERSION = 'v12.1';
+const APP_VERSION = 'v12.2';
 
 // ============================================================
 // WEEKLY SCHEDULE
@@ -2028,6 +2028,8 @@ function renderWorkoutView() {
   const workout = WORKOUTS[effectiveType];
   if (!workout) { scroll.innerHTML = '<div class="empty-state">No workout data for this day.</div>'; return; }
 
+  resolveStaleSwapCollisions(workout);
+
   const sectionsForProgress = (effectiveType === 'fort' && fortCancelled)
     ? workout.sections.filter(s => s.label !== 'If At FORT')
     : (effectiveType === 'fort' && !fortCancelled)
@@ -2517,6 +2519,26 @@ function swapExercise(exId, newName, type) {
 
 // ── EXERCISE SWAP (Feature B) ────────────────────────────────
 let _swapTarget = null; // { exId, muscle, type, originalName }
+
+// BUG-LEGCURL-SWAP: a swapOverride persisted from an earlier session can end up
+// naming an exercise the same as another exercise's native name in today's workout
+// (e.g. Lying Leg Curl swapped to "Seated Leg Curl" while a real Seated Leg Curl
+// slot exists the same day) — that's how a set gets logged under the wrong name.
+// Clear any override that collides with another exercise's effective name in this day.
+function resolveStaleSwapCollisions(workout) {
+  const seen = new Map(); // effective name -> exId
+  let changed = false;
+  workout.sections.forEach(s => s.exercises.forEach(ex => {
+    const name = swapOverrides[ex.id] || ex.name;
+    const priorId = seen.get(name);
+    if (priorId && priorId !== ex.id) {
+      if (swapOverrides[ex.id]) { delete swapOverrides[ex.id]; changed = true; }
+      else if (swapOverrides[priorId]) { delete swapOverrides[priorId]; changed = true; }
+    }
+    seen.set(swapOverrides[ex.id] || ex.name, ex.id);
+  }));
+  if (changed) { try { window.storage.set('swap-overrides', JSON.stringify(swapOverrides)); } catch(e){} }
+}
 
 function showSwapSheet(exId, muscle, type, originalName) {
   _swapTarget = { exId, muscle, type, originalName };
