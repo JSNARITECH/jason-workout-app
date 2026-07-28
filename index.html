@@ -1660,7 +1660,7 @@ let timerInterval = null;
 let timerSec = 90;
 let timerMax = 90;
 let restOverrides = {}; // { exId: seconds } — user-customized rest per exercise
-let swapOverrides = {}; // { exId: altName } — user-selected exercise swaps
+let swapOverrides = {}; // { exId: { HG: altName, LT: altName } } — user-selected exercise swaps, scoped per gym location (BUG-LEGCURL-SWAP fix)
 let prStreaks = {};     // { exId: count } — consecutive sessions with new PRs
 let notesStore = {};   // { exId: { todayNote, lastWeekNote, weekCount } }
 let fortCancelled = false;
@@ -1779,7 +1779,19 @@ async function loadAll() {
   prStore = {};
   try { const v = await getStored('exercise-freq'); if (v) exerciseFreq = JSON.parse(v); } catch(e) { exerciseFreq = {}; }
   try { const v = await getStored('rest-overrides'); if (v) restOverrides = JSON.parse(v); } catch(e) { restOverrides = {}; }
-  try { const v = await getStored('swap-overrides'); if (v) swapOverrides = JSON.parse(v); } catch(e) { swapOverrides = {}; }
+  try {
+    const v = await getStored('swap-overrides');
+    swapOverrides = v ? JSON.parse(v) : {};
+    // BUG-LEGCURL-SWAP FIX: legacy format was { exId: altName } with no location —
+    // a swap made at one gym silently applied at the other (e.g. Lying Leg Curl
+    // carrying over to Home Gym, which has no lying curl machine). Ambiguous
+    // legacy entries are dropped rather than guessed at; user re-swaps as needed.
+    let migrated = false;
+    for (const exId of Object.keys(swapOverrides)) {
+      if (typeof swapOverrides[exId] === 'string') { delete swapOverrides[exId]; migrated = true; }
+    }
+    if (migrated) { try { await window.storage.set('swap-overrides', JSON.stringify(swapOverrides)); } catch(e) {} }
+  } catch(e) { swapOverrides = {}; }
   try { const v = await getStored('pr-streaks'); if (v) prStreaks = JSON.parse(v); } catch(e) { prStreaks = {}; }
 
   // Restore fort-cancelled flag for today
@@ -2241,8 +2253,8 @@ function buildExCard(ex, isDone, savedWeights, hasPR, type) {
   const rotFlagHtml = isRotation ? `<span class="rotation-flag">🔄 Vary soon</span>` : '';
 
   // Swap override: use alternate name if set
-  const isSwapped = !!swapOverrides[ex.id];
-  const displayName = isSwapped ? swapOverrides[ex.id] : ex.name;
+  const isSwapped = !!getSwap(ex.id);
+  const displayName = isSwapped ? getSwap(ex.id) : ex.name;
   const swapBtnClass = isSwapped ? 'swap-btn swapped' : 'swap-btn';
   const swapBtnHtml = ex.muscle && ROTATION_POOLS[ex.muscle]
     ? `<button class="swap-btn ${isSwapped ? 'swapped' : ''}" onclick="event.stopPropagation();showSwapSheet('${ex.id}','${ex.muscle}','${type}','${ex.name.replace(/'/g,"\\'")}')">⟳ ${isSwapped ? 'Swapped' : 'Swap'}</button>`
@@ -2365,7 +2377,8 @@ function buildExCard(ex, isDone, savedWeights, hasPR, type) {
 // ============================================================
 // PRs are keyed by "exId:exerciseName" when swapped, so machine vs Smith vs DB PRs stay isolated
 function getPRKey(exId) {
-  return swapOverrides[exId] ? `${exId}:${swapOverrides[exId]}` : exId;
+  const swapped = getSwap(exId);
+  return swapped ? `${exId}:${swapped}` : exId;
 }
 
 function checkIfPR(exId, weights) {
@@ -2518,6 +2531,19 @@ function swapExercise(exId, newName, type) {
 // ── EXERCISE SWAP (Feature B) ────────────────────────────────
 let _swapTarget = null; // { exId, muscle, type, originalName }
 
+// Swaps are scoped per gym location — a machine swapped in at Lifetime Fitness
+// must not silently apply at Home Gym, which has different equipment (BUG-LEGCURL-SWAP)
+function getSwap(exId) {
+  return swapOverrides[exId] ? (swapOverrides[exId][sessionLocation] || null) : null;
+}
+function setSwap(exId, newName) {
+  if (!swapOverrides[exId]) swapOverrides[exId] = {};
+  swapOverrides[exId][sessionLocation] = newName;
+}
+function clearSwap(exId) {
+  if (swapOverrides[exId]) delete swapOverrides[exId][sessionLocation];
+}
+
 function showSwapSheet(exId, muscle, type, originalName) {
   _swapTarget = { exId, muscle, type, originalName };
   const overlay = document.getElementById('swapOverlay');
@@ -2525,13 +2551,13 @@ function showSwapSheet(exId, muscle, type, originalName) {
   const current = document.getElementById('swapCurrentName');
   const undoBtn = document.getElementById('swapUndoBtn');
 
-  const currentName = swapOverrides[exId] || originalName;
+  const currentName = getSwap(exId) || originalName;
   current.innerHTML = `<strong>${currentName}</strong>`;
 
   // Collect all display names already in use for this workout day (to exclude)
   const w = WORKOUTS[type];
   const inUse = new Set([currentName]);
-  if (w) w.sections.forEach(s => s.exercises.forEach(e => inUse.add(swapOverrides[e.id] || e.name)));
+  if (w) w.sections.forEach(s => s.exercises.forEach(e => inUse.add(getSwap(e.id) || e.name)));
 
   const pool = ROTATION_POOLS[muscle] || [];
   const alts = pool.filter(e => !inUse.has(e.name));
@@ -2559,12 +2585,12 @@ function showSwapSheet(exId, muscle, type, originalName) {
     opts.innerHTML = `<div style="font-size:11px;color:var(--dim2);padding:8px 0">All alternatives for this muscle are already in today's workout.</div>`;
   }
 
-  undoBtn.style.display = swapOverrides[exId] ? 'block' : 'none';
+  undoBtn.style.display = getSwap(exId) ? 'block' : 'none';
   overlay.classList.add('open');
 }
 
 async function applySwap(exId, newName, type) {
-  swapOverrides[exId] = newName;
+  setSwap(exId, newName);
   try { await window.storage.set('swap-overrides', JSON.stringify(swapOverrides)); } catch(e){}
   closeSwapSheet();
   showToast(`⟳ Swapped → ${newName}`);
@@ -2573,7 +2599,7 @@ async function applySwap(exId, newName, type) {
 
 async function undoSwap() {
   if (!_swapTarget) return;
-  delete swapOverrides[_swapTarget.exId];
+  clearSwap(_swapTarget.exId);
   try { await window.storage.set('swap-overrides', JSON.stringify(swapOverrides)); } catch(e){}
   closeSwapSheet();
   showToast('↩ Restored original');
@@ -2905,22 +2931,23 @@ function startTimerForEx(exId, type) {
   const allExes = workout.sections.flatMap(s => s.exercises);
   let exName = '', nextName = null, ex = null;
   for (const e of allExes) {
-    if (e.id === exId) { exName = swapOverrides[exId] || e.name; ex = e; }
+    if (e.id === exId) { exName = getSwap(exId) || e.name; ex = e; }
   }
   // Find next INCOMPLETE exercise — use swap name if applicable
   let foundCurrent = false;
   for (const e of allExes) {
     if (e.id === exId) { foundCurrent = true; continue; }
-    if (foundCurrent && !sessionState[e.id]?.done) { nextName = swapOverrides[e.id] || e.name; break; }
+    if (foundCurrent && !sessionState[e.id]?.done) { nextName = getSwap(e.id) || e.name; break; }
   }
   // If none after, check before
   if (!nextName) {
     for (const e of allExes) {
-      if (e.id !== exId && !sessionState[e.id]?.done) { nextName = swapOverrides[e.id] || e.name; break; }
+      if (e.id !== exId && !sessionState[e.id]?.done) { nextName = getSwap(e.id) || e.name; break; }
     }
   }
   // Use swapped exercise metadata for rest time if available
-  const effectiveEx = swapOverrides[exId] ? (findExByNameAnywhere(swapOverrides[exId]) || ex) : ex;
+  const swappedName = getSwap(exId);
+  const effectiveEx = swappedName ? (findExByNameAnywhere(swappedName) || ex) : ex;
   const protocol = effectiveEx?.hassan ? 'Hassan Protocol' : 'Straight Sets';
   const totalSets = effectiveEx?.sets?.length || ex?.sets?.length || 0;
   const restTime = restOverrides[exId] || getSmartRestTime(effectiveEx || ex, (totalSets || 1) - 1);
@@ -2953,7 +2980,8 @@ function completeSet(exId, setIdx, type) {
   // Get exercise data and smart rest time — use swapped exercise config if applicable
   const ex = getExById(exId);
   if (!ex) return;
-  const effectiveEx = swapOverrides[exId] ? (findExByNameAnywhere(swapOverrides[exId]) || ex) : ex;
+  const swappedName = getSwap(exId);
+  const effectiveEx = swappedName ? (findExByNameAnywhere(swappedName) || ex) : ex;
 
   const restTime = restOverrides[exId] || getSmartRestTime(effectiveEx, setIdx);
   const set = ex.sets[setIdx];
@@ -2970,7 +2998,7 @@ function completeSet(exId, setIdx, type) {
     const nextReps = nextSet.reps;
     // Get the current logged weight for the next set (or fallback to default)
     const nextWeight = sessionState[exId]?.weights?.[nextSetIdx] ?? nextSet.wt;
-    nextInfo = `Next: <strong>${swapOverrides[exId] || ex.name} — ${nextLabel}</strong>`;
+    nextInfo = `Next: <strong>${getSwap(exId) || ex.name} — ${nextLabel}</strong>`;
     // Build next target pill
     const protocolTag = ex.hassan ? 'Hassan' : 'Straight';
     const burnoutTag = (nextSet.note === 'Burnout' || String(nextReps).toLowerCase().includes('burn')) ? ' · Burnout' : '';
@@ -3020,7 +3048,7 @@ function completeSet(exId, setIdx, type) {
   const protocol = effectiveEx.hassan ? 'Hassan' : 'Straight Sets';
   const burnoutLabel = (set.note === 'Burnout') ? ' · Burnout' : '';
   const setInfoLine = `${setLabel} of ${effectiveEx.sets?.length || ex.sets.length} · ${protocol}${burnoutLabel}`;
-  startTimer(swapOverrides[exId] || ex.name, null, restTime, setInfoLine, nextInfo, nextTargetText);
+  startTimer(getSwap(exId) || ex.name, null, restTime, setInfoLine, nextInfo, nextTargetText);
 }
 
 async function setRestOverride(exId, seconds) {
@@ -3144,7 +3172,7 @@ async function saveWorkout(type, dayKey) {
       if (state.done) {
         exerciseFreq[ex.id] = (exerciseFreq[ex.id] || 0) + 1;
       }
-      const exSaveName = (swapOverrides[ex.id] || ex.name) + ' [' + sessionLocation + ']';
+      const exSaveName = (getSwap(ex.id) || ex.name) + ' [' + sessionLocation + ']';
       exercises.push({
         name: exSaveName, muscle: ex.muscle,
         done: state.done || false,
@@ -3339,7 +3367,7 @@ function generateSessionSummary(type) {
     section.exercises.forEach(ex => {
       const state   = sessionState[ex.id] || {};
       const weights = state.weights || ex.sets.map(s => s.wt);
-      const displayName = swapOverrides[ex.id] || ex.name;
+      const displayName = getSwap(ex.id) || ex.name;
       const setStr  = ex.sets.map((s, i) => `${weights[i] || s.wt}×${s.reps}`).join(', ');
       const done    = state.done ? '✓' : '–';
       const note    = notesStore[ex.id]?.todayNote ? ` [${notesStore[ex.id].todayNote}]` : '';
