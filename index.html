@@ -1000,10 +1000,10 @@ const WORKOUTS = {
           sets:[{wt:35,reps:'20 each'},{wt:40,reps:'20 each'}],
           chips:{sets:'2 Sets',reps:'20 reps/leg',pr:'PR: 35 lb DBs',target:'Target: 40 lb DBs'},
           cue:'Medium strides. Minimize rear leg push. Knee tracks toes.' },
-        { id:'f-curl', name:'Lying Leg Curl', muscle:'hams',
-          sets:[{wt:121,reps:'6'},{wt:143,reps:'FAIL'}],
-          chips:{sets:'2 Sets',reps:'6 reps',pr:'PR: 132 lbs',target:'Target: 143 lbs',tag:'Hassan'},
-          hassan:true, cue:'Hamstrings squeeze. No hip rise. Control the negative.' },
+        { id:'f-curl', name:'Nordic Curl', muscle:'hams',
+          sets:[{wt:0,reps:'6-8'},{wt:0,reps:'6-8'}],
+          chips:{sets:'2 Sets',reps:'6-8 reps',pr:'PR: BW×8'},
+          cue:'No lying leg curl machine at Home Gym — anchor feet under a bench/partner, lower under control as far as possible, push back up.' },
         { id:'f-abduct', name:'Hip Abduction Machine', muscle:'glutes',
           sets:[{wt:55,reps:'15-20'},{wt:66,reps:'15-20'}],
           chips:{sets:'2 Sets',reps:'15-20 reps',pr:'PR: 55 lbs (NEW baseline)'},
@@ -1041,6 +1041,19 @@ const WORKOUTS = {
     ]
   },
 };
+
+// Home Gym has no lying leg curl machine — substitute the whole exercise
+// (name + sets + chips + cue, not just a display-name swap) when rendering
+// at Home Gym. Lifetime Fitness keeps the original machine-based definition.
+const HOME_GYM_SUBS = {
+  'l-curl': { id:'l-curl', name:'Nordic Curl', muscle:'hams',
+    sets:[{wt:0,reps:'6-8'},{wt:0,reps:'6-8'}],
+    chips:{sets:'2 Sets',reps:'6-8 reps',pr:'PR: BW×8'},
+    cue:'No lying leg curl machine at Home Gym — anchor feet under a bench/partner, lower under control as far as possible, push back up.' }
+};
+function getExForLocation(ex) {
+  return (sessionLocation === 'HG' && HOME_GYM_SUBS[ex.id]) ? HOME_GYM_SUBS[ex.id] : ex;
+}
 
 // FEAT-1 & FEAT-2: Mobility exercises for Wed/Sat recovery
 const MOBILITY_EXERCISES = {
@@ -2194,7 +2207,8 @@ function renderWorkoutView() {
 
   sectionsToRender.forEach(section => {
     html += `<div class="sec-label">${section.label}</div>`;
-    section.exercises.forEach(ex => {
+    section.exercises.forEach(exRaw => {
+      const ex = getExForLocation(exRaw);
       const state = sessionState[ex.id] || {};
       const isDone = state.done || false;
       const savedWeights = state.weights || ex.sets.map(s => s.wt);
