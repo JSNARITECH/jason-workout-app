@@ -1127,7 +1127,7 @@ const MOBILITY_EXERCISES = {
 const REST_CONTENT = {
   wed:{ title:'SPRINT DAY ⚡', icon:'⚡', sub:'Visceral fat weapon. 90-min/wk HIIT target.', tips:[
     {icon:'🚶',text:'AM fasted incline walk FIRST: 6% grade, 3.0 mph, 30–45 min. Zone 2 (108–128 bpm). Fasted keto state = maximum fat oxidation.'},
-    {icon:'⚡',text:'SPRINT PROTOCOL — counts toward your 90-min/week HIIT threshold: 5-min warm-up walk → 6 × 30-sec MAX effort sprints (manual treadmill, lean hard) → 90-sec walking recovery between each → 5-min cool-down. Total: ~25 min. Zone 4–5 target: 140–165+ bpm. Dr. O\'Mara data: short maximal sprints eliminate visceral fat faster than any other cardio modality.'},
+    {icon:'⚡',text:'SPRINT PROTOCOL — counts toward your 90-min/week HIIT threshold: 5-min warm-up walk → 6 × 30-sec MAX effort sprints (manual treadmill, lean hard) → 75-sec walking recovery between each (trial, was 90s) → 5-min cool-down. Total: ~24 min. Zone 4–5 target: 140–165+ bpm. Dr. O\'Mara data: short maximal sprints eliminate visceral fat faster than any other cardio modality.'},
     {icon:'📈',text:'PROGRESSIVE OVERLOAD: Week 1–2 = 4 rounds. Add 1 round every 2 weeks. Goal = 8 rounds by Week 8. Intensity rule: if it doesn\'t feel hard, lean harder into the belt.'},
     {icon:'♨️',text:'POST-SPRINT SAUNA (non-optional): 20 min @ 175°F traditional sauna. Using sauna post-exercise amplifies VO2 max gains and anabolic signaling beyond exercise alone. Do not exceed 200°F. Dr. Rhonda Patrick protocol.'},
     {icon:'🧘',text:'Hip mobility + thoracic spine work: 15–20 min. Counteracts desk compression from sitting.'},
@@ -1135,7 +1135,7 @@ const REST_CONTENT = {
     {icon:'😴',text:'Sleep is visceral fat medicine. Two weeks of poor sleep = 11% more visceral fat with zero weight change (RCT). Protect tonight\'s window. Magnesium before bed.'}
   ]},
   sat:{ title:'SPRINT + RECOVERY', icon:'⚡', sub:'Second HIIT session. Then full recharge.', tips:[
-    {icon:'⚡',text:'SPRINT PROTOCOL (2nd weekly HIIT session): 5-min warm-up walk → 6 × 30-sec MAX effort sprints (manual treadmill, lean hard) → 90-sec walking recovery between each → 5-min cool-down. Total: ~25 min. Zone 4–5 target: 140–165+ bpm. Wed + Sat sprints = ~50 min pure HIIT. Add Tuesday class and you clear the 90-min/week visceral fat threshold.'},
+    {icon:'⚡',text:'SPRINT PROTOCOL (2nd weekly HIIT session): 5-min warm-up walk → 6 × 30-sec MAX effort sprints (manual treadmill, lean hard) → 75-sec walking recovery between each (trial, was 90s) → 5-min cool-down. Total: ~24 min. Zone 4–5 target: 140–165+ bpm. Wed + Sat sprints = ~48 min pure HIIT. Add Tuesday class and you clear the 90-min/week visceral fat threshold.'},
     {icon:'📈',text:'Progressive overload: Start at 4 rounds. Add 1 round every 2 weeks alongside Wednesday. Both days progress together. Goal = 8 rounds each by Week 8.'},
     {icon:'♨️',text:'POST-SPRINT SAUNA: 20–30 min @ 175°F. No rush today — weekend. This is the best day to extend the session. Do not exceed 200°F. Amplifies VO2 max and anabolic signaling beyond exercise alone.'},
     {icon:'🚶',text:'After sauna: done. No more cardio. Zone 1–2 walking only if you feel like moving. Legs are tomorrow — protect recovery.'},
@@ -4468,7 +4468,7 @@ document.addEventListener('visibilitychange', () => {
 const SPRINT_PHASES = {
   warmup:   { label: 'WARM-UP WALK',  secs: 300, cue: 'Easy incline walk. Get the blood moving. Deep breaths.' },
   sprint:   { label: 'SPRINT — MAX EFFORT', secs: 30,  cue: 'LEAN HARD INTO THE BELT. Maximum effort. Drive your legs. Zone 5.' },
-  rest:     { label: 'WALKING RECOVERY', secs: 90,  cue: 'Slow it down. Walk it out. Heart rate coming down to Zone 2 before next round.' },
+  rest:     { label: 'WALKING RECOVERY', secs: 75,  cue: 'Slow it down. Walk it out. Heart rate coming down to Zone 2 before next round.' }, // FEAT-16: trial 90s->75s, revert if it doesn't hold up
   cooldown: { label: 'COOL-DOWN WALK', secs: 300, cue: 'Easy walk. Let heart rate drop below 120. Great work.' },
   done:     { label: 'SESSION COMPLETE', secs: 0,   cue: 'Head straight to the sauna. 20 min @ 175°F. Non-optional.' }
 };
@@ -4508,7 +4508,7 @@ function renderSprintDay(dayKey, content) {
       <div class="sprint-progress-fill fill-warmup" id="spProgressFill" style="width:100%"></div>
     </div>
 
-    <div class="sprint-cue" id="spCue">5-min warm-up → ${sprintState.totalRounds} × 30-sec sprints → 90-sec rest between → 5-min cool-down. Hit START when on the treadmill.</div>
+    <div class="sprint-cue" id="spCue">5-min warm-up → ${sprintState.totalRounds} × 30-sec sprints → 75-sec rest between → 5-min cool-down. Hit START when on the treadmill.</div>
 
     <div class="sprint-btn-row">
       <button class="sprint-btn sprint-btn-main" id="spMainBtn" onclick="toggleSprint()">START</button>
@@ -4674,7 +4674,7 @@ function adjustRounds(delta) {
   const el = document.getElementById('spRoundsVal');
   if (el) el.textContent = sprintState.totalRounds;
   const cueEl = document.getElementById('spCue');
-  if (cueEl) cueEl.textContent = `5-min warm-up → ${sprintState.totalRounds} × 30-sec sprints → 90-sec rest between → 5-min cool-down. Hit START when on the treadmill.`;
+  if (cueEl) cueEl.textContent = `5-min warm-up → ${sprintState.totalRounds} × 30-sec sprints → 75-sec rest between → 5-min cool-down. Hit START when on the treadmill.`;
   buildRoundDots();
 }
 
@@ -4812,7 +4812,7 @@ function resetSprint() {
   const labelEl = document.getElementById('spPhaseLabel');
   if (labelEl) { labelEl.textContent = 'READY TO START'; labelEl.className = 'sprint-phase-label phase-warmup'; }
   const cueEl = document.getElementById('spCue');
-  if (cueEl) cueEl.textContent = `5-min warm-up → ${sprintState.totalRounds} × 30-sec sprints → 90-sec rest between → 5-min cool-down. Hit START when on the treadmill.`;
+  if (cueEl) cueEl.textContent = `5-min warm-up → ${sprintState.totalRounds} × 30-sec sprints → 75-sec rest between → 5-min cool-down. Hit START when on the treadmill.`;
   const fillEl = document.getElementById('spProgressFill');
   if (fillEl) { fillEl.style.width = '100%'; fillEl.className = 'sprint-progress-fill fill-warmup'; }
   buildRoundDots();
