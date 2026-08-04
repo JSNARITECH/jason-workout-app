@@ -591,11 +591,31 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .acct-lbl{font-size:7.5px;letter-spacing:0.3px;color:var(--dim2);text-transform:uppercase;font-weight:700;}
 .acct-btn{margin-top:2px;font-size:7.5px;padding:3px 6px;border-radius:7px;border:1px solid var(--border2);background:transparent;color:var(--dim2);font-family:'DM Sans',sans-serif;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:0.3px;white-space:nowrap;}
 .acct-btn.acct-btn-done{background:var(--green-dim);color:var(--green);border-color:transparent;}
+
+/* FEAT-12: WEEKLY CHECK-IN MODAL */
+.checkin-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;align-items:center;justify-content:center;padding:20px;}
+.checkin-overlay.visible{display:flex;}
+.checkin-box{background:var(--card);border:1px solid var(--border2);border-radius:16px;padding:20px;max-width:400px;width:100%;max-height:85vh;overflow-y:auto;}
+.checkin-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;margin-bottom:4px;}
+.checkin-sub{font-size:11px;color:var(--dim2);margin-bottom:14px;}
+.checkin-field{margin-bottom:14px;}
+.cf-label{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--dim2);font-weight:700;margin-bottom:7px;}
+.cf-opts{display:flex;gap:6px;flex-wrap:wrap;}
+.cf-opt{flex:1;min-width:38px;padding:9px 6px;border-radius:9px;border:1px solid var(--border2);background:var(--card2);color:var(--dim2);font-size:11px;font-weight:700;text-align:center;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.cf-opt.cf-opt-active{background:var(--accent);color:var(--black);border-color:var(--accent);}
+.checkin-submit{width:100%;padding:13px;border-radius:11px;border:none;background:var(--accent);color:var(--black);font-weight:800;font-size:12px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;margin-top:6px;}
+.checkin-submit:disabled{opacity:0.4;cursor:not-allowed;}
+.checkin-skip{width:100%;padding:10px;border-radius:11px;border:none;background:none;color:var(--dim2);font-size:10px;text-decoration:underline;cursor:pointer;margin-top:8px;font-family:'DM Sans',sans-serif;}
+.checkin-result{margin-top:14px;padding:12px;border-radius:10px;background:var(--card2);font-size:11px;line-height:1.5;display:none;}
+.checkin-result.visible{display:block;}
+.checkin-trend{display:flex;gap:5px;}
+.checkin-trend-bar{flex:1;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;}
 </style>
 </head>
 <body>
 
 <div class="load-overlay" id="loadOverlay"><div class="load-icon">🏋️</div></div>
+<div class="checkin-overlay" id="checkinOverlay"></div>
 <div class="pr-flash" id="prFlash">🏆 NEW PR!</div>
 <div class="toast" id="toast">✓ SAVED</div>
 <div class="pr-sync-pill" id="prSyncPill"><div class="sync-dot"></div>Syncing PRs</div>
@@ -1745,6 +1765,8 @@ async function init() {
   setTimeout(() => {
     document.getElementById('loadOverlay').classList.add('hidden');
   }, 400);
+
+  maybeShowWeeklyCheckin(); // FEAT-12: fire-and-forget so a slow/failed check never blocks the app itself
 }
 
 async function loadAll() {
@@ -2066,6 +2088,158 @@ function renderAcctWidget() {
     </div>
   `;
   el.classList.add('visible');
+}
+
+// ============================================================
+// FEAT-12: WEEKLY PROTOCOL CHECK-IN — SUNDAY MODAL
+// ============================================================
+let checkinDraft = { sprints: null, alcohol: null, sleep: null, protein: null, walks: null };
+let checkinTrend = [];
+
+async function maybeShowWeeklyCheckin() {
+  if (new Date().getDay() !== 0) return; // Sunday only
+  try {
+    if (localStorage.getItem(`checkin-skipped-${getDateStr()}`)) return; // skipped today, don't re-nag until tomorrow
+  } catch(e) {}
+  const weekStart = getWeekStartKey(getDateStr());
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/weekly_checkins?week_start=eq.${weekStart}&select=id&limit=1`,
+      { headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` } }
+    );
+    if (res.ok) {
+      const rows = await res.json();
+      if (rows.length) return; // already submitted this week
+    }
+  } catch(e) { return; } // non-fatal — never block the app on a network hiccup
+  openCheckinModal();
+}
+
+function openCheckinModal() {
+  checkinDraft = { sprints: null, alcohol: null, sleep: null, protein: null, walks: null };
+  checkinTrend = [];
+  renderCheckinModal();
+  document.getElementById('checkinOverlay').classList.add('visible');
+  loadCheckinTrend();
+}
+function closeCheckinModal() {
+  const el = document.getElementById('checkinOverlay');
+  if (el) { el.classList.remove('visible'); el.innerHTML = ''; }
+}
+function skipWeeklyCheckin() {
+  try { localStorage.setItem(`checkin-skipped-${getDateStr()}`, '1'); } catch(e) {}
+  closeCheckinModal();
+}
+async function loadCheckinTrend() {
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/weekly_checkins?select=week_start,score&order=week_start.desc&limit=4`,
+      { headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` } }
+    );
+    checkinTrend = res.ok ? await res.json() : [];
+  } catch(e) { checkinTrend = []; }
+  renderCheckinModal();
+}
+function setCheckinField(field, value) {
+  checkinDraft[field] = value;
+  renderCheckinModal();
+}
+function computeCheckinScore(d) {
+  let score = 0;
+  if (d.sprints >= 2) score++;
+  if (d.alcohol === false) score++;
+  if (d.sleep === 'yes') score++;
+  if (d.protein === true) score++;
+  if (d.walks >= 4) score++;
+  return score;
+}
+function renderCheckinModal() {
+  const el = document.getElementById('checkinOverlay');
+  if (!el) return;
+  const d = checkinDraft;
+  const opt = (field, value, label) => {
+    const active = d[field] === value ? 'cf-opt-active' : '';
+    const valStr = typeof value === 'string' ? `'${value}'` : value;
+    return `<button class="cf-opt ${active}" onclick="setCheckinField('${field}',${valStr})">${label}</button>`;
+  };
+  const allAnswered = d.sprints !== null && d.alcohol !== null && d.sleep !== null && d.protein !== null && d.walks !== null;
+  const trendHtml = checkinTrend.length ? `
+      <div class="checkin-field">
+        <div class="cf-label">Last ${checkinTrend.length} Weeks</div>
+        <div class="checkin-trend">
+          ${checkinTrend.slice().reverse().map(t => {
+            const color = t.score >= 4 ? 'var(--green)' : t.score >= 3 ? 'var(--gold)' : 'var(--red)';
+            return `<div class="checkin-trend-bar" style="background:${color}22;color:${color};border:1px solid ${color}">${t.score}</div>`;
+          }).join('')}
+        </div>
+      </div>` : '';
+  el.innerHTML = `
+    <div class="checkin-box">
+      <div class="checkin-title">📋 WEEKLY PROTOCOL CHECK-IN</div>
+      <div class="checkin-sub">Sunday accountability — how'd the week go?</div>
+      ${trendHtml}
+      <div class="checkin-field">
+        <div class="cf-label">Sprints This Week</div>
+        <div class="cf-opts">${[0,1,2,3].map(n => opt('sprints', n, n === 3 ? '2+' : String(n))).join('')}</div>
+      </div>
+      <div class="checkin-field">
+        <div class="cf-label">Alcohol This Week?</div>
+        <div class="cf-opts">${opt('alcohol', false, 'No')}${opt('alcohol', true, 'Yes')}</div>
+      </div>
+      <div class="checkin-field">
+        <div class="cf-label">Sleep Before 10PM?</div>
+        <div class="cf-opts">${opt('sleep', 'yes', 'Yes')}${opt('sleep', 'most', 'Most')}${opt('sleep', 'no', 'No')}</div>
+      </div>
+      <div class="checkin-field">
+        <div class="cf-label">Protein 225g+ Most Days?</div>
+        <div class="cf-opts">${opt('protein', true, 'Yes')}${opt('protein', false, 'No')}</div>
+      </div>
+      <div class="checkin-field">
+        <div class="cf-label">Fasted Walks This Week</div>
+        <div class="cf-opts">${[0,1,2,3,4,5,6,7].map(n => opt('walks', n, String(n))).join('')}</div>
+      </div>
+      <button class="checkin-submit" id="checkinSubmitBtn" ${allAnswered ? '' : 'disabled'} onclick="submitWeeklyCheckin()">SUBMIT CHECK-IN</button>
+      <button class="checkin-skip" onclick="skipWeeklyCheckin()">Skip for today</button>
+      <div class="checkin-result" id="checkinResult"></div>
+    </div>
+  `;
+}
+async function submitWeeklyCheckin() {
+  const d = checkinDraft;
+  const score = computeCheckinScore(d);
+  const weekStart = getWeekStartKey(getDateStr());
+  const payload = {
+    week_start: weekStart,
+    checkin_date: getDateStr(),
+    sprints_this_week: d.sprints === 3 ? 2 : d.sprints, // "2+" stored as 2; score logic already treats >=2 as met
+    alcohol: d.alcohol,
+    sleep_before_10pm: d.sleep,
+    protein_225g: d.protein,
+    fasted_walks: d.walks,
+    score
+  };
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/weekly_checkins`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: SUPABASE_ANON,
+        Authorization: `Bearer ${SUPABASE_ANON}`,
+        Prefer: 'return=minimal'
+      },
+      body: JSON.stringify(payload)
+    });
+  } catch(e) { /* non-fatal — still show the result locally */ }
+
+  const resultEl = document.getElementById('checkinResult');
+  let msg = `<strong>Score: ${score}/5</strong>`;
+  if (score < 3) msg += `<div style="color:var(--red);margin-top:6px;">⚠ Recovery priority this week — dial in sprints, sleep, and protein before adding volume.</div>`;
+  else msg += `<div style="color:var(--green);margin-top:6px;">Solid week. Keep the streaks alive.</div>`;
+  if (resultEl) { resultEl.innerHTML = msg; resultEl.classList.add('visible'); }
+  const btn = document.getElementById('checkinSubmitBtn');
+  if (btn) { btn.disabled = true; btn.textContent = '✓ SUBMITTED'; }
+  try { localStorage.setItem(`checkin-skipped-${getDateStr()}`, '1'); } catch(e) {} // submitted — don't re-open today
+  setTimeout(closeCheckinModal, 1800);
 }
 
 function getDateStr(offset = 0) {
