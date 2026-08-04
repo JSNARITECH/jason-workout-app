@@ -792,10 +792,10 @@ const WORKOUTS = {
     sections:[
       { label:'Chest', exercises:[
         { id:'u-fly', name:'Cable Low-to-High Fly', muscle:'chest',
-          sets:[{wt:20,reps:'Warm'},{wt:30,reps:'FAIL'}],
-          chips:{sets:'2 Sets',reps:'Pre-Exhaust',pr:'PR: 30 lbs',tag:'Hassan'},
+          sets:[{wt:20,reps:'Warm'},{wt:30,reps:'FAIL'},{wt:24,reps:'20',note:'Burnout'}],
+          chips:{sets:'3 Sets',reps:'Pre-Exhaust',pr:'PR: 30 lbs',tag:'Hassan'},
           hassan:true, ladder:['20×warm','30×FAIL'], burnout:'Drop 20%, 20 reps',
-          cue:'Start externally rotated. Pull elbows up and in. Slight internal rotation at top.' },
+          cue:'Start externally rotated. Pull elbows up and in. Slight internal rotation at top. FEAT-10: burnout weight = ~20% below failure weight, logged as its own set.' },
         { id:'u-chest', name:'Machine Chest Press', muscle:'chest',
           sets:[{wt:121,reps:'8'},{wt:143,reps:'FAIL'},{wt:121,reps:'20',note:'Burnout'}],
           chips:{sets:'3 Sets',reps:'8-12 reps',pr:'PR: 137×12',target:'Target: 143 lbs',tag:'Hassan'},
@@ -905,10 +905,10 @@ const WORKOUTS = {
       ]},
       { label:'Main Movement', exercises:[
         { id:'pull-lat', name:'Lat Pulldown (Wide Grip)', muscle:'back',
-          sets:[{wt:121,reps:'6'},{wt:143,reps:'FAIL'}],
-          chips:{sets:'2 Sets',reps:'8-12 reps',pr:'PR: 143×10',target:'Target: 154 lbs',tag:'Hassan'},
+          sets:[{wt:121,reps:'6'},{wt:143,reps:'FAIL'},{wt:110,reps:'20',note:'Burnout'}],
+          chips:{sets:'3 Sets',reps:'8-12 reps',pr:'PR: 143×10',target:'Target: 154 lbs',tag:'Hassan'},
           hassan:true, ladder:['121×6','132×4','143×FAIL'], burnout:'110 lbs × 20 reps',
-          cue:'Pull elbows down and in. Chest tall. No shoulder shrug.' },
+          cue:'Pull elbows down and in. Chest tall. No shoulder shrug. FEAT-10: burnout weight logged as its own set.' },
         { id:'pull-row', name:'Seated Cable Row', muscle:'back',
           sets:[{wt:132,reps:'6'},{wt:154,reps:'FAIL'}],
           chips:{sets:'2 Sets',reps:'10-12 reps',pr:'PR: 154×10',tag:'Hassan'},
