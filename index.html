@@ -582,6 +582,27 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .rehab-banner-title{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1px;color:var(--green);margin-bottom:4px;}
 .rehab-banner-sub{font-size:11px;color:var(--dim2);line-height:1.4;}
 .rehab-note{font-size:9px;color:var(--dim2);font-style:italic;margin-top:4px;line-height:1.4;}
+
+/* FEAT-13: VISCERAL FAT GRADE WIDGET */
+.vf-widget{display:none;}
+.vf-widget.visible{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:9px 13px;margin:9px 0;}
+.vf-w-left{display:flex;align-items:center;gap:9px;}
+.vf-w-grade{font-family:'Bebas Neue',sans-serif;font-size:24px;line-height:1;}
+.vf-w-meta{display:flex;flex-direction:column;gap:2px;}
+.vf-w-label{font-size:8px;letter-spacing:1.3px;text-transform:uppercase;color:var(--dim2);font-weight:700;}
+.vf-w-trend{font-size:10px;font-weight:700;}
+.vf-w-nudge{font-size:9px;color:var(--orange);font-weight:700;text-align:right;}
+
+/* FEAT-11: ACCOUNTABILITY DASHBOARD */
+.acct-widget{display:none;}
+.acct-widget.visible{display:block;background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:10px 13px 11px;margin:0 0 9px;}
+.acct-title{font-size:8px;letter-spacing:1.3px;text-transform:uppercase;color:var(--dim2);font-weight:700;margin-bottom:8px;}
+.acct-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+.acct-item{display:flex;flex-direction:column;align-items:center;gap:3px;text-align:center;}
+.acct-num{font-family:'Bebas Neue',sans-serif;font-size:18px;line-height:1;}
+.acct-lbl{font-size:7.5px;letter-spacing:0.3px;color:var(--dim2);text-transform:uppercase;font-weight:700;}
+.acct-btn{margin-top:2px;font-size:7.5px;padding:3px 6px;border-radius:7px;border:1px solid var(--border2);background:transparent;color:var(--dim2);font-family:'DM Sans',sans-serif;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:0.3px;white-space:nowrap;}
+.acct-btn.acct-btn-done{background:var(--green-dim);color:var(--green);border-color:transparent;}
 </style>
 </head>
 <body>
@@ -607,6 +628,8 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
     <div class="g-progress"><div class="g-progress-fill" id="gBar"></div></div>
     <div id="recoveryModePill" class="rehab-mode-pill"></div>
     <div id="vacationModePill" class="rehab-mode-pill"></div>
+    <div id="vfWidget" class="vf-widget"></div>
+    <div id="acctWidget" class="acct-widget"></div>
   </div>
 
   <div class="scroll-area" id="mainScroll"></div>
@@ -1682,6 +1705,8 @@ let vacationMode = false; // FEAT-8: Gym-free maintenance routine
 let dayTypeOverride = {}; // { dateStr: 'upper'|'push'|'pull'|'legs'|'fort'|'flex' }
 let prReadyFlags = new Set(); // exercise names flagged pr_ready=true in Supabase
 let sessionLocation = 'HG'; // 'HG' = Home Gym, 'LT' = Lifetime Fitness
+let vfData = null; // FEAT-13: { grade, prevGrade, date, daysSince }
+let acctData = { sprintStreak: 0 }; // FEAT-11: accountability dashboard state
 
 const SUPABASE_URL  = 'https://fnjjfnsdxibjbzldfgit.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZuampmbnNkeGliamJ6bGRmZ2l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY1MDM2MjAsImV4cCI6MjA4MjA3OTYyMH0.oZYn5OXKZH2h1wGfIj_R1L8Hlk3ytGFBgDCyGqUcatk'; // true = show home lower body sub instead of FORT class
@@ -1895,6 +1920,43 @@ async function loadAll() {
     }
   } catch(e) { /* non-fatal */ }
 
+  // FEAT-13: Load latest Visceral Fat Grade reading (+ previous, for trend arrow)
+  try {
+    const vfRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/body_composition?select=measurement_date,visceral_fat_grade&order=measurement_date.desc&limit=2`,
+      { headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` } }
+    );
+    if (vfRes.ok) {
+      const vfRows = await vfRes.json();
+      if (vfRows.length && vfRows[0].visceral_fat_grade != null) {
+        const daysSince = Math.floor((Date.now() - new Date(vfRows[0].measurement_date + 'T00:00:00').getTime()) / 86400000);
+        vfData = {
+          grade: vfRows[0].visceral_fat_grade,
+          prevGrade: vfRows[1]?.visceral_fat_grade ?? null,
+          date: vfRows[0].measurement_date,
+          daysSince
+        };
+      }
+    }
+  } catch(e) { /* non-fatal */ }
+
+  // FEAT-11: Load sprint session dates to compute weekly sprint streak
+  try {
+    const sprintRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/workouts?workout_type=eq.sprint&select=workout_date&order=workout_date.desc&limit=300`,
+      { headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` } }
+    );
+    if (sprintRes.ok) {
+      const sprintRows = await sprintRes.json();
+      const weekCounts = {};
+      sprintRows.forEach(r => {
+        const wk = getWeekStartKey(r.workout_date);
+        weekCounts[wk] = (weekCounts[wk] || 0) + 1;
+      });
+      acctData.sprintStreak = computeStreakFromWeekCounts(weekCounts);
+    }
+  } catch(e) { /* non-fatal */ }
+
   // Load today's session — try window.storage first, fall back to localStorage crash save
   try {
     const todayKey = `session-${getDateStr()}`;
@@ -1930,6 +1992,133 @@ function buildUI() {
   renderCurrentView();
   const badge = document.getElementById('appVersionBadge');
   if (badge) badge.textContent = `Jason's Workout App ${APP_VERSION}`;
+  renderVFWidget();
+  renderAcctWidget();
+}
+
+// ============================================================
+// FEAT-13: VISCERAL FAT GRADE WIDGET
+// ============================================================
+function renderVFWidget() {
+  const el = document.getElementById('vfWidget');
+  if (!el) return;
+  if (!vfData) { el.classList.remove('visible'); el.innerHTML = ''; return; }
+  const g = vfData.grade;
+  const color = g <= 10 ? 'var(--green)' : g <= 12 ? 'var(--gold)' : g === 13 ? 'var(--orange)' : 'var(--red)';
+  const statusLabel = g <= 10 ? 'Healthy' : g <= 12 ? 'Watch' : g === 13 ? 'Elevated' : 'Action Required';
+  let trendHtml = '';
+  if (vfData.prevGrade != null) {
+    const delta = g - vfData.prevGrade;
+    const arrow = delta < 0 ? '↓' : delta > 0 ? '↑' : '→';
+    const trendColor = delta < 0 ? 'var(--green)' : delta > 0 ? 'var(--red)' : 'var(--dim2)';
+    trendHtml = `<span class="vf-w-trend" style="color:${trendColor}">${arrow}${delta === 0 ? ' Flat' : ' ' + Math.abs(delta)}</span>`;
+  }
+  const nudge = vfData.daysSince > 14 ? `<div class="vf-w-nudge">⚠ ${vfData.daysSince}d since last scan</div>` : '';
+  el.innerHTML = `
+    <div class="vf-w-left">
+      <div class="vf-w-grade" style="color:${color}">${g}</div>
+      <div class="vf-w-meta">
+        <span class="vf-w-label">VF Grade · ${statusLabel}</span>
+        ${trendHtml}
+      </div>
+    </div>
+    ${nudge}
+  `;
+  el.classList.add('visible');
+}
+
+// ============================================================
+// FEAT-11: DAILY ACCOUNTABILITY DASHBOARD
+// ============================================================
+function getWeekStartKey(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  const day = d.getDay(); // 0 = Sun
+  const diffToMon = (day === 0 ? -6 : 1 - day);
+  d.setDate(d.getDate() + diffToMon);
+  return d.toISOString().split('T')[0];
+}
+function computeStreakFromWeekCounts(weekCounts, minPerWeek = 2) {
+  let streak = 0;
+  const cursor = new Date();
+  const curWeekKey = getWeekStartKey(cursor.toISOString().split('T')[0]);
+  if ((weekCounts[curWeekKey] || 0) >= minPerWeek) streak++;
+  cursor.setDate(cursor.getDate() - 7);
+  while (true) {
+    const wk = getWeekStartKey(cursor.toISOString().split('T')[0]);
+    if ((weekCounts[wk] || 0) >= minPerWeek) { streak++; cursor.setDate(cursor.getDate() - 7); }
+    else break;
+  }
+  return streak;
+}
+function getDailyLog(dateStr) {
+  try { const v = localStorage.getItem(`daily-log-${dateStr}`); return v ? JSON.parse(v) : {}; }
+  catch(e) { return {}; }
+}
+function setDailyLog(dateStr, patch) {
+  const next = { ...getDailyLog(dateStr), ...patch };
+  try { localStorage.setItem(`daily-log-${dateStr}`, JSON.stringify(next)); } catch(e) {}
+  return next;
+}
+function computeDailyStreak(field) {
+  let streak = 0;
+  if (getDailyLog(getDateStr())[field] === true) streak++;
+  let offset = -1;
+  while (true) {
+    if (getDailyLog(getDateStr(offset))[field] === true) { streak++; offset--; }
+    else break;
+  }
+  return streak;
+}
+function getAlcoholFreeDays() {
+  try {
+    const last = localStorage.getItem('last-alcohol-date');
+    if (!last) return null;
+    return Math.floor((Date.now() - new Date(last + 'T00:00:00').getTime()) / 86400000);
+  } catch(e) { return null; }
+}
+function logAlcoholToday() {
+  try { localStorage.setItem('last-alcohol-date', getDateStr()); } catch(e) {}
+  renderAcctWidget();
+}
+function toggleDailyFlag(field) {
+  const today = getDateStr();
+  const cur = getDailyLog(today);
+  setDailyLog(today, { [field]: !cur[field] });
+  renderAcctWidget();
+}
+function renderAcctWidget() {
+  const el = document.getElementById('acctWidget');
+  if (!el) return;
+  const proteinStreak = computeDailyStreak('protein');
+  const sleepStreak = computeDailyStreak('sleep');
+  const todayLog = getDailyLog(getDateStr());
+  const alcDays = getAlcoholFreeDays();
+  const alcDisplay = alcDays === null ? '—' : alcDays;
+  el.innerHTML = `
+    <div class="acct-title">🔥 Daily Accountability</div>
+    <div class="acct-row">
+      <div class="acct-item">
+        <div class="acct-num" style="color:var(--orange)">${acctData.sprintStreak}</div>
+        <div class="acct-lbl">🔥 Sprint Wks</div>
+      </div>
+      <div class="acct-item">
+        <div class="acct-num" style="color:var(--green)">${alcDisplay}</div>
+        <div class="acct-lbl">🚫🍺 Alc-Free</div>
+        <button class="acct-btn" onclick="logAlcoholToday()">Log drink</button>
+      </div>
+      <div class="acct-item">
+        <div class="acct-num" style="color:var(--blue)">${proteinStreak}</div>
+        <div class="acct-lbl">🥩 Protein</div>
+        <button class="acct-btn ${todayLog.protein ? 'acct-btn-done' : ''}" onclick="toggleDailyFlag('protein')">${todayLog.protein ? '✓ Today' : 'Log today'}</button>
+      </div>
+      <div class="acct-item">
+        <div class="acct-num" style="color:var(--purple)">${sleepStreak}</div>
+        <div class="acct-lbl">😴 Sleep 10p</div>
+        <button class="acct-btn ${todayLog.sleep ? 'acct-btn-done' : ''}" onclick="toggleDailyFlag('sleep')">${todayLog.sleep ? '✓ Today' : 'Log today'}</button>
+      </div>
+    </div>
+  `;
+  el.classList.add('visible');
 }
 
 function getDateStr(offset = 0) {
