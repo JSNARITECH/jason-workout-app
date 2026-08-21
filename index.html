@@ -2224,7 +2224,7 @@ function renderWorkoutView() {
     <div class="notes-label">Session Notes</div>
     <textarea class="notes-input" id="sessionNotes" placeholder="How did it feel? Any PRs? Energy? Pain?" oninput="saveNotes(this.value)">${savedNotes}</textarea>
     <button class="save-btn" id="saveBtn" onclick="saveWorkout('${effectiveType}','${day.key}')">💾 SAVE WORKOUT TO HISTORY</button>
-    <button class="share-claude-btn" onclick="shareToClaudeChat('${effectiveType}')">📤 Send to Claude Chat</button>
+    <button class="share-claude-btn" onclick="switchView('progress')">📊 View AI Insights</button>
   </div>
   <button class="reset-btn" onclick="resetDay()">↺ Reset ${workout.title}</button>`;
 
@@ -3271,6 +3271,8 @@ async function saveWorkout(type, dayKey) {
     invalidateHistoryCache();
     invalidateProgressCache();
     buildDayPills();
+    // Prefetch insights in background so Progress tab loads instantly
+    setTimeout(() => fetchProgressData(true).catch(() => {}), 1500);
   } else {
     alert('Save failed — storage unavailable.');
   }
@@ -4373,7 +4375,7 @@ function renderRecoveryDay(dayKey) {
     <div class="notes-label">Session Notes</div>
     <textarea class="notes-input" id="sessionNotes" placeholder="How did it feel? Pain changes? Shift corrected?" oninput="saveNotes(this.value)">${savedNotes}</textarea>
     <button class="save-btn" id="saveBtn" onclick="saveWorkout('recovery','${dayKey}')">💾 SAVE RECOVERY SESSION</button>
-    <button class="share-claude-btn" onclick="shareToClaudeChat('recovery')">📤 Send to Claude Chat</button>
+    <button class="share-claude-btn" onclick="switchView('progress')">📊 View AI Insights</button>
   </div>
   <button class="reset-btn" onclick="resetDay()">↺ Reset ${rw.title}</button>`;
 
@@ -4598,7 +4600,7 @@ function renderSprintDay(dayKey, content) {
   <div class="rest-card" id="spShareRow" style="padding:14px;margin-top:8px">
     <div class="notes-label" style="margin-bottom:8px">Session Notes</div>
     <textarea class="notes-input" id="sprintNotes" placeholder="How did it feel? Energy? RPE? Any notes..." style="margin-bottom:10px"></textarea>
-    <button class="share-claude-btn" onclick="shareSprintToClaude()" style="width:100%">📤 Send to Claude Chat</button>
+    <button class="share-claude-btn" onclick="switchView('progress')" style="width:100%">📊 View AI Insights</button>
   </div>`;
 
   // FEAT-1 & FEAT-2: Add mobility exercises for Wed/Sat
@@ -4685,7 +4687,7 @@ function renderAlternativeActivity(activityId) {
     <div class="notes-label">Session Notes</div>
     <textarea class="notes-input" id="sessionNotes" placeholder="How did it feel?" oninput="saveNotes(this.value)">${savedNotes}</textarea>
     <button class="save-btn" id="saveBtn" onclick="saveWorkout('rest','${activityId}')">💾 SAVE ${activity.title.toUpperCase()}</button>
-    <button class="share-claude-btn" onclick="shareActivityToClaude('${activityId}')">📤 Send to Claude Chat</button>
+    <button class="share-claude-btn" onclick="switchView('progress')">📊 View AI Insights</button>
   </div>
   <button class="reset-btn" onclick="resetDay()">↺ Reset Activity</button>`;
 

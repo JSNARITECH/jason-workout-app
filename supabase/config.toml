@@ -3,3 +3,9 @@ verify_jwt = false
 
 [functions.analyze-bpm]
 verify_jwt = false
+
+[functions.workout-history]
+verify_jwt = false
+
+[functions.workout-insights]
+verify_jwt = false
