@@ -151,6 +151,8 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 @keyframes prReadyGlow{0%,100%{box-shadow:0 0 8px 2px rgba(255,140,0,0.45),0 0 22px 5px rgba(255,60,0,0.18);}50%{box-shadow:0 0 18px 7px rgba(255,140,0,0.75),0 0 45px 14px rgba(255,60,0,0.32);}}
 .pr-ready-badge{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:800;letter-spacing:1px;background:rgba(255,140,0,0.15);color:#ff8c00;padding:2px 7px;border-radius:8px;border:1px solid rgba(255,140,0,0.4);flex-shrink:0;}
 .rotation-flag{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:700;letter-spacing:1px;background:var(--purple-dim);color:var(--purple);padding:2px 7px;border-radius:8px;border:1px solid rgba(192,132,252,0.25);flex-shrink:0;}
+.target-badge{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:800;letter-spacing:1px;background:var(--orange-dim);color:var(--orange);padding:2px 7px;border-radius:8px;border:1px solid rgba(255,154,77,0.3);flex-shrink:0;}
+.target-badge.floor{background:rgba(136,136,136,0.10);color:var(--dim2);border-color:rgba(136,136,136,0.22);font-weight:700;opacity:0.75;}
 .ex-chips{display:flex;gap:4px;margin-top:4px;flex-wrap:wrap;}
 .chip{font-size:9px;padding:2px 6px;border-radius:9px;font-weight:700;}
 .chip-sets{background:var(--border2);color:var(--dim2);}
@@ -671,7 +673,7 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 // ============================================================
 // APP VERSION — update this on every release
 // ============================================================
-const APP_VERSION = 'v12.1';
+const APP_VERSION = 'v12.2';
 
 // ============================================================
 // WEEKLY SCHEDULE
@@ -1664,6 +1666,12 @@ let sessionState = {}; // exercise state for today
 let prStore = {};       // PRs: { exId: { weight, date } }
 const prSyncCache = {}; // { workoutType: timestamp } — prevents hammering Supabase on every day tap
 const PR_SYNC_TTL  = 5 * 60 * 1000; // 5 minutes
+
+// Next-session targets (Supabase `next-targets` edge function).
+// Cached module-level so a given day+location is fetched at most once per session load.
+let nextTargets    = {};   // { exerciseNameLower: targetRow }
+let nextTargetsKey = null; // "workoutType|location" the cache above was built for
+const nextTargetsInflight = {}; // dedupes concurrent loads of the same key
 let historyStore = [];  // saved workouts array (local window.storage)
 let completedDates = new Set(); // dates logged in Supabase — drives green dot on day pills
 let exerciseFreq = {};  // { exId: consecutive_sessions_count }
@@ -1764,7 +1772,7 @@ async function init() {
   const _initType = dayTypeOverride[getDateStr()] || WEEK[currentDayIdx].type;
   if (_initType !== 'rest') {
     showPRSyncPill();
-    await syncPRsFromSupabase(_initType);
+    await Promise.all([syncPRsFromSupabase(_initType), loadNextTargets(_initType)]);
     hidePRSyncPill();
   }
 
@@ -2003,7 +2011,7 @@ async function selectDay(idx) {
     const _selType = dayTypeOverride[getDateStr()] || WEEK[idx].type;
     if (_selType !== 'rest') {
       showPRSyncPill();
-      await syncPRsFromSupabase(_selType);
+      await Promise.all([syncPRsFromSupabase(_selType), loadNextTargets(_selType)]);
       hidePRSyncPill();
     }
     renderWorkoutView();
@@ -2274,6 +2282,20 @@ function buildExCard(ex, isDone, savedWeights, hasPR, type) {
     ? `<button class="swap-btn ${isSwapped ? 'swapped' : ''}" onclick="event.stopPropagation();showSwapSheet('${ex.id}','${ex.muscle}','${type}','${ex.name.replace(/'/g,"\\'")}')">⟳ ${isSwapped ? 'Swapped' : 'Swap'}</button>`
     : '';
 
+  // Next-session target badge — dimmed when it's only a PR floor, ⏳ when the target is stale
+  let targetBadgeHtml = '';
+  const tgt = getNextTarget(displayName) || getNextTarget(ex.name);
+  if (tgt && Number(tgt.effective_target_lbs) > 0) {
+    const lbs = formatTargetLbs(tgt.effective_target_lbs);
+    if (lbs) {
+      const floorCls = tgt.has_explicit_target ? '' : ' floor';
+      const staleMark = tgt.stale ? ' ⏳' : '';
+      const title = (tgt.has_explicit_target ? 'Next-session target' : 'PR floor — no explicit target set')
+        + (tgt.stale ? ' · stale (over 21 days old)' : '');
+      targetBadgeHtml = `<span class="target-badge${floorCls}" title="${title}">🎯 ${lbs}${staleMark}</span>`;
+    }
+  }
+
   // Auto-progression badge (Feature C): 3+ consecutive PR sessions
   const streak = prStreaks[ex.id] || 0;
   const levelUpHtml = streak >= 3
@@ -2375,7 +2397,7 @@ function buildExCard(ex, isDone, savedWeights, hasPR, type) {
       <div class="ex-info">
         <div class="ex-name-row">
           <span class="ex-name">${displayName}</span>
-          ${prBadgeHtml}${rotFlagHtml}${levelUpHtml}
+          ${prBadgeHtml}${targetBadgeHtml}${rotFlagHtml}${levelUpHtml}
         </div>
         <div class="ex-chips">${chipsHtml}</div>
       </div>
@@ -2531,7 +2553,12 @@ function setSessionLocation(loc) {
   // Bust PR sync cache so next render re-fetches for the correct location
   Object.keys(prSyncCache).forEach(k => delete prSyncCache[k]);
   showToast(`📍 ${loc === 'HG' ? 'Home Gym [HG]' : 'Lifetime Fitness [LT]'}`);
+  // Targets are gym-specific — kick off the new location's load first (it clears the old
+  // gym's badges synchronously so the render below never shows them), then repaint once loaded
+  const _locType = dayTypeOverride[getDateStr()] || WEEK[currentDayIdx].type;
+  const _tgtLoad = loadNextTargets(_locType);
   renderWorkoutView();
+  _tgtLoad.then(() => { if (currentView === 'workout') renderWorkoutView(); });
 }
 
 function swapExercise(exId, newName, type) {
@@ -2937,6 +2964,58 @@ async function syncPRsFromSupabase(workoutType) {
 
     prSyncCache[workoutType] = Date.now();
   } catch(e) { /* non-fatal — local prStore is the fallback */ }
+}
+
+// Fetch next-session targets for a workout type at the current gym.
+// Fails silently — on any error the cache stays empty and badges simply don't render.
+async function loadNextTargets(workoutType) {
+  if (!workoutType || workoutType === 'rest') return;
+  const loc = sessionLocation === 'HG' ? 'Home Gym' : 'Lifetime Fitness';
+  const key = `${workoutType}|${loc}`;
+  if (nextTargetsKey === key) return;               // already loaded this session
+  if (nextTargetsInflight[key]) return nextTargetsInflight[key];
+
+  // Drop any targets held for a different day/location so stale badges never render
+  nextTargets = {};
+  nextTargetsKey = null;
+
+  nextTargetsInflight[key] = (async () => {
+    try {
+      const url = `${SUPABASE_URL}/functions/v1/next-targets`
+        + `?type=${encodeURIComponent(workoutType)}`
+        + `&location=${encodeURIComponent(loc)}`;
+      const res = await fetch(url, {
+        headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` }
+      });
+      if (!res.ok) return;
+      const body = await res.json();
+      if (!body?.ok || !Array.isArray(body.targets)) return;
+
+      const map = {};
+      for (const t of body.targets) {
+        if (!t?.exercise_name) continue;
+        map[t.exercise_name.trim().toLowerCase()] = t;
+      }
+      nextTargets = map;
+      nextTargetsKey = key;
+    } catch(e) { /* non-fatal — badges just don't render */ }
+    finally { delete nextTargetsInflight[key]; }
+  })();
+
+  return nextTargetsInflight[key];
+}
+
+// Look up a loaded target row by exercise name (case/whitespace insensitive)
+function getNextTarget(name) {
+  if (!name) return null;
+  return nextTargets[String(name).trim().toLowerCase()] || null;
+}
+
+// 225 not 225.0; 227.5 stays 227.5
+function formatTargetLbs(v) {
+  const n = Number(v);
+  if (!isFinite(n)) return '';
+  return Number.isInteger(n) ? String(n) : String(parseFloat(n.toFixed(1)));
 }
 
 function startTimerForEx(exId, type) {

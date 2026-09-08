@@ -1,5 +1,13 @@
 # Workout App Changelog
 
+## v12.2 — 2026-09-08
+### Added
+- **Next-session target badges** — on workout load the app calls the `next-targets` edge function (`?type={dayType}&location={gym}`) and renders a 🎯 badge with `effective_target_lbs` next to each matching exercise name.
+  - Dimmed badge when `has_explicit_target` is false (the number is a PR floor, not a set target).
+  - ⏳ suffix when `stale` is true (target older than 21 days).
+  - Response cached per day + location for the session, so each combination is fetched once. Switching gyms re-fetches for the new location.
+  - Fails silently — if the fetch errors, badges simply don't render.
+
 ## v11.1 — 2026-03-18
 ### Added
 - **Back Recovery Mode** — global toggle (🦴 pill in header) swaps all workout days to spine-safe rehab protocols when active. Persists via localStorage.
