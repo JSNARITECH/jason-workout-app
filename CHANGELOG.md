@@ -1,5 +1,19 @@
 # Workout App Changelog
 
+## v12.3 — 2026-09-09
+### Added
+- **Day-type override (per date)** — swap what session a specific date runs without changing the base `WEEK` schedule. Session chips (Upper / Push / Pull / Legs / Lower / Rest·Sprint) at the top of both the workout and rest-day views; `↩ Reset to [original]` link with a date-only note; `•` marker on the day pill. Persisted under `day-type-overrides` keyed by ISO date, so next week falls back automatically. `effDay(idx)` replaces raw `WEEK[idx]` reads in the render path; 
+- **Sprint eligibility engine** — `sprintEligibility(idx)` rates each day (DONE / BLOCKED / CAUTION / OK / IDEAL) from leg load (`legs`/`lower` heavy, `pull` light, `upper`/`push`/`rest` none), yesterday's sprint, weekly count, and tomorrow's session, with a reason, recommended rounds, and a timing note (rest days: AM fasted; lifting days: after the lift).
+- **Catch-up banner** — when fewer than 2 sprints are logged this week, ranks the remaining days and renders them as tappable chips. Fail-safe: if the target can't be hit without stacking consecutive days, it says to eat the miss.
+- **Sprint interval timer** — full-screen overlay (separate from the rest timer) with three protocols (Standard 20/40 ×10, Treadmill 30/90 ×6, Short 20/40 ×6), rounds stepper, 5-min warm-up → work/rest → 3-min cool-down, phase-coloured progress ring (work red, rest green, warm-up/cool-down blue), round pips, coaching cues, audio (high tone → work, low tone → rest, 3-2-1 beeps), pause / skip / two-tap end, and `navigator.wakeLock`. Finishing or ending early logs `{date, protocol, rounds, workSeconds, completed}` to `sprint-log` (partial sessions count) and toasts the weekly count.
+
+### Removed
+- **FORT Tuesday** — no longer training there. Tuesday is now a first-class `lower` session (`WORKOUTS.lower`: the former home-gym sub + ab finisher + hip mobility, same exercise IDs so PRs carry). The FORT-cancelled banner, toggle, and `fort-cancelled-*` storage flag are gone. Old `fort` records still render in History.
+
+### Changed
+- Header session label now reads today's *effective* session.
+- Sprint card: protocol picker + stepper + START replace the inline clock; Supabase save and Claude share report the rounds actually logged and the protocol used.
+
 ## v12.2 — 2026-09-08
 ### Added
 - **Next-session target badges** — on workout load the app calls the `next-targets` edge function (`?type={dayType}&location={gym}`) and renders a 🎯 badge with `effective_target_lbs` next to each matching exercise name.

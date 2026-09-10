@@ -81,6 +81,44 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .type-btn:active{transform:scale(0.98);}
 .type-btn-active{border-color:var(--accent);background:var(--accent);color:var(--bg);font-weight:900;}
 .type-reset-btn{background:var(--card2);border-color:var(--border2);font-size:7px;padding:5px 7px;}
+/* DAY-TYPE OVERRIDE (per-date session swap) */
+.day-swap{margin-bottom:12px;}
+.day-swap-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+.ds-chip{padding:6px 9px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--dim2);font-size:8px;cursor:pointer;transition:all 0.15s ease;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;flex-shrink:0;font-family:'DM Sans',sans-serif;}
+.ds-chip:active{transform:scale(0.98);}
+.ds-chip.active{border-color:var(--accent);background:var(--accent);color:var(--black);font-weight:900;}
+.ds-meta{display:flex;align-items:center;gap:10px;margin-top:7px;flex-wrap:wrap;}
+.ds-reset{background:none;border:none;color:var(--accent);font-size:10px;font-weight:700;letter-spacing:0.5px;cursor:pointer;font-family:'DM Sans',sans-serif;padding:0;}
+.ds-note{font-size:9px;color:var(--dim2);}
+/* SPRINT PLANNER — catch-up banner + eligibility */
+.catchup{background:var(--card);border:1px solid rgba(232,255,71,0.35);border-radius:14px;padding:13px 14px;margin-bottom:10px;}
+.catchup-miss{border-color:rgba(255,77,77,0.4);}
+.catchup-title{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1px;color:var(--accent);display:flex;justify-content:space-between;align-items:baseline;gap:8px;}
+.catchup-miss .catchup-title{color:var(--red);}
+.catchup-count{font-family:'DM Sans',sans-serif;font-size:9px;letter-spacing:1px;color:var(--dim2);font-weight:700;text-transform:uppercase;}
+.catchup-body{font-size:11px;color:var(--dim2);line-height:1.45;margin:6px 0 9px;}
+.catchup-body strong{color:var(--white);}
+.catchup-chips{display:flex;gap:6px;flex-wrap:wrap;}
+.cu-chip{display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 10px;border-radius:9px;border:1px solid var(--border2);background:var(--card2);cursor:pointer;font-family:'DM Sans',sans-serif;min-width:58px;}
+.cu-chip.cu-here{border-color:var(--white);}
+.cu-day{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--white);}
+.cu-badge{font-size:7px;font-weight:800;letter-spacing:1px;padding:2px 6px;border-radius:6px;}
+.sp-elig{border-radius:12px;padding:11px 13px;margin-bottom:10px;border:1px solid var(--border2);background:var(--card);}
+.sp-elig-top{display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap;}
+.elig-badge{font-size:9px;font-weight:800;letter-spacing:1.5px;padding:3px 8px;border-radius:8px;}
+.sp-elig-meta{font-size:10px;color:var(--dim2);font-weight:600;}
+.sp-elig-reason{font-size:11px;color:var(--dim2);line-height:1.45;}
+.elig-ideal .elig-badge,.cu-chip.elig-ideal .cu-badge{background:var(--green-dim);color:var(--green);}
+.elig-ok .elig-badge,.cu-chip.elig-ok .cu-badge{background:var(--blue-dim);color:var(--blue);}
+.elig-caution .elig-badge,.cu-chip.elig-caution .cu-badge{background:var(--orange-dim);color:var(--orange);}
+.elig-blocked .elig-badge,.cu-chip.elig-blocked .cu-badge{background:var(--red-dim);color:var(--red);}
+.elig-done .elig-badge{background:var(--gold-dim);color:var(--gold);}
+.sp-elig.elig-ideal{border-color:rgba(77,255,170,0.3);}.sp-elig.elig-ok{border-color:rgba(77,170,255,0.3);}.sp-elig.elig-caution{border-color:rgba(255,154,77,0.35);}.sp-elig.elig-blocked{border-color:rgba(255,77,77,0.35);}.sp-elig.elig-done{border-color:rgba(255,215,0,0.35);}
+.sp-proto-row{display:flex;gap:6px;margin-bottom:14px;}
+.sp-proto{flex:1;padding:8px 6px;border-radius:9px;border:1px solid var(--border2);background:var(--card2);color:var(--dim2);cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;flex-direction:column;align-items:center;gap:2px;}
+.sp-proto.active{border-color:var(--accent);color:var(--white);background:var(--accent-dim);}
+.sp-proto-name{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1px;}
+.sp-proto-desc{font-size:8px;letter-spacing:0.5px;font-weight:700;}
 
 /* LOCATION SELECTOR */
 .loc-selector{display:flex;gap:6px;margin-bottom:12px;align-items:center;flex-wrap:wrap;width:100%;}
@@ -117,18 +155,6 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .rotation-ex:hover,.rotation-ex:active{background:rgba(192,132,252,0.2);}
 .rotation-dismiss{font-size:10px;color:var(--dim);margin-top:8px;cursor:pointer;text-decoration:underline;}
 
-/* FORT CANCELLED BANNER */
-.fort-cancel-banner{background:rgba(255,77,77,0.08);border:1px solid rgba(255,77,77,0.25);border-radius:14px;padding:14px 15px;margin-bottom:14px;}
-.fort-cancel-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
-.fort-cancel-title{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1px;color:var(--red);}
-.fort-cancel-sub{font-size:11px;color:var(--dim2);line-height:1.4;margin-bottom:10px;}
-.fort-cancel-btns{display:flex;gap:8px;}
-.fort-btn{flex:1;padding:9px 10px;border-radius:10px;border:none;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all 0.2s;}
-.fort-btn-go{background:var(--green);color:#000;}
-.fort-btn-go:active{background:#3ddda0;}
-.fort-btn-fort{background:var(--border2);color:var(--dim2);}
-.fort-btn-fort:active{background:var(--border);}
-.fort-mode-indicator{display:flex;align-items:center;gap:7px;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:5px 10px;border-radius:8px;background:rgba(77,255,170,0.1);color:var(--green);border:1px solid rgba(77,255,170,0.2);}
 
 /* SECTION LABEL */
 .sec-label{font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:3px;color:var(--dim);margin:16px 0 7px;display:flex;align-items:center;gap:8px;}
@@ -482,6 +508,33 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .t-skip{background:var(--border2);color:var(--dim2);}
 .t-go{background:var(--green);color:var(--black);flex:2;}
 
+/* SPRINT INTERVAL TIMER — full-screen overlay, independent of the rest timer */
+.hiit-overlay{position:fixed;inset:0;background:var(--black);z-index:210;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px 20px;}
+.hiit-overlay.visible{display:flex;}
+.hiit-box{width:100%;max-width:360px;text-align:center;}
+.hiit-top{display:flex;justify-content:space-between;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--dim2);font-weight:700;margin-bottom:14px;}
+.hiit-phase{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;margin-bottom:14px;color:var(--blue);min-height:26px;}
+.hiit-ring-wrap{position:relative;width:240px;height:240px;margin:0 auto 18px;}
+.hiit-ring-wrap svg{width:240px;height:240px;transform:rotate(-90deg);}
+.hiit-ring-bg{fill:none;stroke:var(--border2);stroke-width:10;}
+.hiit-ring-fill{fill:none;stroke:var(--blue);stroke-width:10;stroke-linecap:round;stroke-dasharray:603.2;stroke-dashoffset:0;transition:stroke-dashoffset 0.25s linear,stroke 0.3s;}
+.hiit-display{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:200px;}
+.hiit-time{font-family:'Bebas Neue',sans-serif;font-size:82px;letter-spacing:2px;line-height:1;color:var(--blue);transition:opacity 0.2s;}
+.hiit-sub{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--dim2);font-weight:700;margin-top:4px;}
+.hiit-overlay[data-phase="work"] .hiit-phase,.hiit-overlay[data-phase="work"] .hiit-time{color:var(--red);}.hiit-overlay[data-phase="work"] .hiit-ring-fill{stroke:var(--red);}
+.hiit-overlay[data-phase="rest"] .hiit-phase,.hiit-overlay[data-phase="rest"] .hiit-time{color:var(--green);}.hiit-overlay[data-phase="rest"] .hiit-ring-fill{stroke:var(--green);}
+.hiit-overlay[data-phase="done"] .hiit-phase,.hiit-overlay[data-phase="done"] .hiit-time{color:var(--accent);}.hiit-overlay[data-phase="done"] .hiit-ring-fill{stroke:var(--accent);}
+.hiit-overlay.paused .hiit-time{opacity:0.4;}
+.hiit-pips{display:flex;gap:5px;justify-content:center;flex-wrap:wrap;margin-bottom:14px;min-height:12px;}
+.hiit-pip{width:10px;height:10px;border-radius:50%;border:2px solid var(--border2);transition:all 0.3s;}
+.hiit-pip.done{background:var(--green);border-color:var(--green);}
+.hiit-pip.active{border-color:var(--red);background:var(--red);animation:pulse-dot 1s infinite;}
+.hiit-pip.skipped{border-color:var(--dim);}
+.hiit-controls{display:flex;gap:8px;}
+.hiit-controls .sprint-btn-reset{flex:0 0 84px;white-space:nowrap;}
+.hiit-paused-tag{display:none;font-size:9px;letter-spacing:3px;color:var(--orange);font-weight:700;margin-bottom:8px;}
+.hiit-overlay.paused .hiit-paused-tag{display:block;}
+
 /* TOAST */
 .toast{position:fixed;bottom:76px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--green);color:var(--black);font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:2px;padding:9px 18px;border-radius:18px;z-index:300;opacity:0;transition:all 0.3s;pointer-events:none;white-space:nowrap;}
 .toast.visible{opacity:1;transform:translateX(-50%) translateY(0);}
@@ -669,24 +722,234 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
   </div>
 </div>
 
+<!-- Sprint interval timer — full-screen, separate from the rest timer above -->
+<div class="hiit-overlay" id="hiitOverlay" data-phase="idle">
+  <div class="hiit-box">
+    <div class="hiit-top"><span id="hiitProto"></span><span id="hiitElapsed"></span></div>
+    <div class="hiit-paused-tag">PAUSED</div>
+    <div class="hiit-phase" id="hiitPhase"></div>
+    <div class="hiit-ring-wrap">
+      <svg viewBox="0 0 220 220">
+        <circle class="hiit-ring-bg" cx="110" cy="110" r="96"/>
+        <circle class="hiit-ring-fill" id="hiitRing" cx="110" cy="110" r="96"/>
+      </svg>
+      <div class="hiit-display">
+        <div class="hiit-time" id="hiitTime">5:00</div>
+        <div class="hiit-sub" id="hiitSub"></div>
+      </div>
+    </div>
+    <div class="hiit-pips" id="hiitPips"></div>
+    <div class="sprint-cue" id="hiitCue"></div>
+    <div class="hiit-controls">
+      <button class="sprint-btn sprint-btn-reset" id="hiitEndBtn" onclick="hiitEnd()">END</button>
+      <button class="sprint-btn sprint-btn-main" id="hiitPauseBtn" onclick="hiitTogglePause()">PAUSE</button>
+      <button class="sprint-btn sprint-btn-reset" onclick="hiitSkipPhase()">SKIP ›</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ============================================================
 // APP VERSION — update this on every release
 // ============================================================
-const APP_VERSION = 'v12.2';
+const APP_VERSION = 'v12.3';
 
 // ============================================================
 // WEEKLY SCHEDULE
 // ============================================================
 const WEEK = [
   { key:'mon', name:'Mon', type:'upper',  emoji:'💪', label:'UPPER' },
-  { key:'tue', name:'Tue', type:'fort',   emoji:'🥊', label:'FLEX/HIIT' },
+  { key:'tue', name:'Tue', type:'lower',  emoji:'🟢', label:'LOWER' },
   { key:'wed', name:'Wed', type:'rest',   emoji:'⚡', label:'SPRINT' },
   { key:'thu', name:'Thu', type:'push',   emoji:'🔥', label:'PUSH' },
   { key:'fri', name:'Fri', type:'pull',   emoji:'💙', label:'PULL' },
   { key:'sat', name:'Sat', type:'rest',   emoji:'⚡', label:'SPRINT' },
   { key:'sun', name:'Sun', type:'legs',   emoji:'🦵', label:'LEGS' },
 ];
+
+// ============================================================
+// DAY-TYPE OVERRIDES — swap what session a specific DATE runs
+// Keyed by ISO date (not weekday), so next week falls back to WEEK automatically.
+// ============================================================
+// Label/emoji per session type, plus how hard it hits the legs (feeds sprint eligibility)
+const TYPE_META = {
+  upper: { label:'UPPER',     emoji:'💪', legLoad:'none'  },
+  push:  { label:'PUSH',      emoji:'🔥', legLoad:'none'  },
+  pull:  { label:'PULL',      emoji:'💙', legLoad:'light' },
+  legs:  { label:'LEGS',      emoji:'🦵', legLoad:'heavy' },
+  lower: { label:'LOWER',     emoji:'🟢', legLoad:'heavy' },
+  rest:  { label:'SPRINT',    emoji:'⚡', legLoad:'none'  },
+};
+// Chips offered in the day-swap row
+const DAY_SWAP_TYPES = ['upper', 'push', 'pull', 'legs', 'lower', 'rest'];
+
+// Effective day for any week index. Indices outside 0–6 wrap to the adjacent week (needed for
+// yesterday/tomorrow checks around Mon/Sun). Base WEEK entry merged with the date's override — never mutates WEEK.
+function effDay(idx) {
+  const base = WEEK[((idx % 7) + 7) % 7];
+  const date = getDayDate(idx);
+  const ov = dayTypeOverrides[date];
+  if (ov && ov !== base.type && TYPE_META[ov]) {
+    return { ...base, date, type: ov, label: TYPE_META[ov].label, emoji: TYPE_META[ov].emoji, overridden: true, originalType: base.type };
+  }
+  return { ...base, date, overridden: false };
+}
+
+function persistDayOverrides() {
+  try { window.storage.set('day-type-overrides', JSON.stringify(dayTypeOverrides)).catch(()=>{}); } catch(e) {}
+  try { localStorage.setItem('day-type-overrides', JSON.stringify(dayTypeOverrides)); } catch(e) {}
+}
+
+// Override the session a given day (by week index → its date) runs. Picking the scheduled type clears it.
+function setDayOverride(idx, type) {
+  const date = getDayDate(idx);
+  if (type === WEEK[((idx % 7) + 7) % 7].type) delete dayTypeOverrides[date];
+  else dayTypeOverrides[date] = type;
+  persistDayOverrides();
+  buildDayPills();
+  updateHeader();
+  if (currentView !== 'workout') return;
+  renderWorkoutView();
+  // Pull PRs + next-session targets for the swapped-in session, then repaint once they land
+  const t = effDay(idx).type;
+  if (t !== 'rest') {
+    Promise.all([syncPRsFromSupabase(t), loadNextTargets(t)]).then(() => { if (currentView === 'workout') renderWorkoutView(); });
+  }
+}
+function clearDayOverride(idx) { setDayOverride(idx, WEEK[((idx % 7) + 7) % 7].type); }
+
+// Tappable session chips for a day, shown at the top of both the workout view and the rest-day view
+function renderDaySwap(idx) {
+  const d = effDay(idx);
+  let html = `<div class="day-swap">
+    <div class="day-swap-row">
+      <span class="type-selector-label">Session:</span>
+      ${DAY_SWAP_TYPES.map(t => `<button class="ds-chip bg-${t}${d.type === t ? ' active' : ''}" onclick="event.stopPropagation();setDayOverride(${idx},'${t}')">${t === 'rest' ? 'REST · SPRINT' : TYPE_META[t].label}</button>`).join('')}
+    </div>`;
+  if (d.overridden) {
+    html += `<div class="ds-meta">
+      <button class="ds-reset" onclick="event.stopPropagation();clearDayOverride(${idx})">↩ Reset to ${TYPE_META[d.originalType].label}</button>
+      <span class="ds-note">${formatDate(d.date)} only — next week runs the normal schedule.</span>
+    </div>`;
+  }
+  return html + `</div>`;
+}
+
+// ============================================================
+// SPRINT SCHEDULING — 2 HIIT sessions/week, placed where the legs can take it
+// ============================================================
+const SPRINT_WEEKLY_TARGET = 2;
+const SPRINT_PROTOCOLS = {
+  standard:  { label:'STANDARD',  work:20, rest:40, rounds:10, min:6, max:12, desc:'20s on · 40s off' },
+  treadmill: { label:'TREADMILL', work:30, rest:90, rounds:6,  min:4, max:10, desc:'30s on · 90s off' },
+  short:     { label:'SHORT',     work:20, rest:40, rounds:6,  min:4, max:8,  desc:'20s on · 40s off' },
+};
+const HIIT_WARMUP_SECS = 300, HIIT_COOLDOWN_SECS = 180;
+
+let sprintLog = []; // [{ date, protocol, rounds, workSeconds, completed, savedAt }] — persisted under 'sprint-log'
+function persistSprintLog() {
+  try { window.storage.set('sprint-log', JSON.stringify(sprintLog)).catch(()=>{}); } catch(e) {}
+  try { localStorage.setItem('sprint-log', JSON.stringify(sprintLog)); } catch(e) {}
+}
+
+// Every sprint logged for a date: the sprint-log plus legacy '⚡ SPRINT SESSION' history entries
+function sprintsOnDate(date) {
+  const fromLog = sprintLog.filter(x => x.date === date);
+  const legacy = historyStore
+    .filter(h => h.date === date && /SPRINT/i.test(h.title || ''))
+    .map(h => ({ date, protocol: 'legacy', rounds: h.rounds || 0, workSeconds: (h.rounds || 0) * 30, completed: true }));
+  return fromLog.concat(legacy);
+}
+// Distinct sprint days in the displayed Mon–Sun week
+function weekSprintCount() {
+  let n = 0;
+  for (let i = 0; i < 7; i++) if (sprintsOnDate(getDayDate(i)).length) n++;
+  return n;
+}
+function legLoadOf(type) { return (TYPE_META[type] || {}).legLoad || 'none'; }
+
+// Can this day take a sprint? Reads effDay() so overrides feed the answer. Rules apply in order.
+function sprintEligibility(idx) {
+  const day = effDay(idx), prev = effDay(idx - 1), next = effDay(idx + 1);
+  const done = sprintsOnDate(day.date);
+  const isRest = day.type === 'rest';
+  const timing = isRest ? 'Anytime — AM fasted is best.' : 'AFTER the lift, never before.';
+  const proto = SPRINT_PROTOCOLS[sprintState.protocol] || SPRINT_PROTOCOLS.standard;
+  const base = { idx, date: day.date, timing, rounds: proto.rounds };
+
+  if (done.length) {
+    const d = done[0];
+    const protoLabel = d.protocol && SPRINT_PROTOCOLS[d.protocol] ? ` · ${SPRINT_PROTOCOLS[d.protocol].label.toLowerCase()}` : '';
+    return { ...base, status:'done', rank:99, badge:'✓ DONE', cls:'elig-done', rounds: d.rounds,
+      reason: `Logged ${d.rounds} round${d.rounds === 1 ? '' : 's'}${protoLabel}${d.workSeconds ? ` · ${d.workSeconds}s of work` : ''}${d.completed === false ? ' · ended early' : ''}.` };
+  }
+  if (legLoadOf(day.type) === 'heavy') {
+    return { ...base, status:'blocked', rank:3, badge:'BLOCKED', cls:'elig-blocked', rounds:0,
+      reason: 'Heavy lower day. Sprinting on top of it is redundant fatigue, and a pre-fatigued posterior chain is how the lower back gets hurt.' };
+  }
+  if (sprintsOnDate(prev.date).length) {
+    return { ...base, status:'blocked', rank:3, badge:'BLOCKED', cls:'elig-blocked', rounds:0,
+      reason: 'You sprinted yesterday. Back-to-back max-effort days mean the second one runs at ~70% — not worth the recovery cost.' };
+  }
+  if (weekSprintCount() >= 3) {
+    return { ...base, status:'caution', rank:2, badge:'AT CEILING', cls:'elig-caution',
+      reason: 'Already 3 sessions this week. Optional only — more HIIT is not more fat loss; recovery is where the adaptation happens.' };
+  }
+  if (legLoadOf(prev.type) === 'heavy') {
+    return { ...base, status:'caution', rank:2, badge:'CAUTION', cls:'elig-caution', rounds: 6,
+      reason: 'Yesterday was heavy legs. Hamstrings and glutes are still repairing — cap it at 6 rounds and stop if anything feels tight.' };
+  }
+  if (legLoadOf(next.type) === 'heavy') {
+    return { ...base, status:'caution', rank:2, badge:'AM ONLY', cls:'elig-caution',
+      reason: `Heavy legs tomorrow. Sprint in the morning only so there's a full 24h buffer before ${TYPE_META[next.type].label.toLowerCase()}.` };
+  }
+  if (day.type === 'pull') {
+    return { ...base, status:'ok', rank:1, badge:'OK', cls:'elig-ok',
+      reason: 'Pull day is light on the legs — a good backup slot. Sprint after the lift.' };
+  }
+  return { ...base, status:'ideal', rank:0, badge:'IDEAL', cls:'elig-ideal',
+    reason: isRest ? 'Rest day, fresh legs. This is the slot the sprint was built for.' : `${TYPE_META[day.type].label} doesn't touch the legs — clean slot. Sprint after the lift.` };
+}
+
+// Catch-up banner (when the week is short) + this day's eligibility card. Rendered above the sprint card.
+function renderSprintPlanner(idx) {
+  const count = weekSprintCount();
+  const elig = sprintEligibility(idx);
+  let html = '';
+
+  if (count < SPRINT_WEEKLY_TARGET) {
+    const todayIdx = [6,0,1,2,3,4,5][new Date().getDay()];
+    const left = SPRINT_WEEKLY_TARGET - count;
+    const remaining = [];
+    for (let i = todayIdx; i < 7; i++) { const e = sprintEligibility(i); if (e.status !== 'done') remaining.push(e); }
+    remaining.sort((a, b) => a.rank - b.rank || a.idx - b.idx);
+    const usable = remaining.filter(e => e.status !== 'blocked');
+    // Fail-safe: never suggest doubling up on consecutive days to hit the number
+    let feasible = usable.length >= left;
+    if (feasible && left >= 2) feasible = usable.some(a => usable.some(b => Math.abs(a.idx - b.idx) >= 2));
+
+    html += `<div class="catchup${feasible ? '' : ' catchup-miss'}">
+      <div class="catchup-title"><span>⚡ ${left} sprint${left > 1 ? 's' : ''} left this week</span><span class="catchup-count">${count}/${SPRINT_WEEKLY_TARGET} logged</span></div>`;
+    if (!feasible) {
+      html += `<div class="catchup-body">Not enough clean slots left to get ${left} in without stacking consecutive days. <strong>Eat the miss.</strong> A missed week is recoverable — a tweaked hamstring costs a month.${usable.length ? ' Take the best single slot below and leave it there.' : ''}</div>`;
+    } else {
+      html += `<div class="catchup-body">Remaining days, ranked by what you've already trained:</div>`;
+    }
+    if (remaining.length) {
+      html += `<div class="catchup-chips">${remaining.map(e =>
+        `<button class="cu-chip ${e.cls}${e.idx === idx ? ' cu-here' : ''}" onclick="selectDay(${e.idx})"><span class="cu-day">${WEEK[e.idx].name} ${getDayNum(e.idx)}</span><span class="cu-badge">${e.badge}</span></button>`
+      ).join('')}</div>`;
+    }
+    html += `</div>`;
+  }
+
+  const meta = elig.status === 'done' ? '' : elig.status === 'blocked' ? 'No sprint today' : `${elig.rounds} rounds · ${elig.timing}`;
+  html += `<div class="sp-elig ${elig.cls}">
+    <div class="sp-elig-top"><span class="elig-badge">${elig.badge}</span><span class="sp-elig-meta">${meta}</span></div>
+    <div class="sp-elig-reason">${elig.reason}</div>
+  </div>`;
+  return html;
+}
 
 // Exercise rotation pools — S+ and A tier (sourced from Push/Pull/Legs NotebookLM notebooks)
 // Each entry: { name, tier, equip } — equip = 'machine'|'smith'|'cable'|'free'
@@ -979,17 +1242,11 @@ const WORKOUTS = {
       ]}
     ]
   },
-  fort:{
-    title:'TUESDAY FLEX DAY', emoji:'🥊',
-    chips:['Boxing · HIIT Class · Lower Body','Counts toward 90-min/wk HIIT target'],
+  lower:{
+    title:'HOME LOWER DAY', emoji:'🟢',
+    chips:['Home Gym Lower Body','Hassan Protocol'],
     sections:[
-      { label:'If At A Class (Boxing / HIIT)', exercises:[
-        { id:'f-class', name:'Boxing / HIIT Class', muscle:'full',
-          sets:[{wt:0,reps:'Full session'}],
-          chips:{sets:'Full Class',reps:'Zone 4 — 140-155 bpm'},
-          cue:'Target HR: 140–155 bpm throughout. This session = ~35-40 min toward your 90-min/week visceral fat HIIT threshold (Dr. Rhonda Patrick protocol). Log HR avg + max from Galaxy Watch after.' }
-      ]},
-      { label:'If Lower Day (Home Sub)', exercises:[
+      { label:'Lower Body', exercises:[
         { id:'f-ext', name:'Leg Extension', muscle:'quads',
           sets:[{wt:99,reps:'6'},{wt:121,reps:'FAIL'}],
           chips:{sets:'2 Sets',reps:'6 reps',pr:'PR: 121 lbs',tag:'Hassan'},
@@ -1150,7 +1407,7 @@ const REST_CONTENT = {
     {icon:'😴',text:'Sleep is visceral fat medicine. Two weeks of poor sleep = 11% more visceral fat with zero weight change (RCT). Protect tonight\'s window. Magnesium before bed.'}
   ]},
   sat:{ title:'SPRINT + RECOVERY', icon:'⚡', sub:'Second HIIT session. Then full recharge.', tips:[
-    {icon:'⚡',text:'SPRINT PROTOCOL (2nd weekly HIIT session): 5-min warm-up walk → 6 × 30-sec MAX effort sprints (manual treadmill, lean hard) → 75-sec walking recovery between each (trial, was 90s) → 5-min cool-down. Total: ~24 min. Zone 4–5 target: 140–165+ bpm. Wed + Sat sprints = ~48 min pure HIIT. Add Tuesday class and you clear the 90-min/week visceral fat threshold.'},
+    {icon:'⚡',text:'SPRINT PROTOCOL (2nd weekly HIIT session): 5-min warm-up walk → 6 × 30-sec MAX effort sprints (manual treadmill, lean hard) → 75-sec walking recovery between each (trial, was 90s) → 5-min cool-down. Total: ~24 min. Zone 4–5 target: 140–165+ bpm. Wed + Sat sprints = ~48 min pure HIIT toward the 90-min/week visceral fat threshold.'},
     {icon:'📈',text:'Progressive overload: Start at 4 rounds. Add 1 round every 2 weeks alongside Wednesday. Both days progress together. Goal = 8 rounds each by Week 8.'},
     {icon:'♨️',text:'POST-SPRINT SAUNA: 20–30 min @ 175°F. No rush today — weekend. This is the best day to extend the session. Do not exceed 200°F. Amplifies VO2 max and anabolic signaling beyond exercise alone.'},
     {icon:'🚶',text:'After sauna: done. No more cardio. Zone 1–2 walking only if you feel like moving. Legs are tomorrow — protect recovery.'},
@@ -1684,10 +1941,9 @@ let restOverrides = {}; // { exId: seconds } — user-customized rest per exerci
 let swapOverrides = {}; // { exId: { HG: altName, LT: altName } } — user-selected exercise swaps, scoped per gym location (BUG-LEGCURL-SWAP fix)
 let prStreaks = {};     // { exId: count } — consecutive sessions with new PRs
 let notesStore = {};   // { exId: { todayNote, lastWeekNote, weekCount } }
-let fortCancelled = false;
 let backRecoveryMode = false;
 let vacationMode = false; // FEAT-8: Gym-free maintenance routine
-let dayTypeOverride = {}; // { dateStr: 'upper'|'push'|'pull'|'legs'|'fort'|'flex' }
+let dayTypeOverrides = {}; // { dateStr: 'upper'|'push'|'pull'|'legs'|'lower'|'rest' }
 let prReadyFlags = new Set(); // exercise names flagged pr_ready=true in Supabase
 let sessionLocation = 'HG'; // 'HG' = Home Gym, 'LT' = Lifetime Fitness
 
@@ -1768,8 +2024,8 @@ async function init() {
   // Load all persisted data
   await loadAll();
 
-  // Sync PRs from Supabase before first render (dayTypeOverride is now loaded)
-  const _initType = dayTypeOverride[getDateStr()] || WEEK[currentDayIdx].type;
+  // Sync PRs from Supabase before first render (dayTypeOverrides is now loaded)
+  const _initType = effDay(currentDayIdx).type;
   if (_initType !== 'rest') {
     showPRSyncPill();
     await Promise.all([syncPRsFromSupabase(_initType), loadNextTargets(_initType)]);
@@ -1815,13 +2071,6 @@ async function loadAll() {
   } catch(e) { swapOverrides = {}; }
   try { const v = await getStored('pr-streaks'); if (v) prStreaks = JSON.parse(v); } catch(e) { prStreaks = {}; }
 
-  // Restore fort-cancelled flag for today
-  try {
-    const key = `fort-cancelled-${getDateStr()}`;
-    const v = await getStored(key);
-    fortCancelled = !!(v);
-  } catch(e) { fortCancelled = false; }
-
   // Restore back recovery mode
   try {
     const v = localStorage.getItem('back-recovery-mode');
@@ -1845,8 +2094,21 @@ async function loadAll() {
   // Restore day type overrides
   try {
     const v = await getStored('day-type-overrides');
-    if (v) dayTypeOverride = JSON.parse(v);
-  } catch(e) { dayTypeOverride = {}; }
+    if (v) dayTypeOverrides = JSON.parse(v);
+  } catch(e) { dayTypeOverrides = {}; }
+
+  // Restore sprint log (weekly HIIT count + eligibility engine)
+  try {
+    const v = await getStored('sprint-log');
+    sprintLog = v ? JSON.parse(v) : [];
+    if (!Array.isArray(sprintLog)) sprintLog = [];
+  } catch(e) { sprintLog = []; }
+
+  // Restore last sprint protocol
+  try {
+    const pKey = localStorage.getItem('sprint-protocol');
+    if (pKey && SPRINT_PROTOCOLS[pKey]) { sprintState.protocol = pKey; sprintState.totalRounds = SPRINT_PROTOCOLS[pKey].rounds; }
+  } catch(e) {}
 
   // Restore session location
   try { const v = localStorage.getItem('session-location'); if (v) sessionLocation = v; } catch(e) {}
@@ -1969,7 +2231,8 @@ function buildDayPills() {
   wrap.innerHTML = '';
   const todayIdx = [6,0,1,2,3,4,5][new Date().getDay()];
 
-  WEEK.forEach((day, idx) => {
+  WEEK.forEach((_, idx) => {
+    const day = effDay(idx);
     const btn = document.createElement('button');
     btn.className = 'day-pill';
     if (idx === currentDayIdx) btn.classList.add('active');
@@ -1985,7 +2248,7 @@ function buildDayPills() {
     btn.innerHTML = `
       <span class="dp-name c-${day.type}">${day.name}</span>
       <span class="dp-num">${getDayNum(idx)}</span>
-      <span class="dp-type c-${day.type}">${day.label.split('/')[0].trim()}</span>
+      <span class="dp-type c-${day.type}">${day.label.split('/')[0].trim()}${day.overridden ? ' •' : ''}</span>
       <span class="dp-dot"></span>
     `;
     btn.onclick = () => selectDay(idx);
@@ -2001,14 +2264,16 @@ function buildDayPills() {
 function updateHeader() {
   const days = ['SUNDAY','MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY'];
   document.getElementById('hdrDay').textContent = days[new Date().getDay()];
-  document.getElementById('hdrType').textContent = WEEK[currentDayIdx].label;
+  // Header is always TODAY (day name above comes from new Date()), so read today's effective session
+  const todayIdx = [6,0,1,2,3,4,5][new Date().getDay()];
+  document.getElementById('hdrType').textContent = effDay(todayIdx).label;
 }
 
 async function selectDay(idx) {
   currentDayIdx = idx;
   buildDayPills();
   if (currentView === 'workout') {
-    const _selType = dayTypeOverride[getDateStr()] || WEEK[idx].type;
+    const _selType = effDay(idx).type;
     if (_selType !== 'rest') {
       showPRSyncPill();
       await Promise.all([syncPRsFromSupabase(_selType), loadNextTargets(_selType)]);
@@ -2039,7 +2304,7 @@ function renderCurrentView() {
 // WORKOUT VIEW
 // ============================================================
 function renderWorkoutView() {
-  const day = WEEK[currentDayIdx];
+  const day = effDay(currentDayIdx);
   const scroll = document.getElementById('mainScroll');
 
   // FEAT-8: Vacation Mode — gym-free routine every day
@@ -2052,20 +2317,15 @@ function renderWorkoutView() {
     renderRecoveryDay(day.key); return;
   }
 
-  // Compute effective workout type (may be overridden for this date)
-  const todayDateStr = getDateStr();
-  const effectiveType = dayTypeOverride[todayDateStr] || day.type;
+  // Effective workout type — effDay() already applied any override for this date
+  const effectiveType = day.type;
 
   if (effectiveType === 'rest') { renderRestDay(day.key); return; }
 
   const workout = WORKOUTS[effectiveType];
   if (!workout) { scroll.innerHTML = '<div class="empty-state">No workout data for this day.</div>'; return; }
 
-  const sectionsForProgress = (effectiveType === 'fort' && fortCancelled)
-    ? workout.sections.filter(s => s.label !== 'If At FORT')
-    : (effectiveType === 'fort' && !fortCancelled)
-      ? workout.sections.filter(s => s.label === 'If At FORT' || s.label.includes('Ab'))
-      : workout.sections;
+  const sectionsForProgress = workout.sections;
 
   const allExIds = [];
   sectionsForProgress.forEach(s => s.exercises.forEach(e => allExIds.push(e.id)));
@@ -2074,32 +2334,6 @@ function renderWorkoutView() {
   const rotationAlerts = getRotationAlerts(effectiveType);
 
   let html = '';
-
-  // FORT cancelled banner (only when scheduled type is FORT and no override)
-  if (day.type === 'fort' && !dayTypeOverride[todayDateStr]) {
-    if (fortCancelled) {
-      html += `<div class="fort-cancel-banner">
-        <div class="fort-cancel-top">
-          <div class="fort-cancel-title">🏠 HOME LOWER DAY</div>
-          <div class="fort-mode-indicator">✓ FORT CANCELLED</div>
-        </div>
-        <div class="fort-cancel-sub">Swapped to your full home gym lower body protocol. All the gains, none of the commute.</div>
-        <div class="fort-cancel-btns">
-          <button class="fort-btn fort-btn-fort" onclick="toggleFortCancelled()">↩ FORT Was On After All</button>
-        </div>
-      </div>`;
-    } else {
-      html += `<div class="fort-cancel-banner">
-        <div class="fort-cancel-top">
-          <div class="fort-cancel-title">📍 FORT / LOWER DAY</div>
-        </div>
-        <div class="fort-cancel-sub">Heading to FORT? Go get it. Class got cancelled? Hit the home gym lower body sub below.</div>
-        <div class="fort-cancel-btns">
-          <button class="fort-btn fort-btn-go" onclick="toggleFortCancelled()">🏠 FORT Cancelled — Home Lower Day</button>
-        </div>
-      </div>`;
-    }
-  }
 
   // Location selector
   const hgActive = sessionLocation === 'HG' ? ' loc-active' : '';
@@ -2112,8 +2346,8 @@ function renderWorkoutView() {
 
   // Workout header
   html += `<div class="w-header">
-    <div class="w-title"><span>${workout.emoji}</span>${fortCancelled && effectiveType==='fort' ? 'HOME LOWER DAY' : workout.title}</div>
-    <div class="w-chips">${(fortCancelled && effectiveType==='fort' ? ['Home Gym Lower Body','Hassan Protocol'] : workout.chips).map(c => `<span class="wchip bg-${effectiveType} c-${effectiveType}">${c}</span>`).join('')}</div>
+    <div class="w-title"><span>${workout.emoji}</span>${workout.title}</div>
+    <div class="w-chips">${workout.chips.map(c => `<span class="wchip bg-${effectiveType} c-${effectiveType}">${c}</span>`).join('')}</div>
     <div class="prog-row">
       <span class="prog-label">Progress</span>
       <div class="mini-bar"><div class="mini-bar-fill bar-${effectiveType}" id="dayProg" style="width:0%"></div></div>
@@ -2121,22 +2355,11 @@ function renderWorkoutView() {
     </div>
   </div>`;
 
-  // Type selector row
-  const workoutTypes = ['upper', 'push', 'pull', 'legs', 'fort'];
-  const typeLabels = { upper: 'UPPER', push: 'PUSH', pull: 'PULL', legs: 'LEGS', fort: 'FLEX' };
-  html += `<div class="w-type-selector">
-    <span class="type-selector-label">Pick a type:</span>`;
-  workoutTypes.forEach(wType => {
-    const isActive = effectiveType === wType ? ' type-btn-active' : '';
-    html += `<button class="type-btn bg-${wType}${isActive}" onclick="event.stopPropagation();switchDayType('${wType}');">${typeLabels[wType]}</button>`;
-  });
-  if (dayTypeOverride[todayDateStr]) {
-    html += `<button class="type-btn type-reset-btn" onclick="event.stopPropagation();resetDayType();">RESET</button>`;
-  }
-  html += `</div>`;
+  // Day-type override chips (per-date session swap)
+  html += renderDaySwap(currentDayIdx);
 
   // Done banner
-  const doneBannerTitle = (fortCancelled && effectiveType==='fort') ? 'HOME LOWER DAY COMPLETE' : `${workout.title} COMPLETE`;
+  const doneBannerTitle = `${workout.title} COMPLETE`;
   html += `<div class="done-banner" id="doneBanner">
     <div class="done-emoji">${workout.emoji}</div>
     <div class="done-title">${doneBannerTitle}</div>
@@ -2206,12 +2429,8 @@ function renderWorkoutView() {
     </div>
   </div>`;
 
-  // Exercises — if FORT day and cancelled, skip "If At FORT" section, show only sub + abs
-  const sectionsToRender = (effectiveType === 'fort' && fortCancelled)
-    ? workout.sections.filter(s => s.label !== 'If At FORT')
-    : (effectiveType === 'fort' && !fortCancelled)
-      ? workout.sections.filter(s => s.label === 'If At FORT' || s.label.includes('Ab'))
-      : workout.sections;
+  // Exercises
+  const sectionsToRender = workout.sections;
 
   sectionsToRender.forEach(section => {
     html += `<div class="sec-label">${section.label}</div>`;
@@ -2506,47 +2725,6 @@ function dismissAlert(id) {
   if (el) el.classList.remove('visible');
 }
 
-function toggleFortCancelled() {
-  fortCancelled = !fortCancelled;
-  // Persist choice for today so page reload remembers
-  const key = `fort-cancelled-${getDateStr()}`;
-  if (fortCancelled) {
-    window.storage.set(key, '1').catch(()=>{});
-  } else {
-    window.storage.delete(key).catch(()=>{});
-  }
-  renderWorkoutView();
-}
-
-function switchDayType(newType) {
-  const todayDateStr = getDateStr();
-  const day = WEEK[currentDayIdx];
-
-  // If switching to the same type as scheduled, just clear the override
-  if (newType === day.type) {
-    delete dayTypeOverride[todayDateStr];
-  } else {
-    dayTypeOverride[todayDateStr] = newType;
-  }
-
-  // Persist overrides (try-catch because window.storage may throw synchronously)
-  try { window.storage.set('day-type-overrides', JSON.stringify(dayTypeOverride)).catch(()=>{}); } catch(e) {}
-  try { localStorage.setItem('day-type-overrides', JSON.stringify(dayTypeOverride)); } catch(e) {}
-
-  renderWorkoutView();
-}
-
-function resetDayType() {
-  const todayDateStr = getDateStr();
-  delete dayTypeOverride[todayDateStr];
-
-  // Persist overrides (try-catch because window.storage may throw synchronously)
-  try { window.storage.set('day-type-overrides', JSON.stringify(dayTypeOverride)).catch(()=>{}); } catch(e) {}
-  try { localStorage.setItem('day-type-overrides', JSON.stringify(dayTypeOverride)); } catch(e) {}
-
-  renderWorkoutView();
-}
-
 function setSessionLocation(loc) {
   sessionLocation = loc;
   try { localStorage.setItem('session-location', loc); } catch(e) {}
@@ -2555,7 +2733,7 @@ function setSessionLocation(loc) {
   showToast(`📍 ${loc === 'HG' ? 'Home Gym [HG]' : 'Lifetime Fitness [LT]'}`);
   // Targets are gym-specific — kick off the new location's load first (it clears the old
   // gym's badges synchronously so the render below never shows them), then repaint once loaded
-  const _locType = dayTypeOverride[getDateStr()] || WEEK[currentDayIdx].type;
+  const _locType = effDay(currentDayIdx).type;
   const _tgtLoad = loadNextTargets(_locType);
   renderWorkoutView();
   _tgtLoad.then(() => { if (currentView === 'workout') renderWorkoutView(); });
@@ -3247,12 +3425,7 @@ async function saveWorkout(type, dayKey) {
   const exercises = [];
   let newPRs = [];
 
-  // Use sections that are currently rendered (respects fort cancelled state)
-  const sectionsToSave = (type === 'fort' && fortCancelled)
-    ? workout.sections.filter(s => s.label !== 'If At FORT')
-    : (type === 'fort' && !fortCancelled)
-      ? workout.sections.filter(s => s.label === 'If At FORT' || s.label.includes('Ab'))
-      : workout.sections;
+  const sectionsToSave = workout.sections;
 
   for (const section of sectionsToSave) {
     for (const ex of section.exercises) {
@@ -3277,7 +3450,7 @@ async function saveWorkout(type, dayKey) {
   const watch = sessionState['__watch__'] || {};
   const entry = {
     id: Date.now(), date: getDateStr(), dayKey,
-    type, title: (type === 'fort' && fortCancelled) ? 'HOME LOWER DAY' : workout.title,
+    type, title: workout.title,
     emoji: workout.emoji,
     exercises, newPRs,
     notes: (sessionState['__notes__']||{}).notes || '',
@@ -3367,7 +3540,7 @@ async function saveSprintWorkout(dayKey) {
     type: 'rest',
     title: '⚡ SPRINT SESSION',
     emoji: '⚡',
-    rounds: sprintState.totalRounds,
+    rounds: sprintRoundsToday(),
     exercises: [],
     watch: {
       avgHr: avgHrVal,
@@ -3405,7 +3578,7 @@ async function saveSprintWorkout(dayKey) {
       duration_minutes: sessionStart ? Math.floor((Date.now() - sessionStart) / 60000) : null,
       avg_heart_rate: avgHrVal,
       max_heart_rate: maxHrVal,
-      session_notes: `Sprint session · ${sprintState.totalRounds} rounds with Galaxy Watch data`
+      session_notes: `Sprint session · ${sprintRoundsToday()} rounds · ${currentProtocol().label.toLowerCase()} protocol · with Galaxy Watch data`
     };
 
     const supRes = await fetch(
@@ -3452,9 +3625,7 @@ function generateSessionSummary(type) {
   lines.push('');
   lines.push(type === 'recovery' ? '🏥 REHAB EXERCISES' : '💪 EXERCISES');
 
-  const sections = (type === 'fort' && fortCancelled)
-    ? workout.sections.filter(s => s.label !== 'If At FORT')
-    : workout.sections;
+  const sections = workout.sections;
 
   sections.forEach(section => {
     section.exercises.forEach(ex => {
@@ -3499,8 +3670,14 @@ function shareToClaudeChat(type) {
   }
 }
 
+// Rounds actually logged today by the interval timer (falls back to the planned count)
+function sprintRoundsToday() {
+  const logged = sprintsOnDate(getDateStr()).reduce((n, d) => n + (d.rounds || 0), 0);
+  return logged || sprintState.totalRounds;
+}
+
 function shareSprintToClaude() {
-  const rounds = sprintState.totalRounds;
+  const rounds = sprintRoundsToday();
   const hrAvg = document.getElementById('spHrAvg')?.value || '';
   const hrMax = document.getElementById('spHrMax')?.value || '';
   const notes = document.getElementById('sprintNotes')?.value || '';
@@ -3511,7 +3688,7 @@ function shareSprintToClaude() {
   lines.push(`⚡ SPRINT SESSION — ${APP_VERSION}`);
   lines.push(`${date}${dur ? ' · ' + dur : ''}`);
   lines.push('');
-  lines.push(`Rounds: ${rounds} × 30-sec max effort sprints`);
+  lines.push(`Rounds: ${rounds} × ${currentProtocol().work}-sec max effort sprints (${currentProtocol().label.toLowerCase()})`);
   if (hrAvg) lines.push(`Avg HR: ${hrAvg} bpm`);
   if (hrMax) lines.push(`Max HR: ${hrMax} bpm`);
   if (notes) { lines.push(''); lines.push(`📝 Notes: ${notes}`); }
@@ -3687,7 +3864,7 @@ function renderSummaryView() {
   // Recent week summary
   html += `<div class="sec-label">Recent Sessions</div>`;
 
-  ['upper','push','pull','legs','fort'].forEach(type => {
+  ['upper','push','pull','legs','lower'].forEach(type => {
     const sessions = recentByType[type];
     if (!sessions || sessions.length === 0) return;
     const cur = sessions[0];
@@ -3820,7 +3997,7 @@ async function renderHistoryView() {
         <button class="hist-search-clear ${historySearch ? 'visible' : ''}" id="histClear" onclick="clearHistorySearch()">✕</button>
       </div>
       <div class="hist-filter-row" id="histFilters">
-        ${['all','legs','push','pull','upper','fort','cardio'].map(f =>
+        ${['all','legs','push','pull','upper','lower','cardio'].map(f =>
           `<button class="hf-btn ${historyFilter===f?'active':''}" onclick="setHistoryFilter('${f}')">${f==='all'?'All':WORKOUT_LABELS_H[f]||f}</button>`
         ).join('')}
       </div>
@@ -4531,11 +4708,13 @@ function renderVacationDay() {
 
 function renderRestDay(dayKey) {
   const content = REST_CONTENT[dayKey] || REST_CONTENT.wed;
-  const isSprint = (dayKey === 'wed' || dayKey === 'sat');
+  const eff = effDay(currentDayIdx);
+  // Wed/Sat are sprint days by schedule; any day swapped to rest is a make-up sprint slot
+  const isSprint = (dayKey === 'wed' || dayKey === 'sat') || eff.overridden;
 
   if (isSprint) {
-    // FEAT-4: Show activity selector for sprint days
-    if (!selectedActivity || selectedActivity === 'sprint') {
+    // FEAT-4: Show activity selector for sprint days (a swapped-in rest day is always the sprint)
+    if (!selectedActivity || selectedActivity === 'sprint' || eff.overridden) {
       renderSprintDay(dayKey, content);
     } else {
       renderAlternativeActivity(selectedActivity);
@@ -4551,23 +4730,24 @@ function renderRestDay(dayKey) {
       </div>
     </div>`;
   }
-  document.getElementById('mainScroll').scrollTop = 0;
+  // Day swap + sprint planner sit above whatever the rest day rendered
+  const scroll = document.getElementById('mainScroll');
+  scroll.insertAdjacentHTML('afterbegin', renderDaySwap(currentDayIdx) + renderSprintPlanner(currentDayIdx));
+  scroll.scrollTop = 0;
 }
 
 // ============================================================
-// SPRINT TIMER ENGINE
+// SPRINT INTERVAL TIMER — full-screen overlay, separate from the rest timer
 // ============================================================
 let sprintState = {
-  running: false,
-  phase: 'idle',   // idle | warmup | sprint | rest | cooldown | done
-  round: 0,
-  totalRounds: 6,
-  elapsed: 0,
-  phaseDuration: 0,
-  interval: null,
-  hrAvg: '',
-  hrMax: ''
+  running: false, paused: false,
+  phase: 'idle',            // idle | warmup | work | rest | cooldown | done
+  protocol: 'treadmill', totalRounds: 6,
+  round: 0, roundsDone: 0, roundOk: [],   // roundOk[i] = work interval i counted (ran out, or ≥ half done when skipped/ended)
+  phaseSecs: 0, remaining: 0, endsAt: 0, pausedRemaining: 0,
+  tick: null, lastBeep: 0, startedAt: 0, date: '', endArmed: 0
 };
+let hiitAudio = null; // shared AudioContext, created on START (needs a user gesture)
 
 // Wake Lock — keeps screen alive during active sprint timer
 let sprintWakeLock = null;
@@ -4586,17 +4766,20 @@ document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible' && sprintState.running) acquireWakeLock();
 });
 
-const SPRINT_PHASES = {
-  warmup:   { label: 'WARM-UP WALK',  secs: 300, cue: 'Easy incline walk. Get the blood moving. Deep breaths.' },
-  sprint:   { label: 'SPRINT — MAX EFFORT', secs: 30,  cue: 'LEAN HARD INTO THE BELT. Maximum effort. Drive your legs. Zone 5.' },
-  rest:     { label: 'WALKING RECOVERY', secs: 75,  cue: 'Slow it down. Walk it out. Heart rate coming down to Zone 2 before next round.' }, // FEAT-16: trial 90s->75s, revert if it doesn't hold up
-  cooldown: { label: 'COOL-DOWN WALK', secs: 300, cue: 'Easy walk. Let heart rate drop below 120. Great work.' },
-  done:     { label: 'SESSION COMPLETE', secs: 0,   cue: 'Head straight to the sauna. 20 min @ 175°F. Non-optional.' }
+const HIIT_CUES = {
+  warmup:   ['Easy incline walk. Get the blood moving. Deep nasal breaths.', 'Loosen the hips, open the stride. Nothing hard yet.'],
+  work:     { first: 'First one — build to max over 5 seconds, then drive.', mid: 'LEAN INTO IT. Knees up, arms pumping. Zone 5.', last: 'LAST ONE. Empty the tank — everything you have left.' },
+  rest:     ['Walk it out. Nose breathing. Shake the legs loose.', 'Slow it down. HR back toward Zone 2 before the next one.'],
+  cooldown: ['Easy walk. Let HR drop under 120. Do not sit down yet.'],
+  done:     ['Logged. Straight to the sauna — 20 min @ 175°F.'],
 };
 
 function renderSprintDay(dayKey, content) {
-  sprintState = { running: false, phase: 'idle', round: 0, totalRounds: 6, elapsed: 0, phaseDuration: 0, interval: null, hrAvg: '', hrMax: '' };
+  // A running session lives in the overlay and must survive re-renders; only reset when idle
+  if (!sprintState.running) Object.assign(sprintState, { paused: false, phase: 'idle', round: 0, roundsDone: 0, roundOk: [], phaseSecs: 0, remaining: 0 });
   const watch = sessionState['__watch__'] || {};
+  const doneToday = sprintsOnDate(getDateStr());
+  const doneSummary = doneToday.map(d => `${d.rounds} rounds${SPRINT_PROTOCOLS[d.protocol] ? ' · ' + SPRINT_PROTOCOLS[d.protocol].label.toLowerCase() : ''}${d.workSeconds ? ' · ' + d.workSeconds + 's work' : ''}`).join(' + ');
 
   const tipsHtml = content.tips.slice(2).map(t =>
     `<div class="rest-tip"><span class="rt-icon">${t.icon}</span><span>${t.text}</span></div>`
@@ -4606,13 +4789,24 @@ function renderSprintDay(dayKey, content) {
   <div class="sprint-card">
     <div class="sprint-header">
       <div class="sprint-title">⚡ SPRINT SESSION</div>
-      <div class="sprint-subtitle">Visceral fat protocol · Wed & Sat</div>
+      <div class="sprint-subtitle" id="spSubtitle"></div>
+    </div>
+
+    ${doneToday.length ? `<div class="sprint-done-banner" id="spDoneBanner">
+      <div class="sprint-done-title">⚡ LOGGED TODAY</div>
+      <div class="sprint-done-sub" id="spDoneSub">${doneSummary} · sauna 20 min @ 175°F</div>
+    </div>` : ''}
+
+    <div class="sp-proto-row">
+      ${Object.entries(SPRINT_PROTOCOLS).map(([k, p]) =>
+        `<button class="sp-proto" data-proto="${k}" onclick="selectSprintProtocol('${k}')"><span class="sp-proto-name">${p.label}</span><span class="sp-proto-desc">${p.desc}</span></button>`
+      ).join('')}
     </div>
 
     <div class="sprint-rounds-adj">
       <button class="sprint-rounds-adj-btn" onclick="adjustRounds(-1)">−</button>
       <div style="text-align:center">
-        <div class="sprint-rounds-adj-val" id="spRoundsVal">6</div>
+        <div class="sprint-rounds-adj-val" id="spRoundsVal">${sprintState.totalRounds}</div>
         <div class="sprint-rounds-adj-label">rounds</div>
       </div>
       <button class="sprint-rounds-adj-btn" onclick="adjustRounds(1)">+</button>
@@ -4620,26 +4814,11 @@ function renderSprintDay(dayKey, content) {
 
     <div class="sprint-rounds-row" id="spRoundDots"></div>
 
-    <div class="sprint-clock">
-      <div class="sprint-phase-label phase-warmup" id="spPhaseLabel">READY TO START</div>
-      <div class="sprint-time phase-warmup" id="spTime">5:00</div>
-    </div>
-
-    <div class="sprint-progress-bar">
-      <div class="sprint-progress-fill fill-warmup" id="spProgressFill" style="width:100%"></div>
-    </div>
-
-    <div class="sprint-cue" id="spCue">5-min warm-up → ${sprintState.totalRounds} × 30-sec sprints → 75-sec rest between → 5-min cool-down. Hit START when on the treadmill.</div>
+    <div class="sprint-cue" id="spCue"></div>
 
     <div class="sprint-btn-row">
-      <button class="sprint-btn sprint-btn-main" id="spMainBtn" onclick="toggleSprint()">START</button>
-      <button class="sprint-btn sprint-btn-reset" onclick="resetSprint()" title="Reset">↺</button>
+      <button class="sprint-btn sprint-btn-main" id="spMainBtn" onclick="startSprintSession()">${sprintState.running ? 'BACK TO TIMER ›' : doneToday.length ? 'SPRINT AGAIN' : 'START SESSION'}</button>
     </div>
-  </div>
-
-  <div id="spDoneBanner" style="display:none" class="sprint-done-banner">
-    <div class="sprint-done-title">⚡ SESSION COMPLETE</div>
-    <div class="sprint-done-sub" id="spDoneSub">Straight to sauna — 20 min @ 175°F</div>
   </div>
 
   <div class="sprint-card" id="spHrCard">
@@ -4699,7 +4878,7 @@ function renderSprintDay(dayKey, content) {
     });
   }
 
-  buildRoundDots();
+  updateSprintCard();
 }
 
 // FEAT-4: Render selected alternative activity (yoga, pilates, dance, boxing)
@@ -4778,165 +4957,230 @@ function selectActivity(activityId) {
   renderWorkoutView();
 }
 
+// ── Sprint card (protocol picker + rounds stepper) ──────────────────────────
+function currentProtocol() { return SPRINT_PROTOCOLS[sprintState.protocol] || SPRINT_PROTOCOLS.standard; }
+
+function selectSprintProtocol(key) {
+  if (sprintState.running || !SPRINT_PROTOCOLS[key]) return;
+  sprintState.protocol = key;
+  sprintState.totalRounds = SPRINT_PROTOCOLS[key].rounds;
+  try { localStorage.setItem('sprint-protocol', key); } catch(e) {}
+  updateSprintCard();
+}
+
+function adjustRounds(delta) {
+  if (sprintState.running) return;
+  const p = currentProtocol();
+  sprintState.totalRounds = Math.max(p.min, Math.min(p.max, sprintState.totalRounds + delta));
+  updateSprintCard();
+}
+
+function sprintSessionMinutes() {
+  const p = currentProtocol(), n = sprintState.totalRounds;
+  return Math.round((HIIT_WARMUP_SECS + HIIT_COOLDOWN_SECS + n * p.work + (n - 1) * p.rest) / 60);
+}
+
+function updateSprintCard() {
+  const p = currentProtocol();
+  document.querySelectorAll('.sp-proto').forEach(b => b.classList.toggle('active', b.dataset.proto === sprintState.protocol));
+  const val = document.getElementById('spRoundsVal'); if (val) val.textContent = sprintState.totalRounds;
+  const sub = document.getElementById('spSubtitle'); if (sub) sub.textContent = `${p.desc} · ${sprintState.totalRounds} rounds · ~${sprintSessionMinutes()} min`;
+  const cue = document.getElementById('spCue');
+  if (cue) cue.textContent = `5-min warm-up → ${sprintState.totalRounds} × ${p.work}s max effort / ${p.rest}s walk → 3-min cool-down. Hit START when you're on the treadmill.`;
+  buildRoundDots();
+}
+
 function buildRoundDots() {
   const container = document.getElementById('spRoundDots');
   if (!container) return;
   let html = '';
   for (let i = 1; i <= sprintState.totalRounds; i++) {
-    const cls = i < sprintState.round ? 'done' : i === sprintState.round && sprintState.phase === 'sprint' ? 'active' : '';
+    const cls = sprintState.roundOk[i] ? 'done' : (i === sprintState.round && sprintState.phase === 'work') ? 'active' : '';
     html += `<div class="sprint-round-dot ${cls}">${i}</div>`;
   }
   container.innerHTML = html;
 }
 
-function adjustRounds(delta) {
-  if (sprintState.running) return;
-  sprintState.totalRounds = Math.max(4, Math.min(10, sprintState.totalRounds + delta));
-  const el = document.getElementById('spRoundsVal');
-  if (el) el.textContent = sprintState.totalRounds;
-  const cueEl = document.getElementById('spCue');
-  if (cueEl) cueEl.textContent = `5-min warm-up → ${sprintState.totalRounds} × 30-sec sprints → 75-sec rest between → 5-min cool-down. Hit START when on the treadmill.`;
+// ── Session engine ───────────────────────────────────────────────────────────
+// Phases run warmup → (work → rest) × N (no trailing rest) → cooldown → done.
+// Timing is wall-clock (endsAt) so a throttled background tab doesn't drift.
+function startSprintSession() {
+  const ov = document.getElementById('hiitOverlay');
+  if (sprintState.running) { ov.classList.add('visible'); return; } // re-open a session that's already going
+  Object.assign(sprintState, { running: true, paused: false, round: 0, roundsDone: 0, roundOk: [], startedAt: Date.now(), date: getDateStr(), endArmed: 0, lastBeep: 0 });
+  try {
+    hiitAudio = hiitAudio || new (window.AudioContext || window.webkitAudioContext)();
+    if (hiitAudio.state === 'suspended') hiitAudio.resume();
+  } catch(e) { hiitAudio = null; }
+  ov.classList.add('visible'); ov.classList.remove('paused');
+  const pb = document.getElementById('hiitPauseBtn'); if (pb) pb.textContent = 'PAUSE';
+  const eb = document.getElementById('hiitEndBtn');   if (eb) eb.textContent = 'END';
+  acquireWakeLock();
+  hiitEnterPhase('warmup');
+  clearInterval(sprintState.tick);
+  sprintState.tick = setInterval(hiitTick, 250);
+}
+
+function hiitEnterPhase(phase) {
+  const s = sprintState, p = currentProtocol();
+  s.phase = phase;
+  s.phaseSecs = phase === 'warmup' ? HIIT_WARMUP_SECS : phase === 'cooldown' ? HIIT_COOLDOWN_SECS : phase === 'work' ? p.work : p.rest;
+  s.remaining = s.phaseSecs;
+  s.endsAt = Date.now() + s.phaseSecs * 1000;
+  s.lastBeep = 0;
+  if (phase === 'work')          { hiitTone(880, 0.35, 0.3); vibrateDevice([200, 100, 200]); }   // high tone → go
+  else if (phase === 'rest')     { hiitTone(330, 0.4, 0.3);  vibrateDevice([300]); }             // low tone → recover
+  else if (phase === 'cooldown') { hiitTone(523, 0.25, 0.25); setTimeout(() => hiitTone(659, 0.3, 0.25), 200); vibrateDevice([100, 50, 100, 50, 100]); }
+  hiitRender();
+}
+
+function hiitTick() {
+  const s = sprintState;
+  if (!s.running || s.paused) return;
+  const rem = Math.max(0, Math.ceil((s.endsAt - Date.now()) / 1000));
+  if (rem !== s.remaining) {
+    s.remaining = rem;
+    if (rem >= 1 && rem <= 3 && s.lastBeep !== rem) { s.lastBeep = rem; hiitTone(660, 0.1, 0.2); } // 3-2-1 countdown beeps
+    hiitRender();
+  }
+  if (rem <= 0) hiitAdvance();
+}
+
+function hiitCountRound() {
+  const s = sprintState;
+  if (s.phase === 'work' && !s.roundOk[s.round]) { s.roundOk[s.round] = true; s.roundsDone++; }
+}
+
+function hiitAdvance() {
+  const s = sprintState;
+  if (s.phase === 'warmup')        { s.round = 1; hiitEnterPhase('work'); }
+  else if (s.phase === 'work')     { hiitCountRound(); if (s.round >= s.totalRounds) hiitEnterPhase('cooldown'); else hiitEnterPhase('rest'); }
+  else if (s.phase === 'rest')     { s.round++; hiitEnterPhase('work'); }
+  else if (s.phase === 'cooldown') { hiitFinish(true); }
+}
+
+// Skip the current phase. A work interval only counts if at least half of it was done.
+function hiitSkipPhase() {
+  const s = sprintState;
+  if (!s.running) return;
+  if (s.phase === 'work') {
+    if ((s.phaseSecs - s.remaining) >= s.phaseSecs / 2) hiitCountRound();
+    if (s.round >= s.totalRounds) hiitEnterPhase('cooldown'); else hiitEnterPhase('rest');
+    return;
+  }
+  hiitAdvance();
+}
+
+function hiitTogglePause() {
+  const s = sprintState;
+  if (!s.running) return;
+  const ov = document.getElementById('hiitOverlay'), btn = document.getElementById('hiitPauseBtn');
+  s.paused = !s.paused;
+  if (s.paused) { s.pausedRemaining = Math.max(0, s.endsAt - Date.now()); releaseWakeLock(); }
+  else          { s.endsAt = Date.now() + s.pausedRemaining; acquireWakeLock(); }
+  ov.classList.toggle('paused', s.paused);
+  if (btn) btn.textContent = s.paused ? 'RESUME' : 'PAUSE';
+  hiitRender();
+}
+
+// END takes two taps within 3s so a stray thumb can't kill a session mid-sprint
+function hiitEnd() {
+  const s = sprintState;
+  if (!s.running) return;
+  const btn = document.getElementById('hiitEndBtn');
+  if (Date.now() - s.endArmed > 3000) {
+    s.endArmed = Date.now();
+    if (btn) btn.textContent = 'SURE?';
+    setTimeout(() => { if (btn && s.running) btn.textContent = 'END'; }, 3000);
+    return;
+  }
+  if (s.phase === 'work' && (s.phaseSecs - s.remaining) >= s.phaseSecs / 2) hiitCountRound();
+  hiitFinish(false);
+}
+
+// Log whatever was done (partial sessions count — 4 rounds is 4 rounds, not zero) and close
+function hiitFinish(completed) {
+  const s = sprintState, p = currentProtocol();
+  clearInterval(s.tick); s.tick = null;
+  s.running = false; s.paused = false;
+  releaseWakeLock();
+  if (s.roundsDone > 0) {
+    sprintLog.push({ date: s.date, protocol: s.protocol, rounds: s.roundsDone, workSeconds: s.roundsDone * p.work, completed, savedAt: new Date().toISOString() });
+    persistSprintLog();
+    if (completed) {
+      hiitTone(523, 0.2, 0.25); setTimeout(() => hiitTone(659, 0.2, 0.25), 180); setTimeout(() => hiitTone(784, 0.35, 0.25), 360);
+      vibrateDevice([300, 100, 300, 100, 300]);
+    }
+    showToast(`⚡ ${s.roundsDone} ROUND${s.roundsDone === 1 ? '' : 'S'} LOGGED · ${weekSprintCount()}/${SPRINT_WEEKLY_TARGET} SPRINTS THIS WEEK`, completed);
+  } else {
+    showToast('⚡ ENDED BEFORE THE FIRST SPRINT — NOTHING LOGGED');
+  }
+  s.phase = 'done';
+  hiitRender();
+  const ov = document.getElementById('hiitOverlay');
+  setTimeout(() => {
+    ov.classList.remove('visible', 'paused');
+    const pb = document.getElementById('hiitPauseBtn'); if (pb) pb.textContent = 'PAUSE';
+    const eb = document.getElementById('hiitEndBtn');   if (eb) eb.textContent = 'END';
+    if (currentView === 'workout') renderWorkoutView(); // eligibility → DONE, card shows the log
+  }, completed ? 1500 : 300);
+}
+
+function hiitCue() {
+  const s = sprintState;
+  if (s.phase === 'work') return s.round <= 1 ? HIIT_CUES.work.first : s.round >= s.totalRounds ? HIIT_CUES.work.last : HIIT_CUES.work.mid;
+  const list = HIIT_CUES[s.phase];
+  return list ? list[s.round % list.length] : '';
+}
+
+function hiitRender() {
+  const s = sprintState, p = currentProtocol();
+  const ov = document.getElementById('hiitOverlay');
+  if (!ov) return;
+  ov.dataset.phase = s.phase;
+  const set = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+  const labels = {
+    warmup: 'WARM-UP', work: `SPRINT ${s.round} / ${s.totalRounds}`, rest: `RECOVER → SPRINT ${s.round + 1}`,
+    cooldown: 'COOL-DOWN', done: s.roundsDone >= s.totalRounds ? 'SESSION COMPLETE' : 'SESSION ENDED', idle: ''
+  };
+  set('hiitPhase', labels[s.phase] || '');
+  set('hiitTime', s.phase === 'done' ? '0:00' : `${Math.floor(s.remaining / 60)}:${String(s.remaining % 60).padStart(2, '0')}`);
+  set('hiitSub', (s.phase === 'work' || s.phase === 'rest') ? `${s.roundsDone} of ${s.totalRounds} rounds done`
+               : s.phase === 'warmup' ? `${s.totalRounds} rounds · ${p.work}s / ${p.rest}s`
+               : s.phase === 'cooldown' ? 'walk it out' : s.phase === 'done' ? `${s.roundsDone} rounds logged` : '');
+  const ring = document.getElementById('hiitRing');
+  if (ring) { const C = 603.2, frac = s.phaseSecs ? s.remaining / s.phaseSecs : 0; ring.style.strokeDashoffset = (C * (1 - frac)).toFixed(1); }
+  set('hiitProto', `${p.label} · ${p.desc}`);
+  const el = Math.max(0, Math.floor((Date.now() - s.startedAt) / 1000));
+  set('hiitElapsed', `${Math.floor(el / 60)}:${String(el % 60).padStart(2, '0')} elapsed`);
+  set('hiitCue', hiitCue());
+  const pips = document.getElementById('hiitPips');
+  if (pips) {
+    let h = '';
+    for (let i = 1; i <= s.totalRounds; i++) {
+      const cls = s.roundOk[i] ? 'done' : (i === s.round && s.phase === 'work') ? 'active' : (i < s.round || (i === s.round && s.phase !== 'work')) ? 'skipped' : '';
+      h += `<div class="hiit-pip ${cls}"></div>`;
+    }
+    pips.innerHTML = h;
+  }
   buildRoundDots();
 }
 
-function toggleSprint() {
-  if (sprintState.phase === 'done') { resetSprint(); return; }
-  if (sprintState.phase === 'idle') {
-    sprintState.phase = 'warmup';
-    sprintState.elapsed = 0;
-    sprintState.phaseDuration = SPRINT_PHASES.warmup.secs;
-    sprintState.round = 0;
-  }
-  sprintState.running = !sprintState.running;
-  const btn = document.getElementById('spMainBtn');
-  if (btn) { btn.textContent = sprintState.running ? 'PAUSE' : 'RESUME'; btn.className = sprintState.running ? 'sprint-btn sprint-btn-main running' : 'sprint-btn sprint-btn-main'; }
-  if (sprintState.running) {
-    acquireWakeLock();
-    sprintState.interval = setInterval(tickSprint, 1000);
-  } else {
-    releaseWakeLock();
-    clearInterval(sprintState.interval);
-  }
-  updateSprintDisplay();
-}
-
-function tickSprint() {
-  sprintState.elapsed++;
-  if (sprintState.elapsed >= sprintState.phaseDuration) {
-    advanceSprintPhase();
-  }
-  updateSprintDisplay();
-}
-
-function advanceSprintPhase() {
-  sprintState.elapsed = 0;
-  if (sprintState.phase === 'warmup') {
-    sprintState.phase = 'sprint';
-    sprintState.round = 1;
-    sprintState.phaseDuration = SPRINT_PHASES.sprint.secs;
-    vibrateDevice([200, 100, 200]);
-  } else if (sprintState.phase === 'sprint') {
-    if (sprintState.round >= sprintState.totalRounds) {
-      sprintState.round++; // BUG-5 FIX: Increment round so last bubble registers as done
-      sprintState.phase = 'cooldown';
-      sprintState.phaseDuration = SPRINT_PHASES.cooldown.secs;
-      vibrateDevice([100, 50, 100, 50, 100]);
-    } else {
-      sprintState.phase = 'rest';
-      sprintState.phaseDuration = SPRINT_PHASES.rest.secs;
-      vibrateDevice([300]);
-    }
-  } else if (sprintState.phase === 'rest') {
-    sprintState.phase = 'sprint';
-    sprintState.round++;
-    sprintState.phaseDuration = SPRINT_PHASES.sprint.secs;
-    vibrateDevice([200, 100, 200, 100, 200]);
-  } else if (sprintState.phase === 'cooldown') {
-    sprintState.phase = 'done';
-    clearInterval(sprintState.interval);
-    sprintState.running = false;
-    releaseWakeLock();
-    completeSprint();
-    return;
-  }
+function hiitTone(freq, dur, gain) {
+  try {
+    if (!hiitAudio) return;
+    const o = hiitAudio.createOscillator(), g = hiitAudio.createGain();
+    o.type = 'sine'; o.frequency.value = freq;
+    o.connect(g); g.connect(hiitAudio.destination);
+    const t = hiitAudio.currentTime;
+    g.gain.setValueAtTime(gain, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    o.start(t); o.stop(t + dur + 0.05);
+  } catch(e) {}
 }
 
 function vibrateDevice(pattern) {
   try { if (navigator.vibrate) navigator.vibrate(pattern); } catch(e) {}
-}
-
-function updateSprintDisplay() {
-  const phase = sprintState.phase;
-  if (phase === 'idle' || phase === 'done') return;
-  const info = SPRINT_PHASES[phase];
-  const remaining = Math.max(0, info.secs - sprintState.elapsed);
-  const mins = Math.floor(remaining / 60);
-  const secs = remaining % 60;
-  const timeStr = `${mins}:${secs.toString().padStart(2,'0')}`;
-  const progress = ((info.secs - remaining) / info.secs) * 100;
-
-  const phaseClass = `phase-${phase === 'rest' ? 'rest' : phase === 'sprint' ? 'sprint' : phase === 'warmup' ? 'warmup' : 'cooldown'}`;
-  const fillClass = `fill-${phase === 'rest' ? 'rest' : phase === 'sprint' ? 'sprint' : phase === 'warmup' ? 'warmup' : 'cooldown'}`;
-
-  const timeEl = document.getElementById('spTime');
-  const labelEl = document.getElementById('spPhaseLabel');
-  const cueEl = document.getElementById('spCue');
-  const fillEl = document.getElementById('spProgressFill');
-
-  if (timeEl) { timeEl.textContent = timeStr; timeEl.className = `sprint-time ${phaseClass}`; }
-  if (labelEl) {
-    let lbl = info.label;
-    if (phase === 'sprint') lbl += ` — Round ${sprintState.round}/${sprintState.totalRounds}`;
-    if (phase === 'rest') lbl += ` — Next: Round ${sprintState.round + 1}`;
-    labelEl.textContent = lbl;
-    labelEl.className = `sprint-phase-label ${phaseClass}`;
-  }
-  if (cueEl) cueEl.textContent = info.cue;
-  if (fillEl) { fillEl.style.width = (100 - progress) + '%'; fillEl.className = `sprint-progress-fill ${fillClass}`; }
-  buildRoundDots();
-}
-
-function completeSprint() {
-  const timeEl = document.getElementById('spTime');
-  const labelEl = document.getElementById('spPhaseLabel');
-  const cueEl = document.getElementById('spCue');
-  const fillEl = document.getElementById('spProgressFill');
-  const btn = document.getElementById('spMainBtn');
-  const doneBanner = document.getElementById('spDoneBanner');
-  const hrCard = document.getElementById('spHrCard');
-
-  if (timeEl) { timeEl.textContent = '0:00'; timeEl.className = 'sprint-time phase-done'; }
-  if (labelEl) { labelEl.textContent = 'SESSION COMPLETE ✓'; labelEl.className = 'sprint-phase-label phase-done'; }
-  if (cueEl) cueEl.textContent = 'Head straight to the sauna. 20 min @ 175°F. Non-optional.';
-  if (fillEl) { fillEl.style.width = '100%'; fillEl.className = 'sprint-progress-fill fill-rest'; }
-  if (btn) { btn.textContent = 'RESET'; btn.className = 'sprint-btn sprint-btn-main'; }
-  if (doneBanner) doneBanner.style.display = 'block';
-  if (hrCard) hrCard.style.display = 'block';
-  buildRoundDots();
-  vibrateDevice([300, 100, 300, 100, 300]);
-}
-
-function resetSprint() {
-  clearInterval(sprintState.interval);
-  releaseWakeLock();
-  sprintState = { running: false, phase: 'idle', round: 0, totalRounds: sprintState.totalRounds, elapsed: 0, phaseDuration: 0, interval: null, hrAvg: '', hrMax: '' };
-  const btn = document.getElementById('spMainBtn');
-  if (btn) { btn.textContent = 'START'; btn.className = 'sprint-btn sprint-btn-main'; }
-  const doneBanner = document.getElementById('spDoneBanner');
-  if (doneBanner) doneBanner.style.display = 'none';
-  const hrCard = document.getElementById('spHrCard');
-  if (hrCard) hrCard.style.display = 'none';
-  const notesEl = document.getElementById('sprintNotes');
-  if (notesEl) notesEl.value = '';
-  const timeEl = document.getElementById('spTime');
-  if (timeEl) { timeEl.textContent = '5:00'; timeEl.className = 'sprint-time phase-warmup'; }
-  const labelEl = document.getElementById('spPhaseLabel');
-  if (labelEl) { labelEl.textContent = 'READY TO START'; labelEl.className = 'sprint-phase-label phase-warmup'; }
-  const cueEl = document.getElementById('spCue');
-  if (cueEl) cueEl.textContent = `5-min warm-up → ${sprintState.totalRounds} × 30-sec sprints → 75-sec rest between → 5-min cool-down. Hit START when on the treadmill.`;
-  const fillEl = document.getElementById('spProgressFill');
-  if (fillEl) { fillEl.style.width = '100%'; fillEl.className = 'sprint-progress-fill fill-warmup'; }
-  buildRoundDots();
 }
 
 // ============================================================

@@ -283,7 +283,7 @@ Triggers 150s rest between sets (heavy ATP recovery).
 - Unique constraint ensures no duplicate notes per date/gym
 
 ### 4.10 Rotation & Workout Flexing
-- **FORT Tuesday (FEAT-3)** — Swaps Tue to home lower body if gym unavailable
+- **Tuesday = Home Lower Day** — FORT class removed in v12.3; Tue runs the home-gym lower body protocol (`WORKOUTS.lower`)
 - **Daily type override** — Map dates to custom workout types (dayTypeOverride)
 - **Flex day assignments** — Wed/Sat can be recovery or sprint based on rotation
 - **Vacation Mode** — Switches all days to gym-free routines with bodyweight/minimal equipment
@@ -466,7 +466,8 @@ workout-crash-YYYY-MM-DD        // Crash recovery backup
 session-location                // HG or LT
 back-recovery-enabled           // Boolean
 day-type-override-YYYY-MM-DD    // Type override
-fort-cancelled-YYYY-MM-DD       // FORT Tuesday flag
+day-type-overrides              // { 'YYYY-MM-DD': type } per-date session swaps (v12.3)
+sprint-log                      // [{date, protocol, rounds, workSeconds, completed}] (v12.3)
 pr-store                        // JSON stringified PRs
 pr-streaks                      // JSON stringified streaks
 exercise-freq                   // Exercise usage tracking
