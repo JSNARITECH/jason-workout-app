@@ -3280,6 +3280,7 @@ async function saveWorkout(type, dayKey) {
 async function saveSprintWorkout(dayKey) {
   const avgHrVal = parseInt(document.getElementById('spHrAvg')?.value || 0) || null;
   const maxHrVal = parseInt(document.getElementById('spHrMax')?.value || 0) || null;
+  const caloriesVal = parseInt(document.getElementById('spCalories')?.value || 0) || null;
 
   const entry = {
     id: Date.now(),
@@ -3293,7 +3294,7 @@ async function saveSprintWorkout(dayKey) {
     watch: {
       avgHr: avgHrVal,
       maxHr: maxHrVal,
-      calories: null,
+      calories: caloriesVal,
       zones: null,
       peakTiming: null,
       pattern: null
@@ -3326,6 +3327,7 @@ async function saveSprintWorkout(dayKey) {
       duration_minutes: sessionStart ? Math.floor((Date.now() - sessionStart) / 60000) : null,
       avg_heart_rate: avgHrVal,
       max_heart_rate: maxHrVal,
+      calories_burned: caloriesVal,
       session_notes: `Sprint session · ${sprintState.totalRounds} rounds with Galaxy Watch data`
     };
 
@@ -4573,6 +4575,10 @@ function renderSprintDay(dayKey, content) {
       <div class="sprint-hr-field">
         <div class="sprint-hr-label">Max HR (bpm)</div>
         <input class="sprint-hr-input" id="spHrMax" type="number" placeholder="—" value="${watch.maxHr||''}" inputmode="numeric" oninput="saveWatch('maxHr',this.value)">
+      </div>
+      <div class="sprint-hr-field">
+        <div class="sprint-hr-label">Calories</div>
+        <input class="sprint-hr-input" id="spCalories" type="number" placeholder="—" value="${watch.calories||''}" inputmode="numeric" oninput="saveWatch('calories',this.value)">
       </div>
     </div>
     <div style="font-size:10px;color:var(--dim2);text-align:center">Zone 4–5 target: 140–165+ bpm max. Log before, during, or after sprint.</div>
