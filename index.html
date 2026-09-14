@@ -124,6 +124,10 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .ga-banner{background:var(--red-dim);border:1px solid rgba(255,77,77,0.3);border-radius:12px;padding:10px 13px;margin:0 13px 10px;display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px;color:var(--dim2);}
 .ga-banner strong{color:var(--red);}
 .ga-back-btn{background:var(--border2);border:none;color:var(--white);border-radius:8px;padding:7px 10px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;flex-shrink:0;}
+.ga-elig{font-size:9px;color:var(--dim2);line-height:1.35;margin-top:3px;font-weight:500;}
+.ga-elig strong{color:var(--white);}
+.swap-option.blocked{opacity:0.55;cursor:default;}
+.ga-elig-row{margin:-4px 13px 10px;padding:8px 11px;border-radius:9px;background:var(--card2);border:1px solid var(--border2);font-size:10px;color:var(--dim2);line-height:1.4;}
 
 /* SECTION LABEL */
 .sec-label{font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:3px;color:var(--dim);margin:16px 0 7px;display:flex;align-items:center;gap:8px;}
@@ -3165,9 +3169,14 @@ function showGroupActivitySheet() {
   if (!overlay || !list) return;
   // Make-up sprint sits above the classes: same override mechanism, but launches
   // the real sprint interval timer (sprintState/toggleSprint) instead of a checklist.
-  const sprintOpt = `<div class="swap-option" style="border-color:rgba(232,255,71,0.4)" onclick="setGroupActivity('sprint')">
-      <span class="swap-option-name">⚡ Make-Up Sprint</span>
-      <span class="swap-option-tag" style="color:var(--accent)">MISSED WED/SAT</span>
+  const e = sprintEligibility();
+  const blocked = e.level === 'blocked' || e.level === 'done';
+  const sprintOpt = `<div class="swap-option ${blocked ? 'blocked' : ''}" style="border-color:${blocked ? 'var(--border2)' : 'rgba(232,255,71,0.4)'};align-items:flex-start" ${blocked ? '' : `onclick="setGroupActivity('sprint')"`}>
+      <div style="flex:1;min-width:0">
+        <span class="swap-option-name">⚡ Make-Up Sprint</span>
+        <div class="ga-elig">${e.reason}${e.timing ? ` <strong>${e.timing}</strong>` : ''}</div>
+      </div>
+      <span class="swap-option-tag" style="color:${e.color};margin-left:8px;white-space:nowrap">${e.badge}</span>
     </div>`;
   list.innerHTML = sprintOpt + groupActivityOptions().map(a => `
     <div class="swap-option" onclick="setGroupActivity('${a.id}')">
@@ -3205,11 +3214,55 @@ function clearGroupActivity() {
 function renderMakeupSprintDay() {
   const day = WEEK[currentDayIdx];
   renderSprintDay(day.key, REST_CONTENT.wed);
-  const banner = `<div class="ga-banner" style="margin:6px 13px 10px">
+  const e = sprintEligibility();
+  const banner = `<div class="ga-banner" style="margin:6px 13px 8px">
     <span>⚡ <strong>MAKE-UP SPRINT</strong> · replacing today's ${day.label} session</span>
     <button class="ga-back-btn" onclick="clearGroupActivity()">↩ Back to ${day.label}</button>
-  </div>`;
+  </div>
+  <div class="ga-elig-row"><strong style="color:${e.color}">${e.badge}</strong> · ${e.reason}${e.timing ? ` <strong style="color:var(--white)">${e.timing}</strong>` : ''}</div>`;
   document.getElementById('mainScroll').insertAdjacentHTML('afterbegin', banner);
+}
+
+// ── MAKE-UP SPRINT ELIGIBILITY ────────────────────────────────
+// Protects the posterior chain: a make-up sprint next to heavy leg work or another sprint
+// is where hamstrings get tweaked. A missed week is recoverable; a tweaked hamstring costs a month.
+const LEG_LOAD = { legs:'heavy', pull:'light', upper:'none', push:'none', rest:'none', sprint:'none' };
+
+// What a given date will actually load: a class swap unloads the legs, a sprint swap is a sprint
+function dayLoadType(dateStr, idx) {
+  const ga = groupActivityOverride[dateStr];
+  if (ga === 'sprint') return 'sprint';
+  if (ga) return 'rest';
+  return dayTypeOverride[dateStr] || WEEK[idx].type;
+}
+
+function sprintEligibility() {
+  const today = getDateStr();
+  const todayIdx = [6,0,1,2,3,4,5][new Date().getDay()];
+  const yDate = dateOffset(today, -1), nDate = dateOffset(today, 1);
+  const yType = dayLoadType(yDate, (todayIdx + 6) % 7);
+  const nType = dayLoadType(nDate, (todayIdx + 1) % 7);
+  const scheduled = dayTypeOverride[today] || WEEK[todayIdx].type; // what the swap replaces
+  const sprints = allSprintDates();
+  const week = sprintsInWeek(weekStartOf(today));
+  const isRest = WEEK[todayIdx].type === 'rest';
+  const timing = isRest ? 'AM fasted is best.' : 'AM fasted is best — if you also lift today, sprint after it, never before.';
+
+  if (sprints.has(today))
+    return { level:'done', badge:'DONE', color:'var(--gold)', reason:'A sprint is already logged for today.', timing:'' };
+  if (sprints.has(yDate) || yType === 'sprint')
+    return { level:'blocked', badge:'BLOCKED', color:'var(--red)', reason:'You sprinted yesterday — back-to-back max-effort days run the second one at ~70% and stack fatigue on the hamstrings. Take the day.', timing:'' };
+  if (week >= 3)
+    return { level:'caution', badge:'AT CEILING', color:'var(--orange)', reason:`${week} sprints already this week — a third is optional only; the target is 2.`, timing };
+  if (LEG_LOAD[yType] === 'heavy')
+    return { level:'caution', badge:'CAUTION', color:'var(--orange)', reason:'Heavy legs yesterday — keep it to 4–6 rounds and stop at the first sign of hamstring tightness.', timing };
+  if (LEG_LOAD[nType] === 'heavy')
+    return { level:'caution', badge:'AM ONLY', color:'var(--orange)', reason:'Heavy legs tomorrow — sprint in the morning so the legs get a 24h buffer.', timing };
+  if (LEG_LOAD[scheduled] === 'heavy')
+    return { level:'caution', badge:'CAUTION', color:'var(--orange)', reason:"This replaces today's Leg Day — you'd lose the week's lower session. Mon, Thu or Fri is a cleaner slot.", timing };
+  if (scheduled === 'pull')
+    return { level:'ok', badge:'OK', color:'var(--green)', reason:'Pull day is a good backup slot — light leg load.', timing };
+  return { level:'ideal', badge:'IDEAL', color:'var(--green)', reason:'No leg load yesterday or tomorrow — clean slot.', timing };
 }
 
 function switchDayType(newType) {
