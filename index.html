@@ -577,6 +577,21 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .rehab-banner-title{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1px;color:var(--green);margin-bottom:4px;}
 .rehab-banner-sub{font-size:11px;color:var(--dim2);line-height:1.4;}
 .rehab-note{font-size:9px;color:var(--dim2);font-style:italic;margin-top:4px;line-height:1.4;}
+
+/* ACCOUNTABILITY DASHBOARD (FEAT-11) */
+.dash-panel{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px 13px;margin-bottom:12px;}
+.dash-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--dim2);font-weight:700;margin-bottom:9px;display:flex;justify-content:space-between;align-items:center;}
+.dash-date{color:var(--dim);letter-spacing:1px;font-weight:600;}
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.dash-tile{background:var(--card2);border:1px solid var(--border2);border-radius:10px;padding:9px 10px;display:flex;flex-direction:column;gap:3px;min-width:0;}
+.dash-tile-label{font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim2);font-weight:700;}
+.dash-tile-val{font-family:'Bebas Neue',sans-serif;font-size:24px;line-height:1;color:var(--white);}
+.dash-tile-val.hot{color:var(--accent);}
+.dash-tile-val.cold{color:var(--dim);}
+.dash-tile-sub{font-size:9px;color:var(--dim2);line-height:1.3;}
+.dash-toggle{margin-top:4px;padding:5px 8px;border-radius:7px;border:1px solid var(--border2);background:none;color:var(--dim2);font-size:9px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;text-align:left;}
+.dash-toggle.on{background:var(--green-dim);border-color:rgba(77,255,170,0.4);color:var(--green);}
+.dash-toggle.warn{background:var(--red-dim);border-color:rgba(255,77,77,0.4);color:var(--red);}
 </style>
 </head>
 <body>
@@ -1650,6 +1665,9 @@ let vacationMode = false; // FEAT-8: Gym-free maintenance routine
 let dayTypeOverride = {}; // { dateStr: 'upper'|'push'|'pull'|'legs' }
 let prReadyFlags = new Set(); // exercise names flagged pr_ready=true in Supabase
 let sessionLocation = 'HG'; // 'HG' = Home Gym, 'LT' = Lifetime Fitness
+let dailyHabits = {};        // FEAT-11: { 'YYYY-MM-DD': { protein, sleep, alcohol, sprint, walk } } — localStorage + daily_habits table
+let sprintDates = new Set(); // FEAT-11: dates with a logged sprint session (Supabase workouts, type 'sprint')
+let checkinRows = [];        // FEAT-12: weekly_checkins rows, newest first
 
 const SUPABASE_URL  = 'https://fnjjfnsdxibjbzldfgit.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZuampmbnNkeGliamJ6bGRmZ2l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY1MDM2MjAsImV4cCI6MjA4MjA3OTYyMH0.oZYn5OXKZH2h1wGfIj_R1L8Hlk3ytGFBgDCyGqUcatk';
@@ -1864,6 +1882,28 @@ async function loadAll() {
     }
   } catch(e) { /* non-fatal */ }
 
+  // FEAT-11 / FEAT-12: accountability data — habits, sprint dates, weekly check-ins (all non-fatal)
+  try { const v = localStorage.getItem('daily-habits'); if (v) dailyHabits = JSON.parse(v); } catch(e) { dailyHabits = {}; }
+  const sbGet = { headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` } };
+  await Promise.all([
+    fetch(`${SUPABASE_URL}/rest/v1/daily_habits?habit_date=gte.${getDateStr(-90)}&select=habit_date,protein,sleep,alcohol,sprint,walk`, sbGet)
+      .then(r => r.ok ? r.json() : [])
+      .then(rows => {
+        if (!Array.isArray(rows)) return;
+        rows.forEach(r => { dailyHabits[r.habit_date] = { protein: !!r.protein, sleep: !!r.sleep, alcohol: !!r.alcohol, sprint: !!r.sprint, walk: !!r.walk }; });
+        persistHabitsLocal();
+      })
+      .catch(() => {}),
+    fetch(`${SUPABASE_URL}/rest/v1/workouts?workout_type=eq.sprint&select=workout_date&order=workout_date.desc&limit=200`, sbGet)
+      .then(r => r.ok ? r.json() : [])
+      .then(rows => { if (Array.isArray(rows)) sprintDates = new Set(rows.map(r => r.workout_date)); })
+      .catch(() => {}),
+    fetch(`${SUPABASE_URL}/rest/v1/weekly_checkins?select=week_start,checkin_date,sprints_this_week,alcohol,sleep_before_10pm,protein_225g,fasted_walks,score&order=week_start.desc&limit=8`, sbGet)
+      .then(r => r.ok ? r.json() : [])
+      .then(rows => { if (Array.isArray(rows)) checkinRows = rows; })
+      .catch(() => {}),
+  ]);
+
   // Load today's session — try window.storage first, fall back to localStorage crash save
   try {
     const todayKey = `session-${getDateStr()}`;
@@ -1888,6 +1928,115 @@ async function loadAll() {
       }
     } catch(e2) { sessionState = {}; }
   }
+}
+
+// ============================================================
+// FEAT-11: ACCOUNTABILITY DASHBOARD — streaks that surface drift before the scale does
+// ============================================================
+function dateOffset(dateStr, n) { const d = new Date(dateStr + 'T12:00:00'); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); }
+function daysBetween(a, b) { return Math.round((new Date(b + 'T12:00:00') - new Date(a + 'T12:00:00')) / 86400000); }
+function weekStartOf(dateStr) { const d = new Date(dateStr + 'T12:00:00'); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return d.toISOString().slice(0, 10); }
+
+function habitFor(date) { return dailyHabits[date] || {}; }
+function persistHabitsLocal() { try { localStorage.setItem('daily-habits', JSON.stringify(dailyHabits)); } catch(e) {} }
+
+async function setHabit(date, field, val) {
+  dailyHabits[date] = { protein:false, sleep:false, alcohol:false, sprint:false, walk:false, ...(dailyHabits[date] || {}), [field]: !!val };
+  persistHabitsLocal();
+  mountDashboard();
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/daily_habits?on_conflict=habit_date`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}`, Prefer: 'resolution=merge-duplicates' },
+      body: JSON.stringify({ habit_date: date, ...dailyHabits[date], updated_at: new Date().toISOString() })
+    });
+  } catch(e) { /* local copy is the fallback */ }
+}
+function toggleHabit(field) { const d = getDateStr(); setHabit(d, field, !habitFor(d)[field]); }
+
+function allSprintDates() {
+  const s = new Set(sprintDates);
+  historyStore.forEach(h => { if (h.title && h.title.includes('SPRINT')) s.add(h.date); });
+  Object.entries(dailyHabits).forEach(([d, h]) => { if (h.sprint) s.add(d); });
+  return s;
+}
+function sprintsInWeek(weekStart) {
+  let n = 0;
+  allSprintDates().forEach(d => { if (weekStartOf(d) === weekStart) n++; });
+  return n;
+}
+// Consecutive weeks with 2+ sprints. The in-progress week counts once it hits 2 but never breaks the streak.
+function sprintWeekStreak() {
+  const thisWeek = weekStartOf(getDateStr());
+  const thisCount = sprintsInWeek(thisWeek);
+  let week = thisCount >= 2 ? thisWeek : dateOffset(thisWeek, -7);
+  let streak = 0;
+  while (sprintsInWeek(week) >= 2 && streak < 104) { streak++; week = dateOffset(week, -7); }
+  return { streak, thisCount };
+}
+// Consecutive days with the habit confirmed, ending today (or yesterday if today isn't logged yet).
+function habitStreak(field) {
+  const today = getDateStr();
+  let d = habitFor(today)[field] ? today : dateOffset(today, -1);
+  let n = 0;
+  while (habitFor(d)[field] && n < 366) { n++; d = dateOffset(d, -1); }
+  return n;
+}
+function lastAlcoholDate() {
+  const days = Object.keys(dailyHabits).filter(d => dailyHabits[d].alcohol).sort();
+  if (days.length) return days[days.length - 1];
+  const row = checkinRows.find(r => r.alcohol === true);
+  return row ? dateOffset(row.week_start, 6) : null;
+}
+function alcoholFreeDays() {
+  const last = lastAlcoholDate();
+  return last ? Math.max(0, daysBetween(last, getDateStr())) : null;
+}
+
+function dashboardHTML() {
+  const today = getDateStr();
+  const h = habitFor(today);
+  const sp = sprintWeekStreak();
+  const alc = alcoholFreeDays();
+  const prot = habitStreak('protein');
+  const slp = habitStreak('sleep');
+  const cls = n => n > 0 ? 'hot' : 'cold';
+  const unit = (n, u) => `<span style="font-size:12px">${u}${n === 1 ? '' : 's'}</span>`;
+  const dateLbl = new Date().toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+  return `<div class="dash-panel" id="dashPanel">
+    <div class="dash-title"><span>📋 Accountability</span><span class="dash-date">${dateLbl}</span></div>
+    <div class="dash-grid">
+      <div class="dash-tile">
+        <div class="dash-tile-label">🔥 Sprint streak</div>
+        <div class="dash-tile-val ${cls(sp.streak)}">${sp.streak} ${unit(sp.streak, 'wk')}</div>
+        <div class="dash-tile-sub">2+ sprints/week · this week <strong style="color:${sp.thisCount >= 2 ? 'var(--green)' : 'var(--orange)'}">${sp.thisCount}/2</strong></div>
+      </div>
+      <div class="dash-tile">
+        <div class="dash-tile-label">🚫 Alcohol-free</div>
+        <div class="dash-tile-val ${alc === null ? 'cold' : cls(alc)}">${alc === null ? '—' : alc + ' ' + unit(alc, 'day')}</div>
+        <button class="dash-toggle ${h.alcohol ? 'warn' : ''}" onclick="toggleHabit('alcohol')">${h.alcohol ? '🍺 Logged today · undo' : 'Had a drink today'}</button>
+      </div>
+      <div class="dash-tile">
+        <div class="dash-tile-label">🥩 Protein 225g+</div>
+        <div class="dash-tile-val ${cls(prot)}">${prot} ${unit(prot, 'day')}</div>
+        <button class="dash-toggle ${h.protein ? 'on' : ''}" onclick="toggleHabit('protein')">${h.protein ? '✓ Hit 225g today' : '○ Hit 225g today?'}</button>
+      </div>
+      <div class="dash-tile">
+        <div class="dash-tile-label">😴 Bed by 10PM</div>
+        <div class="dash-tile-val ${cls(slp)}">${slp} ${unit(slp, 'day')}</div>
+        <button class="dash-toggle ${h.sleep ? 'on' : ''}" onclick="toggleHabit('sleep')">${h.sleep ? '✓ In bed by 10 last night' : '○ In bed by 10 last night?'}</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// The dashboard sits above whatever the TODAY tab rendered (workout, sprint, recovery, vacation, activity)
+function mountDashboard() {
+  const scroll = document.getElementById('mainScroll');
+  if (!scroll || currentView !== 'workout') return;
+  const old = document.getElementById('dashPanel');
+  if (old) old.remove();
+  scroll.insertAdjacentHTML('afterbegin', dashboardHTML());
 }
 
 // ============================================================
@@ -2000,6 +2149,11 @@ function renderCurrentView() {
 // WORKOUT VIEW
 // ============================================================
 function renderWorkoutView() {
+  renderWorkoutBody();
+  mountDashboard();
+}
+
+function renderWorkoutBody() {
   const day = WEEK[currentDayIdx];
   const scroll = document.getElementById('mainScroll');
 
