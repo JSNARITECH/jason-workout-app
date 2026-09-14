@@ -644,6 +644,16 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .reset-check.on{background:var(--green-dim);border-color:rgba(77,255,170,0.4);color:var(--green);}
 .reset-list{display:flex;flex-direction:column;gap:6px;font-size:11px;color:var(--dim2);margin-bottom:14px;line-height:1.4;}
 .chip-ref{background:var(--border2);color:var(--dim2);border:1px dashed var(--dim);}
+
+/* PICK & CHOOSE SESSION LIST (FEAT-9) */
+.pick-add-btn{width:100%;margin-top:6px;padding:11px;border-radius:11px;border:1px dashed rgba(192,132,252,0.45);background:var(--purple-dim);color:var(--purple);font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1.5px;cursor:pointer;}
+.pick-add-btn:active{opacity:0.7;}
+.pick-reset{display:block;width:100%;margin-top:6px;background:none;border:none;color:var(--dim);font-size:10px;text-decoration:underline;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.pick-row{display:flex;gap:6px;margin-top:8px;}
+.pick-mini{padding:6px 10px;border-radius:7px;border:1px solid var(--border2);background:none;color:var(--dim2);font-size:10px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:0.5px;}
+.pick-mini.pick-remove{flex:1;color:var(--red);border-color:rgba(255,77,77,0.35);text-transform:uppercase;}
+.pick-mini:active{opacity:0.6;}
+.pick-tag{display:inline-flex;align-items:center;font-size:9px;font-weight:700;letter-spacing:1px;background:var(--purple-dim);color:var(--purple);padding:2px 7px;border-radius:8px;border:1px solid rgba(192,132,252,0.25);flex-shrink:0;}
 </style>
 </head>
 <body>
@@ -1724,6 +1734,7 @@ let checkinRows = [];        // FEAT-12: weekly_checkins rows, newest first
 let bodyComp = [];           // FEAT-13: latest body_composition scans with a visceral fat grade, newest first
 let resetProtocol = { active:false, entryDate:null }; // FEAT-14: post-break reset week
 const RESET_TYPE_MAP = { push:'upper', pull:'legs' };  // reset week runs upper/lower only
+let sessionPlan = {}; // FEAT-9: { dateStr: { added:[exercise], removed:[exId], order:[exId] } } — per-day edits to the preset list
 
 const SUPABASE_URL  = 'https://fnjjfnsdxibjbzldfgit.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZuampmbnNkeGliamJ6bGRmZ2l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY1MDM2MjAsImV4cCI6MjA4MjA3OTYyMH0.oZYn5OXKZH2h1wGfIj_R1L8Hlk3ytGFBgDCyGqUcatk';
@@ -1861,6 +1872,14 @@ async function loadAll() {
     const v = await getStored('group-activity-overrides');
     if (v) groupActivityOverride = JSON.parse(v);
   } catch(e) { groupActivityOverride = {}; }
+
+  // FEAT-9: Restore per-day session plans (keep two weeks so a saved session's list can still be reviewed)
+  try {
+    const v = await getStored('session-plan');
+    sessionPlan = v ? JSON.parse(v) : {};
+    const cutoff = getDateStr(-14);
+    for (const d of Object.keys(sessionPlan)) if (d < cutoff) delete sessionPlan[d];
+  } catch(e) { sessionPlan = {}; }
 
   // Restore back recovery mode
   try {
@@ -2430,6 +2449,132 @@ function resetBannerHTML() {
   </div>`;
 }
 
+// ============================================================
+// FEAT-9: PICK & CHOOSE — the preset is a starting point, the session list is yours
+// ============================================================
+function todayPlan() { return sessionPlan[getDateStr()] || { added:[], removed:[], order:[] }; }
+function ensurePlan() {
+  const d = getDateStr();
+  if (!sessionPlan[d]) sessionPlan[d] = { added:[], removed:[], order:[] };
+  return sessionPlan[d];
+}
+function planHasEdits() {
+  const p = todayPlan();
+  return (p.added || []).length > 0 || (p.removed || []).length > 0 || (p.order || []).length > 0;
+}
+function persistSessionPlan() {
+  try { localStorage.setItem('session-plan', JSON.stringify(sessionPlan)); } catch(e) {}
+  try { window.storage.set('session-plan', JSON.stringify(sessionPlan)).catch(()=>{}); } catch(e) {}
+}
+function isPickedExercise(exId) { return (todayPlan().added || []).some(e => e.id === exId); }
+
+// Session sections for a preset day: preset minus removals, plus picks; a custom order collapses to one list
+function getSessionSections(type) {
+  const workout = WORKOUTS[type];
+  if (!workout) return [];
+  const plan = todayPlan();
+  const removed = new Set(plan.removed || []);
+  const sections = workout.sections
+    .map(s => ({ label: s.label, exercises: s.exercises.filter(e => !removed.has(e.id)) }))
+    .filter(s => s.exercises.length);
+  const picks = (plan.added || []).filter(e => !removed.has(e.id));
+  if (picks.length) sections.push({ label: 'Your Picks ✚', exercises: picks });
+  if ((plan.order || []).length) {
+    const all = sections.flatMap(s => s.exercises);
+    const byId = Object.fromEntries(all.map(e => [e.id, e]));
+    const ordered = plan.order.map(id => byId[id]).filter(Boolean);
+    const rest = all.filter(e => !plan.order.includes(e.id));
+    return [{ label: `${workout.title} · your order`, exercises: [...ordered, ...rest] }];
+  }
+  return sections;
+}
+function getSessionExercises(type) { return getSessionSections(type).flatMap(s => s.exercises); }
+
+// A library pick reuses the preset definition (and id, so PRs/notes/swaps carry over) when one exists
+function makePickedExercise(name, muscle, poolEntry) {
+  const preset = findExByNameAnywhere(name);
+  if (preset) return JSON.parse(JSON.stringify(preset));
+  const id = 'x-' + name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  return {
+    id, name, muscle,
+    sets: [{wt:0,reps:'8-12'},{wt:0,reps:'8-12'},{wt:0,reps:'8-12'}],
+    chips: { sets:'3 Sets', reps:'8-12 reps', tag: poolEntry ? `${poolEntry.tier} tier` : 'Pick' },
+    cue: 'Added on the fly — set a working weight on the first set and progress from there.'
+  };
+}
+
+function showPickSheet(type) {
+  const overlay = document.getElementById('pickOverlay');
+  const list = document.getElementById('pickOptionsList');
+  if (!overlay || !list || !WORKOUTS[type]) return;
+  const inUse = new Set(getSessionExercises(type).map(e => (getSwap(e.id) || e.name).toLowerCase()));
+  const equipLabel = { machine:'Machine', smith:'Smith', cable:'Cable', free:'Free Weight' };
+  const tierColor = { 'S+': 'var(--accent)', 'S': '#22c55e', 'A': 'var(--purple)' };
+  const groups = Object.entries(ROTATION_POOLS).map(([muscle, pool]) => {
+    const opts = pool.filter(p => !inUse.has(p.name.toLowerCase()));
+    if (!opts.length) return '';
+    const rows = opts.map(p => `<div class="swap-option" onclick="addSessionEx('${p.name.replace(/'/g,"\\'")}','${muscle}','${type}')">
+        <span class="swap-option-name">${p.name}</span>
+        <span class="swap-option-tag" style="color:${tierColor[p.tier] || 'var(--dim2)'}">${p.tier} · ${equipLabel[p.equip] || p.equip}</span>
+      </div>`).join('');
+    return `<div class="swap-equip-group"><div class="swap-equip-label">${muscle.replace('_', ' ')}</div>${rows}</div>`;
+  }).join('');
+  list.innerHTML = groups || `<div style="font-size:11px;color:var(--dim2);padding:8px 0">Everything in the library is already in today's session.</div>`;
+  overlay.classList.add('open');
+}
+function closePickSheet(e) {
+  if (e && e.target !== document.getElementById('pickOverlay')) return;
+  document.getElementById('pickOverlay').classList.remove('open');
+}
+
+function addSessionEx(name, muscle, type) {
+  if (!WORKOUTS[type]) return;
+  const plan = ensurePlan();
+  const poolEntry = (ROTATION_POOLS[muscle] || []).find(p => p.name === name);
+  const ex = makePickedExercise(name, muscle, poolEntry);
+  if (getSessionExercises(type).some(e => e.id === ex.id)) { closePickSheet(); showToast("Already in today's session"); return; }
+  plan.removed = (plan.removed || []).filter(id => id !== ex.id); // re-adding a removed preset just restores it
+  const presetOfToday = WORKOUTS[type].sections.some(s => s.exercises.some(e => e.id === ex.id));
+  if (!presetOfToday && !(plan.added || []).some(e => e.id === ex.id)) (plan.added = plan.added || []).push(ex);
+  if ((plan.order || []).length) plan.order.push(ex.id);
+  persistSessionPlan();
+  closePickSheet();
+  showToast(`✚ ${name} added to today`);
+  renderWorkoutView();
+}
+
+function removeSessionEx(exId, type) {
+  const plan = ensurePlan();
+  const wasPick = (plan.added || []).some(e => e.id === exId);
+  if (wasPick) plan.added = plan.added.filter(e => e.id !== exId);
+  else if (!(plan.removed || []).includes(exId)) (plan.removed = plan.removed || []).push(exId);
+  plan.order = (plan.order || []).filter(id => id !== exId);
+  persistSessionPlan();
+  const ex = getExById(exId);
+  showToast(`✕ ${ex ? (getSwap(exId) || ex.name) : 'Exercise'} removed for today`);
+  renderWorkoutView();
+}
+
+function moveSessionEx(exId, dir, type) {
+  const ids = getSessionExercises(type).map(e => e.id);
+  const i = ids.indexOf(exId);
+  const j = i + dir;
+  if (i < 0 || j < 0 || j >= ids.length) return;
+  [ids[i], ids[j]] = [ids[j], ids[i]];
+  ensurePlan().order = ids;
+  persistSessionPlan();
+  renderWorkoutView();
+  const card = document.getElementById(`card-${exId}`);
+  if (card) { card.classList.add('expanded'); card.scrollIntoView({ behavior:'smooth', block:'center' }); }
+}
+
+function resetSessionPlan() {
+  delete sessionPlan[getDateStr()];
+  persistSessionPlan();
+  showToast('↺ Preset list restored');
+  renderWorkoutView();
+}
+
 // The dashboard sits above whatever the TODAY tab rendered (workout, sprint, recovery, vacation, activity)
 function mountDashboard() {
   const scroll = document.getElementById('mainScroll');
@@ -2584,8 +2729,9 @@ function renderWorkoutBody() {
   const workout = WORKOUTS[effectiveType];
   if (!workout) { scroll.innerHTML = '<div class="empty-state">No workout data for this day.</div>'; return; }
 
+  const sessionSections = getSessionSections(effectiveType);
   const allExIds = [];
-  workout.sections.forEach(s => s.exercises.forEach(e => allExIds.push(e.id)));
+  sessionSections.forEach(s => s.exercises.forEach(e => allExIds.push(e.id)));
 
   // Check rotation alerts
   const rotationAlerts = getRotationAlerts(effectiveType);
@@ -2703,7 +2849,7 @@ function renderWorkoutBody() {
     </div>
   </div>`;
 
-  workout.sections.forEach(section => {
+  sessionSections.forEach(section => {
     html += `<div class="sec-label">${section.label}</div>`;
     section.exercises.forEach(exRaw => {
       const ex = getExForLocation(exRaw);
@@ -2714,6 +2860,10 @@ function renderWorkoutBody() {
       html += buildExCard(ex, isDone, savedWeights, hasPRThisSession, effectiveType);
     });
   });
+
+  // FEAT-9: the preset is a starting point — add from the library, remove, reorder
+  html += `<button class="pick-add-btn" onclick="showPickSheet('${effectiveType}')">✚ ADD EXERCISE FROM LIBRARY</button>`;
+  if (planHasEdits()) html += `<button class="pick-reset" onclick="resetSessionPlan()">↺ Restore today's preset list</button>`;
 
   // Notes + Save
   const savedNotes = (sessionState['__notes__'] || {}).notes || '';
@@ -2869,13 +3019,23 @@ function buildExCard(ex, isDone, savedWeights, hasPR, type) {
     detail += `<button class="skip-btn ${skipBtnState}" id="skip-${ex.id}" onclick="skipExercise('${ex.id}','${type}')" style="background:var(--dim1);color:var(--dim2);margin-top:8px;">${skipBtnText}</button>`;
   }
 
+  // FEAT-9: reorder / remove controls on preset workout days
+  if (WORKOUTS[type]) {
+    detail += `<div class="pick-row">
+      <button class="pick-mini" onclick="event.stopPropagation();moveSessionEx('${ex.id}',-1,'${type}')" title="Move up">▲</button>
+      <button class="pick-mini" onclick="event.stopPropagation();moveSessionEx('${ex.id}',1,'${type}')" title="Move down">▼</button>
+      <button class="pick-mini pick-remove" onclick="event.stopPropagation();removeSessionEx('${ex.id}','${type}')">✕ Remove from today</button>
+    </div>`;
+  }
+  const pickedTag = isPickedExercise(ex.id) ? `<span class="pick-tag">✚ PICK</span>` : '';
+
   return `<div class="ex-card ${doneClass} ${prCardClass} ${prReadyClass}" id="card-${ex.id}" data-exid="${ex.id}">
     <div class="ex-hdr" onclick="toggleCard('${ex.id}')">
       <button class="check-btn" onclick="toggleDone(event,'${ex.id}','${type}')">✓</button>
       <div class="ex-info">
         <div class="ex-name-row">
           <span class="ex-name">${displayName}</span>
-          ${prBadgeHtml}${rotFlagHtml}${levelUpHtml}
+          ${prBadgeHtml}${rotFlagHtml}${levelUpHtml}${pickedTag}
         </div>
         <div class="ex-chips">${chipsHtml}</div>
       </div>
@@ -2964,7 +3124,7 @@ function getRotationAlerts(workoutType) {
   if (!workout) return [];
   const alerts = [];
 
-  workout.sections.forEach(section => {
+  getSessionSections(workoutType).forEach(section => {
     section.exercises.forEach(ex => {
       const freq = exerciseFreq[ex.id] || 0;
       if (freq >= 3) {
@@ -3104,10 +3264,9 @@ function showSwapSheet(exId, muscle, type, originalName) {
   const currentName = getSwap(exId) || originalName;
   current.innerHTML = `<strong>${currentName}</strong>`;
 
-  // Collect all display names already in use for this workout day (to exclude)
-  const w = WORKOUTS[type];
+  // Collect all display names already in use for this session (to exclude)
   const inUse = new Set([currentName]);
-  if (w) w.sections.forEach(s => s.exercises.forEach(e => inUse.add(getSwap(e.id) || e.name)));
+  if (WORKOUTS[type]) getSessionExercises(type).forEach(e => inUse.add(getSwap(e.id) || e.name));
 
   const pool = ROTATION_POOLS[muscle] || [];
   const alts = pool.filter(e => !inUse.has(e.name));
@@ -3367,6 +3526,11 @@ function getExById(id) {
       if (ex) return ex;
     }
   }
+  // FEAT-9: exercises picked from the library for a session
+  for (const p of Object.values(sessionPlan)) {
+    const ex = (p.added || []).find(e => e.id === id);
+    if (ex) return ex;
+  }
   return null;
 }
 
@@ -3407,6 +3571,9 @@ function buildExNameToIdMap() {
         }
       }
     }
+  }
+  for (const p of Object.values(sessionPlan)) {
+    (p.added || []).forEach(ex => { if (ex.name && ex.id && !map[ex.name.toLowerCase()]) map[ex.name.toLowerCase()] = ex.id; });
   }
   return map;
 }
@@ -3478,7 +3645,7 @@ async function syncPRsFromSupabase(workoutType) {
 function startTimerForEx(exId, type) {
   const workout = WORKOUTS[type];
   if (!workout) return;
-  const allExes = workout.sections.flatMap(s => s.exercises);
+  const allExes = getSessionExercises(type);
   let exName = '', nextName = null, ex = null;
   for (const e of allExes) {
     if (e.id === exId) { exName = getSwap(exId) || e.name; ex = e; }
@@ -3557,7 +3724,7 @@ function completeSet(exId, setIdx, type) {
     // Find next INCOMPLETE exercise (respects out-of-order completion)
     const workout = WORKOUTS[type];
     if (workout) {
-      const allExes = workout.sections.flatMap(s => s.exercises);
+      const allExes = getSessionExercises(type);
       let foundCurrent = false;
       // First pass: look for next incomplete exercise AFTER current
       for (const e of allExes) {
@@ -3652,8 +3819,7 @@ function getSessionDuration() {
 function updateDayProgressDOM(type) {
   const workout = WORKOUTS[type];
   if (!workout) return;
-  const ids = workout.sections.flatMap(s => s.exercises.map(e => e.id));
-  updateDayProgress(ids);
+  updateDayProgress(getSessionExercises(type).map(e => e.id));
 }
 
 function updateDayProgress(allExIds) {
@@ -3704,7 +3870,9 @@ async function saveWorkout(type, dayKey) {
   const exercises = [];
   let newPRs = [];
 
-  for (const section of workout.sections) {
+  // FEAT-9: preset workout days save the session list (picks added, removals honoured)
+  const sectionsToSave = WORKOUTS[type] ? getSessionSections(type) : workout.sections;
+  for (const section of sectionsToSave) {
     for (const ex of section.exercises) {
       const state = sessionState[ex.id] || {};
       const weights = state.weights || ex.sets.map(s => s.wt);
@@ -3904,7 +4072,8 @@ function generateSessionSummary(type) {
   lines.push('');
   lines.push(type === 'recovery' ? '🏥 REHAB EXERCISES' : '💪 EXERCISES');
 
-  workout.sections.forEach(section => {
+  const summarySections = WORKOUTS[type] ? getSessionSections(type) : workout.sections;
+  summarySections.forEach(section => {
     section.exercises.forEach(ex => {
       const state   = sessionState[ex.id] || {};
       const weights = state.weights || ex.sets.map(s => s.wt);
@@ -5600,5 +5769,17 @@ init();
 
 <!-- RESET PROTOCOL PROMPT (FEAT-14) -->
 <div class="checkin-overlay reset-overlay" id="resetOverlay"><div class="checkin-box" id="resetBox"></div></div>
+
+<!-- EXERCISE LIBRARY PICKER (FEAT-9) -->
+<div class="swap-overlay" id="pickOverlay" onclick="closePickSheet(event)">
+  <div class="swap-sheet">
+    <div class="swap-sheet-hdr">
+      <span class="swap-sheet-title">✚ ADD EXERCISE TO TODAY</span>
+      <button class="swap-close-btn" onclick="closePickSheet()">✕</button>
+    </div>
+    <div class="swap-section-label">Library · S+ / S / A tier · grouped by muscle · today's day type is kept for logging</div>
+    <div class="swap-options" id="pickOptionsList"></div>
+  </div>
+</div>
 </body>
 </html>
