@@ -600,6 +600,39 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .vf-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;}
 .vf-meta{font-size:9px;color:var(--dim2);line-height:1.3;}
 .vf-nudge{margin-top:6px;font-size:10px;color:var(--orange);background:var(--orange-dim);border:1px solid rgba(255,154,77,0.35);border-radius:8px;padding:6px 9px;font-weight:600;}
+
+/* WEEKLY CHECK-IN MODAL (FEAT-12) */
+.checkin-overlay{position:fixed;inset:0;background:rgba(8,8,8,0.92);backdrop-filter:blur(8px);z-index:400;display:none;align-items:center;justify-content:center;padding:16px;}
+.checkin-overlay.open{display:flex;}
+.checkin-box{width:100%;max-width:420px;max-height:92vh;overflow-y:auto;background:var(--card);border:1px solid var(--border2);border-radius:18px;padding:18px 16px 16px;}
+.checkin-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;color:var(--accent);margin-bottom:2px;}
+.checkin-sub{font-size:11px;color:var(--dim2);margin-bottom:14px;line-height:1.4;}
+.ci-q{margin-bottom:12px;}
+.ci-q-label{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim2);font-weight:700;margin-bottom:6px;display:flex;justify-content:space-between;gap:8px;}
+.ci-q-hint{color:var(--dim);letter-spacing:0.5px;text-transform:none;font-weight:500;}
+.ci-opts{display:flex;gap:5px;flex-wrap:wrap;}
+.ci-opt{flex:1;min-width:44px;padding:8px 6px;border-radius:8px;border:1px solid var(--border2);background:var(--card2);color:var(--dim2);font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;text-align:center;}
+.ci-opt.sel{background:var(--accent);color:var(--black);border-color:var(--accent);}
+.ci-opt.sel.bad{background:var(--red);color:var(--white);border-color:var(--red);}
+.ci-warn{font-size:10px;color:var(--red);font-weight:700;margin-top:5px;}
+.ci-notes{width:100%;background:var(--card2);border:1px solid var(--border2);border-radius:9px;color:var(--white);padding:8px 10px;font-size:12px;font-family:'DM Sans',sans-serif;resize:none;min-height:48px;}
+.ci-notes:focus{outline:none;border-color:var(--accent);}
+.ci-submit{width:100%;margin-top:6px;padding:12px;border-radius:11px;border:none;background:var(--accent);color:var(--black);font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:2px;cursor:pointer;}
+.ci-submit:disabled{opacity:0.35;cursor:default;}
+.ci-later{display:block;width:100%;margin-top:8px;background:none;border:none;color:var(--dim);font-size:10px;text-decoration:underline;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.ci-score{font-family:'Bebas Neue',sans-serif;font-size:52px;line-height:1;text-align:center;margin:6px 0 2px;}
+.ci-score-sub{text-align:center;font-size:10px;color:var(--dim2);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;}
+.ci-trend{display:flex;gap:6px;align-items:flex-end;justify-content:center;height:78px;margin-bottom:4px;}
+.ci-trend-col{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;width:52px;height:100%;}
+.ci-trend-val{font-size:9px;font-weight:700;color:var(--white);}
+.ci-trend-bar{width:100%;border-radius:5px 5px 0 0;background:var(--accent-dim);border:1px solid var(--accent);}
+.ci-trend-bar.low{background:var(--red-dim);border-color:var(--red);}
+.ci-trend-bar.none{background:none;border:1px dashed var(--border2);}
+.ci-trend-lbl{font-size:8px;color:var(--dim2);letter-spacing:0.5px;}
+.ci-recovery{background:var(--red-dim);border:1px solid rgba(255,77,77,0.35);border-radius:11px;padding:11px 13px;margin:10px 0;font-size:11px;color:var(--white);line-height:1.5;}
+.ci-recovery strong{color:var(--red);}
+.ci-status{margin-top:8px;font-size:10px;color:var(--dim2);display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--card2);border:1px solid var(--border2);border-radius:9px;padding:7px 10px;}
+.ci-status button{background:none;border:1px solid var(--border2);color:var(--accent);border-radius:7px;padding:4px 8px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;flex-shrink:0;}
 </style>
 </head>
 <body>
@@ -1767,6 +1800,9 @@ async function init() {
   setTimeout(() => {
     document.getElementById('loadOverlay').classList.add('hidden');
   }, 400);
+
+  // FEAT-12: on Sundays the protocol check-in gates the week before the session loads
+  maybeShowCheckin();
 }
 
 async function loadAll() {
@@ -1995,11 +2031,14 @@ function habitStreak(field) {
   while (habitFor(d)[field] && n < 366) { n++; d = dateOffset(d, -1); }
   return n;
 }
+// Latest of: an explicit daily alcohol log, or the end of the most recent check-in week that reported alcohol
 function lastAlcoholDate() {
   const days = Object.keys(dailyHabits).filter(d => dailyHabits[d].alcohol).sort();
-  if (days.length) return days[days.length - 1];
+  const fromHabits = days.length ? days[days.length - 1] : null;
   const row = checkinRows.find(r => r.alcohol === true);
-  return row ? dateOffset(row.week_start, 6) : null;
+  const fromCheckin = row ? dateOffset(row.week_start, 6) : null;
+  if (fromHabits && fromCheckin) return fromHabits > fromCheckin ? fromHabits : fromCheckin;
+  return fromHabits || fromCheckin;
 }
 function alcoholFreeDays() {
   const last = lastAlcoholDate();
@@ -2041,6 +2080,7 @@ function dashboardHTML() {
       </div>
     </div>
     ${vfWidgetHTML()}
+    ${checkinStatusHTML()}
   </div>`;
 }
 
@@ -2072,6 +2112,166 @@ function vfWidgetHTML() {
       <div class="vf-meta" style="color:${age > 14 ? 'var(--orange)' : 'var(--dim)'}">Scanned ${formatDate(cur.measurement_date)} · ${ageLbl}</div>
     </div>
   </div>${nudge}`;
+}
+
+// ============================================================
+// FEAT-12: SUNDAY PROTOCOL CHECK-IN — mandatory before the week closes out
+// ============================================================
+let checkinDraft = {};
+
+// Sunday closes the week that started the previous Monday
+function checkinWeekStart() { return weekStartOf(getDateStr()); }
+
+function storedCheckin(ws) {
+  const remote = checkinRows.find(r => r.week_start === ws && r.score !== null && r.score !== undefined);
+  if (remote) return remote;
+  try { const v = localStorage.getItem(`checkin-done-${ws}`); return v ? JSON.parse(v) : null; } catch(e) { return null; }
+}
+
+function checkinScore(d) {
+  let s = 0;
+  if ((d.sprints ?? 0) >= 2) s++;
+  if (d.alcohol === false) s++;
+  if (d.sleep === 'yes' || d.sleep === 'most') s++;
+  if (d.protein === true) s++;
+  if ((d.walks ?? 0) >= 3) s++;
+  return s;
+}
+function checkinComplete(d) {
+  return ['sprints','alcohol','sleep','protein','walks'].every(k => d[k] !== undefined);
+}
+function scoreColor(s) { return s >= 4 ? 'var(--green)' : s === 3 ? 'var(--accent)' : 'var(--red)'; }
+
+function maybeShowCheckin() {
+  if (new Date().getDay() !== 0) return false;
+  const ws = checkinWeekStart();
+  if (storedCheckin(ws)) return false;
+  try { if (sessionStorage.getItem('checkin-snoozed')) return false; } catch(e) {}
+  openCheckin(ws);
+  return true;
+}
+
+function openCheckin(ws) {
+  ws = ws || checkinWeekStart();
+  const logged = sprintsInWeek(ws);
+  checkinDraft = { ws, sprints: Math.min(logged, 3) };
+  renderCheckinForm();
+  document.getElementById('checkinOverlay').classList.add('open');
+}
+function ciPick(field, val) { checkinDraft[field] = val; renderCheckinForm(); }
+function snoozeCheckin() {
+  try { sessionStorage.setItem('checkin-snoozed', '1'); } catch(e) {}
+  closeCheckin();
+}
+function closeCheckin() { document.getElementById('checkinOverlay').classList.remove('open'); }
+
+function renderCheckinForm() {
+  const d = checkinDraft;
+  const box = document.getElementById('checkinBox');
+  const lit = v => typeof v === 'string' ? `'${v}'` : String(v);
+  const opt = (field, val, label, bad) =>
+    `<button class="ci-opt ${d[field] === val ? 'sel' + (bad ? ' bad' : '') : ''}" onclick="ciPick('${field}',${lit(val)})">${label}</button>`;
+  const weekLbl = `${formatDate(d.ws)} – ${formatDate(dateOffset(d.ws, 6))}`;
+  const logged = sprintsInWeek(d.ws);
+  box.innerHTML = `
+    <div class="checkin-title">📝 SUNDAY PROTOCOL CHECK-IN</div>
+    <div class="checkin-sub">Week of ${weekLbl}. Five honest answers before the week closes — the score is the early-warning system.</div>
+
+    <div class="ci-q">
+      <div class="ci-q-label"><span>⚡ Sprints this week</span><span class="ci-q-hint">${logged} logged in app</span></div>
+      <div class="ci-opts">${opt('sprints',0,'0',true)}${opt('sprints',1,'1',true)}${opt('sprints',2,'2')}${opt('sprints',3,'2+')}</div>
+      ${d.sprints !== undefined && d.sprints < 2 ? '<div class="ci-warn">⚠️ Under 2 sprints — the visceral fat protocol needs two a week</div>' : ''}
+    </div>
+    <div class="ci-q">
+      <div class="ci-q-label"><span>🍺 Any alcohol this week?</span></div>
+      <div class="ci-opts">${opt('alcohol',true,'Yes',true)}${opt('alcohol',false,'No')}</div>
+    </div>
+    <div class="ci-q">
+      <div class="ci-q-label"><span>😴 In bed before 10PM</span></div>
+      <div class="ci-opts">${opt('sleep','yes','Yes')}${opt('sleep','most','Most nights')}${opt('sleep','no','No',true)}</div>
+    </div>
+    <div class="ci-q">
+      <div class="ci-q-label"><span>🥩 225g protein most days</span></div>
+      <div class="ci-opts">${opt('protein',true,'Yes')}${opt('protein',false,'No',true)}</div>
+    </div>
+    <div class="ci-q">
+      <div class="ci-q-label"><span>🚶 Fasted walks (days)</span><span class="ci-q-hint">3+ scores</span></div>
+      <div class="ci-opts">${[0,1,2,3,4,5,6,7].map(n => opt('walks', n, String(n), n < 3)).join('')}</div>
+    </div>
+    <div class="ci-q">
+      <div class="ci-q-label"><span>Notes (optional)</span></div>
+      <textarea class="ci-notes" id="ciNotes" placeholder="Travel, illness, wins, anything the numbers don't show…">${d.notes || ''}</textarea>
+    </div>
+    <button class="ci-submit" id="ciSubmit" onclick="submitCheckin()" ${checkinComplete(d) ? '' : 'disabled'}>SUBMIT CHECK-IN${checkinComplete(d) ? ` · SCORE ${checkinScore(d)}/5` : ''}</button>
+    <button class="ci-later" onclick="snoozeCheckin()">Not now — ask me again next time I open the app</button>`;
+}
+
+async function submitCheckin() {
+  const d = checkinDraft;
+  if (!checkinComplete(d)) return;
+  const score = checkinScore(d);
+  const notes = (document.getElementById('ciNotes')?.value || '').trim();
+  const row = {
+    week_start: d.ws, checkin_date: getDateStr(),
+    sprints_this_week: d.sprints, alcohol: d.alcohol, sleep_before_10pm: d.sleep,
+    protein_225g: d.protein, fasted_walks: d.walks, score, notes: notes || null
+  };
+  try { localStorage.setItem(`checkin-done-${d.ws}`, JSON.stringify(row)); } catch(e) {}
+  checkinRows = [row, ...checkinRows.filter(r => r.week_start !== d.ws)];
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/weekly_checkins`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}`, Prefer: 'return=minimal' },
+      body: JSON.stringify(row)
+    });
+  } catch(e) { /* local copy is the fallback */ }
+  renderCheckinResult(row);
+  mountDashboard();
+}
+
+function openCheckinResult() {
+  const row = storedCheckin(checkinWeekStart()) || checkinRows.find(r => r.score !== null && r.score !== undefined);
+  if (!row) return openCheckin();
+  renderCheckinResult(row);
+  document.getElementById('checkinOverlay').classList.add('open');
+}
+
+function renderCheckinResult(row) {
+  const box = document.getElementById('checkinBox');
+  const score = row.score;
+  // 4-week trend, oldest → newest, ending at the reviewed week
+  const weeks = [3,2,1,0].map(n => dateOffset(row.week_start, -7 * n));
+  const trend = weeks.map(ws => {
+    const r = ws === row.week_start ? row : checkinRows.find(x => x.week_start === ws);
+    const s = r && r.score !== null && r.score !== undefined ? r.score : null;
+    const h = s === null ? 6 : Math.max(6, (s / 5) * 52);
+    return `<div class="ci-trend-col">
+      <div class="ci-trend-val">${s === null ? '—' : s}</div>
+      <div class="ci-trend-bar ${s === null ? 'none' : s < 3 ? 'low' : ''}" style="height:${h}px"></div>
+      <div class="ci-trend-lbl">${formatDate(ws).slice(4)}</div>
+    </div>`;
+  }).join('');
+  const recovery = score < 3 ? `<div class="ci-recovery">
+      <strong>⚠️ RECOVERY PRIORITY THIS WEEK</strong><br>
+      Score under 3 — the protocol slipped. Next 7 days: two sprints (Wed + Sat, non-negotiable) · fasted walk every morning · zero alcohol · 225g protein · in bed by 10. Lift at reference weights, no PR chasing, until the score is back to 3+.
+    </div>` : score === 5 ? `<div class="ci-recovery" style="background:var(--green-dim);border-color:rgba(77,255,170,0.35)"><strong style="color:var(--green)">🏆 PERFECT WEEK</strong> — every lever pulled. Visceral fat has nowhere to hide.</div>` : '';
+  box.innerHTML = `
+    <div class="checkin-title">📝 WEEK OF ${formatDate(row.week_start).toUpperCase()}</div>
+    <div class="ci-score" style="color:${scoreColor(score)}">${score}<span style="font-size:22px;color:var(--dim2)">/5</span></div>
+    <div class="ci-score-sub">Protocol score · ${score >= 4 ? 'on track' : score === 3 ? 'holding' : 'drifting'}</div>
+    <div class="ci-trend">${trend}</div>
+    <div class="ci-score-sub" style="margin-bottom:6px">4-week trend</div>
+    ${recovery}
+    <button class="ci-submit" onclick="closeCheckin()">LOAD TODAY'S SESSION ›</button>`;
+}
+
+function checkinStatusHTML() {
+  const ws = checkinWeekStart();
+  const row = storedCheckin(ws);
+  if (row) return `<div class="ci-status"><span>📝 Weekly check-in · score <strong style="color:${scoreColor(row.score)}">${row.score}/5</strong></span><button onclick="openCheckinResult()">Trend</button></div>`;
+  if (new Date().getDay() === 0) return `<div class="ci-status"><span>📝 Sunday check-in due</span><button onclick="openCheckin()">Check in</button></div>`;
+  const last = checkinRows.find(r => r.score !== null && r.score !== undefined);
+  return `<div class="ci-status"><span>📝 Weekly check-in opens Sunday${last ? ` · last score <strong style="color:${scoreColor(last.score)}">${last.score}/5</strong>` : ''}</span></div>`;
 }
 
 // The dashboard sits above whatever the TODAY tab rendered (workout, sprint, recovery, vacation, activity)
@@ -5232,5 +5432,8 @@ init();
     <div class="swap-options" id="gaOptionsList"></div>
   </div>
 </div>
+
+<!-- WEEKLY CHECK-IN (FEAT-12) -->
+<div class="checkin-overlay" id="checkinOverlay"><div class="checkin-box" id="checkinBox"></div></div>
 </body>
 </html>
