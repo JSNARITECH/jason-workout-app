@@ -1,5 +1,17 @@
 # Workout App Changelog
 
+## v12.2 — 2026-09-14
+### Added
+- **FEAT-11 Accountability dashboard** — top of the TODAY tab on every day type: sprint streak (consecutive weeks with 2+ sprints), alcohol-free days, protein 225g+ and bed-by-10PM daily toggles. Toggles persist to localStorage and the new `daily_habits` table.
+- **FEAT-12 Sunday check-in** — mandatory modal on Sundays (sprints, alcohol, sleep, protein, fasted walks, notes) saved to `weekly_checkins` with a 0–5 score, a 4-week trend and a recovery-priority prompt under 3. Status line on the dashboard.
+- **FEAT-13 Visceral fat grade widget** — latest `body_composition` grade with colour status (≤10 green, 11–12 yellow, 13 orange, 14+ red), direction vs the previous scan, scan age and a >14-day rescan nudge.
+- **FEAT-14 Reset Protocol week** — offered after a 7+ day gap (or manually / from a low check-in score): push/pull fold into upper/lower, PRs become reference-only, daily sprint/walk/protein/sleep checklist, auto-exits after 7 consecutive logged days.
+- **FEAT-15 Group class swap on any day** — "Swap today for a group class / activity" on every workout day (yoga, pilates, dance, boxing, new Group HIIT Class), with a one-tap way back. Activity sessions now save as `flex` (the `workouts` type constraint rejected the old `rest` value).
+- **FEAT-9 Pick & choose** — add exercises from the tiered library, remove or reorder today's list, restore the preset. The day type is kept for logging; timer, progress, summary and save follow the session list.
+- **FEAT-10** — burnout weight row added to Cable Low-to-High Fly and Lat Pulldown (Pull) so all Hassan exercises capture failure and burnout weights separately.
+### Changed
+- **FORT NYC removed** — Tuesday is a fixed Lower Day (Leg Day programming); the FORT toggle, banner and type-selector entry are gone. History filters gain Sprint and Class / Flex.
+
 ## v11.1 — 2026-03-18
 ### Added
 - **Back Recovery Mode** — global toggle (🦴 pill in header) swaps all workout days to spine-safe rehab protocols when active. Persists via localStorage.

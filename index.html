@@ -117,18 +117,13 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .rotation-ex:hover,.rotation-ex:active{background:rgba(192,132,252,0.2);}
 .rotation-dismiss{font-size:10px;color:var(--dim);margin-top:8px;cursor:pointer;text-decoration:underline;}
 
-/* FORT CANCELLED BANNER */
-.fort-cancel-banner{background:rgba(255,77,77,0.08);border:1px solid rgba(255,77,77,0.25);border-radius:14px;padding:14px 15px;margin-bottom:14px;}
-.fort-cancel-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
-.fort-cancel-title{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1px;color:var(--red);}
-.fort-cancel-sub{font-size:11px;color:var(--dim2);line-height:1.4;margin-bottom:10px;}
-.fort-cancel-btns{display:flex;gap:8px;}
-.fort-btn{flex:1;padding:9px 10px;border-radius:10px;border:none;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all 0.2s;}
-.fort-btn-go{background:var(--green);color:#000;}
-.fort-btn-go:active{background:#3ddda0;}
-.fort-btn-fort{background:var(--border2);color:var(--dim2);}
-.fort-btn-fort:active{background:var(--border);}
-.fort-mode-indicator{display:flex;align-items:center;gap:7px;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:5px 10px;border-radius:8px;background:rgba(77,255,170,0.1);color:var(--green);border:1px solid rgba(77,255,170,0.2);}
+/* GROUP ACTIVITY SWAP (FEAT-15) */
+.ga-row{display:flex;gap:8px;align-items:center;margin:-4px 0 12px;flex-wrap:wrap;}
+.ga-btn{flex:1;padding:8px 10px;border-radius:9px;border:1px dashed rgba(255,77,77,0.4);background:var(--red-dim);color:var(--red);font-family:'DM Sans',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;}
+.ga-btn:active{opacity:0.7;}
+.ga-banner{background:var(--red-dim);border:1px solid rgba(255,77,77,0.3);border-radius:12px;padding:10px 13px;margin:0 13px 10px;display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px;color:var(--dim2);}
+.ga-banner strong{color:var(--red);}
+.ga-back-btn{background:var(--border2);border:none;color:var(--white);border-radius:8px;padding:7px 10px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;flex-shrink:0;}
 
 /* SECTION LABEL */
 .sec-label{font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:3px;color:var(--dim);margin:16px 0 7px;display:flex;align-items:center;gap:8px;}
@@ -497,11 +492,11 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 
 /* COLORS */
 .c-push{color:var(--orange);}.c-pull{color:var(--blue);}.c-legs{color:var(--accent);}
-.c-upper{color:var(--purple);}.c-lower{color:var(--green);}.c-fort{color:var(--red);}.c-rest{color:var(--dim2);}
+.c-upper{color:var(--purple);}.c-lower{color:var(--green);}.c-flex{color:var(--red);}.c-sprint{color:var(--accent);}.c-rest{color:var(--dim2);}
 .bg-push{background:var(--orange-dim);}.bg-pull{background:var(--blue-dim);}.bg-legs{background:var(--accent-dim);}
-.bg-upper{background:var(--purple-dim);}.bg-lower{background:var(--green-dim);}.bg-fort{background:var(--red-dim);}
+.bg-upper{background:var(--purple-dim);}.bg-lower{background:var(--green-dim);}.bg-flex{background:var(--red-dim);}
 .bar-push{background:var(--orange);}.bar-pull{background:var(--blue);}.bar-legs{background:var(--accent);}
-.bar-upper{background:var(--purple);}.bar-lower{background:var(--green);}.bar-fort{background:var(--red);}
+.bar-upper{background:var(--purple);}.bar-lower{background:var(--green);}.bar-flex{background:var(--red);}
 
 /* BPM IMPORT + ZONE BARS */
 .bpm-import-btn{width:100%;margin-top:10px;padding:8px 12px;border-radius:9px;border:1px dashed rgba(192,132,252,0.4);background:var(--purple-dim);color:var(--purple);font-size:10px;font-weight:700;letter-spacing:1.5px;cursor:pointer;font-family:'DM Sans',sans-serif;text-transform:uppercase;transition:all 0.2s;}
@@ -582,6 +577,83 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .rehab-banner-title{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1px;color:var(--green);margin-bottom:4px;}
 .rehab-banner-sub{font-size:11px;color:var(--dim2);line-height:1.4;}
 .rehab-note{font-size:9px;color:var(--dim2);font-style:italic;margin-top:4px;line-height:1.4;}
+
+/* ACCOUNTABILITY DASHBOARD (FEAT-11) */
+.dash-panel{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px 13px;margin-bottom:12px;}
+.dash-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--dim2);font-weight:700;margin-bottom:9px;display:flex;justify-content:space-between;align-items:center;}
+.dash-date{color:var(--dim);letter-spacing:1px;font-weight:600;}
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.dash-tile{background:var(--card2);border:1px solid var(--border2);border-radius:10px;padding:9px 10px;display:flex;flex-direction:column;gap:3px;min-width:0;}
+.dash-tile-label{font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim2);font-weight:700;}
+.dash-tile-val{font-family:'Bebas Neue',sans-serif;font-size:24px;line-height:1;color:var(--white);}
+.dash-tile-val.hot{color:var(--accent);}
+.dash-tile-val.cold{color:var(--dim);}
+.dash-tile-sub{font-size:9px;color:var(--dim2);line-height:1.3;}
+.dash-toggle{margin-top:4px;padding:5px 8px;border-radius:7px;border:1px solid var(--border2);background:none;color:var(--dim2);font-size:9px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;text-align:left;}
+.dash-toggle.on{background:var(--green-dim);border-color:rgba(77,255,170,0.4);color:var(--green);}
+.dash-toggle.warn{background:var(--red-dim);border-color:rgba(255,77,77,0.4);color:var(--red);}
+
+/* VISCERAL FAT GRADE WIDGET (FEAT-13) */
+.vf-row{display:flex;gap:11px;align-items:center;margin-top:8px;background:var(--card2);border:1px solid var(--border2);border-left-width:3px;border-radius:10px;padding:9px 11px;}
+.vf-row.vf-empty{font-size:10px;color:var(--dim2);}
+.vf-grade{font-family:'Bebas Neue',sans-serif;font-size:34px;line-height:1;min-width:34px;text-align:center;}
+.vf-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;}
+.vf-meta{font-size:9px;color:var(--dim2);line-height:1.3;}
+.vf-nudge{margin-top:6px;font-size:10px;color:var(--orange);background:var(--orange-dim);border:1px solid rgba(255,154,77,0.35);border-radius:8px;padding:6px 9px;font-weight:600;}
+
+/* WEEKLY CHECK-IN MODAL (FEAT-12) */
+.checkin-overlay{position:fixed;inset:0;background:rgba(8,8,8,0.92);backdrop-filter:blur(8px);z-index:400;display:none;align-items:center;justify-content:center;padding:16px;}
+.checkin-overlay.open{display:flex;}
+.checkin-box{width:100%;max-width:420px;max-height:92vh;overflow-y:auto;background:var(--card);border:1px solid var(--border2);border-radius:18px;padding:18px 16px 16px;}
+.checkin-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;color:var(--accent);margin-bottom:2px;}
+.checkin-sub{font-size:11px;color:var(--dim2);margin-bottom:14px;line-height:1.4;}
+.ci-q{margin-bottom:12px;}
+.ci-q-label{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim2);font-weight:700;margin-bottom:6px;display:flex;justify-content:space-between;gap:8px;}
+.ci-q-hint{color:var(--dim);letter-spacing:0.5px;text-transform:none;font-weight:500;}
+.ci-opts{display:flex;gap:5px;flex-wrap:wrap;}
+.ci-opt{flex:1;min-width:44px;padding:8px 6px;border-radius:8px;border:1px solid var(--border2);background:var(--card2);color:var(--dim2);font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;text-align:center;}
+.ci-opt.sel{background:var(--accent);color:var(--black);border-color:var(--accent);}
+.ci-opt.sel.bad{background:var(--red);color:var(--white);border-color:var(--red);}
+.ci-warn{font-size:10px;color:var(--red);font-weight:700;margin-top:5px;}
+.ci-notes{width:100%;background:var(--card2);border:1px solid var(--border2);border-radius:9px;color:var(--white);padding:8px 10px;font-size:12px;font-family:'DM Sans',sans-serif;resize:none;min-height:48px;}
+.ci-notes:focus{outline:none;border-color:var(--accent);}
+.ci-submit{width:100%;margin-top:6px;padding:12px;border-radius:11px;border:none;background:var(--accent);color:var(--black);font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:2px;cursor:pointer;}
+.ci-submit:disabled{opacity:0.35;cursor:default;}
+.ci-later{display:block;width:100%;margin-top:8px;background:none;border:none;color:var(--dim);font-size:10px;text-decoration:underline;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.ci-score{font-family:'Bebas Neue',sans-serif;font-size:52px;line-height:1;text-align:center;margin:6px 0 2px;}
+.ci-score-sub{text-align:center;font-size:10px;color:var(--dim2);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;}
+.ci-trend{display:flex;gap:6px;align-items:flex-end;justify-content:center;height:78px;margin-bottom:4px;}
+.ci-trend-col{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;width:52px;height:100%;}
+.ci-trend-val{font-size:9px;font-weight:700;color:var(--white);}
+.ci-trend-bar{width:100%;border-radius:5px 5px 0 0;background:var(--accent-dim);border:1px solid var(--accent);}
+.ci-trend-bar.low{background:var(--red-dim);border-color:var(--red);}
+.ci-trend-bar.none{background:none;border:1px dashed var(--border2);}
+.ci-trend-lbl{font-size:8px;color:var(--dim2);letter-spacing:0.5px;}
+.ci-recovery{background:var(--red-dim);border:1px solid rgba(255,77,77,0.35);border-radius:11px;padding:11px 13px;margin:10px 0;font-size:11px;color:var(--white);line-height:1.5;}
+.ci-recovery strong{color:var(--red);}
+.ci-status{margin-top:8px;font-size:10px;color:var(--dim2);display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--card2);border:1px solid var(--border2);border-radius:9px;padding:7px 10px;}
+.ci-status button{background:none;border:1px solid var(--border2);color:var(--accent);border-radius:7px;padding:4px 8px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;flex-shrink:0;}
+
+/* RESET PROTOCOL WEEK (FEAT-14) */
+.reset-banner{background:rgba(77,170,255,0.08);border:1px solid rgba(77,170,255,0.35);border-radius:11px;padding:10px 11px;margin-bottom:9px;}
+.reset-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px;}
+.reset-title{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;color:var(--blue);}
+.reset-sub{font-size:9px;color:var(--dim2);line-height:1.35;margin-top:2px;}
+.reset-checks{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
+.reset-check{padding:7px 8px;border-radius:8px;border:1px solid var(--border2);background:var(--card2);color:var(--dim2);font-size:10px;font-weight:700;letter-spacing:0.5px;cursor:pointer;font-family:'DM Sans',sans-serif;text-align:left;}
+.reset-check.on{background:var(--green-dim);border-color:rgba(77,255,170,0.4);color:var(--green);}
+.reset-list{display:flex;flex-direction:column;gap:6px;font-size:11px;color:var(--dim2);margin-bottom:14px;line-height:1.4;}
+.chip-ref{background:var(--border2);color:var(--dim2);border:1px dashed var(--dim);}
+
+/* PICK & CHOOSE SESSION LIST (FEAT-9) */
+.pick-add-btn{width:100%;margin-top:6px;padding:11px;border-radius:11px;border:1px dashed rgba(192,132,252,0.45);background:var(--purple-dim);color:var(--purple);font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1.5px;cursor:pointer;}
+.pick-add-btn:active{opacity:0.7;}
+.pick-reset{display:block;width:100%;margin-top:6px;background:none;border:none;color:var(--dim);font-size:10px;text-decoration:underline;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.pick-row{display:flex;gap:6px;margin-top:8px;}
+.pick-mini{padding:6px 10px;border-radius:7px;border:1px solid var(--border2);background:none;color:var(--dim2);font-size:10px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:0.5px;}
+.pick-mini.pick-remove{flex:1;color:var(--red);border-color:rgba(255,77,77,0.35);text-transform:uppercase;}
+.pick-mini:active{opacity:0.6;}
+.pick-tag{display:inline-flex;align-items:center;font-size:9px;font-weight:700;letter-spacing:1px;background:var(--purple-dim);color:var(--purple);padding:2px 7px;border-radius:8px;border:1px solid rgba(192,132,252,0.25);flex-shrink:0;}
 </style>
 </head>
 <body>
@@ -607,6 +679,7 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
     <div class="g-progress"><div class="g-progress-fill" id="gBar"></div></div>
     <div id="recoveryModePill" class="rehab-mode-pill"></div>
     <div id="vacationModePill" class="rehab-mode-pill"></div>
+    <div id="resetModePill" class="rehab-mode-pill"></div>
   </div>
 
   <div class="scroll-area" id="mainScroll"></div>
@@ -671,14 +744,14 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 // ============================================================
 // APP VERSION — update this on every release
 // ============================================================
-const APP_VERSION = 'v12.1';
+const APP_VERSION = 'v12.2';
 
 // ============================================================
 // WEEKLY SCHEDULE
 // ============================================================
 const WEEK = [
   { key:'mon', name:'Mon', type:'upper',  emoji:'💪', label:'UPPER' },
-  { key:'tue', name:'Tue', type:'fort',   emoji:'🥊', label:'FLEX/HIIT' },
+  { key:'tue', name:'Tue', type:'legs',   emoji:'🦵', label:'LOWER' },
   { key:'wed', name:'Wed', type:'rest',   emoji:'⚡', label:'SPRINT' },
   { key:'thu', name:'Thu', type:'push',   emoji:'🔥', label:'PUSH' },
   { key:'fri', name:'Fri', type:'pull',   emoji:'💙', label:'PULL' },
@@ -792,8 +865,8 @@ const WORKOUTS = {
     sections:[
       { label:'Chest', exercises:[
         { id:'u-fly', name:'Cable Low-to-High Fly', muscle:'chest',
-          sets:[{wt:20,reps:'Warm'},{wt:30,reps:'FAIL'}],
-          chips:{sets:'2 Sets',reps:'Pre-Exhaust',pr:'PR: 30 lbs',tag:'Hassan'},
+          sets:[{wt:20,reps:'Warm'},{wt:30,reps:'FAIL'},{wt:24,reps:'20',note:'Burnout'}],
+          chips:{sets:'3 Sets',reps:'Pre-Exhaust',pr:'PR: 30 lbs',tag:'Hassan'},
           hassan:true, ladder:['20×warm','30×FAIL'], burnout:'Drop 20%, 20 reps',
           cue:'Start externally rotated. Pull elbows up and in. Slight internal rotation at top.' },
         { id:'u-chest', name:'Machine Chest Press', muscle:'chest',
@@ -905,8 +978,8 @@ const WORKOUTS = {
       ]},
       { label:'Main Movement', exercises:[
         { id:'pull-lat', name:'Lat Pulldown (Wide Grip)', muscle:'back',
-          sets:[{wt:121,reps:'6'},{wt:143,reps:'FAIL'}],
-          chips:{sets:'2 Sets',reps:'8-12 reps',pr:'PR: 143×10',target:'Target: 154 lbs',tag:'Hassan'},
+          sets:[{wt:121,reps:'6'},{wt:143,reps:'FAIL'},{wt:110,reps:'20',note:'Burnout'}],
+          chips:{sets:'3 Sets',reps:'8-12 reps',pr:'PR: 143×10',target:'Target: 154 lbs',tag:'Hassan'},
           hassan:true, ladder:['121×6','132×4','143×FAIL'], burnout:'110 lbs × 20 reps',
           cue:'Pull elbows down and in. Chest tall. No shoulder shrug.' },
         { id:'pull-row', name:'Seated Cable Row', muscle:'back',
@@ -974,46 +1047,6 @@ const WORKOUTS = {
           sets:[{wt:0,reps:'15-20'},{wt:0,reps:'15-20'}],
           chips:{sets:'2 Sets',reps:'15-20 reps',tag:'Nippard Abs'},
           cue:'Kneel facing cable. Hands at temples. Crunch DOWN — flex spine, not arms. Full stretch at top. Completes your 8 sets/week ab volume.' }
-      ]}
-    ]
-  },
-  fort:{
-    title:'TUESDAY FLEX DAY', emoji:'🥊',
-    chips:['Boxing · HIIT Class · Lower Body','Counts toward 90-min/wk HIIT target'],
-    sections:[
-      { label:'If At A Class (Boxing / HIIT)', exercises:[
-        { id:'f-class', name:'Boxing / HIIT Class', muscle:'full',
-          sets:[{wt:0,reps:'Full session'}],
-          chips:{sets:'Full Class',reps:'Zone 4 — 140-155 bpm'},
-          cue:'Target HR: 140–155 bpm throughout. This session = ~35-40 min toward your 90-min/week visceral fat HIIT threshold (Dr. Rhonda Patrick protocol). Log HR avg + max from Galaxy Watch after.' }
-      ]},
-      { label:'If Lower Day (Home Sub)', exercises:[
-        { id:'f-ext', name:'Leg Extension', muscle:'quads',
-          sets:[{wt:99,reps:'6'},{wt:121,reps:'FAIL'}],
-          chips:{sets:'2 Sets',reps:'6 reps',pr:'PR: 121 lbs',tag:'Hassan'},
-          hassan:true, cue:'Quad squeeze. Pause at peak.' },
-        { id:'f-squat', name:'Smith Machine Squat', muscle:'quads',
-          sets:[{wt:145,reps:'8'},{wt:165,reps:'8-10'}],
-          chips:{sets:'2 Sets',reps:'8-12 reps',pr:'PR: 155×10',target:'Target: 165 lbs'},
-          cue:'Feet forward. Sit back. Drive knees OUT. Protect lower back.' },
-        { id:'f-lunge', name:'DB Walking Lunges', muscle:'quads',
-          sets:[{wt:35,reps:'20 each'},{wt:40,reps:'20 each'}],
-          chips:{sets:'2 Sets',reps:'20 reps/leg',pr:'PR: 35 lb DBs',target:'Target: 40 lb DBs'},
-          cue:'Medium strides. Minimize rear leg push. Knee tracks toes.' },
-        { id:'f-curl', name:'Nordic Curl', muscle:'hams',
-          sets:[{wt:0,reps:'6-8'},{wt:0,reps:'6-8'}],
-          chips:{sets:'2 Sets',reps:'6-8 reps',pr:'PR: BW×8'},
-          cue:'No lying leg curl machine at Home Gym — anchor feet under a bench/partner, lower under control as far as possible, push back up.' },
-        { id:'f-abduct', name:'Hip Abduction Machine', muscle:'glutes',
-          sets:[{wt:55,reps:'15-20'},{wt:66,reps:'15-20'}],
-          chips:{sets:'2 Sets',reps:'15-20 reps',pr:'PR: 55 lbs (NEW baseline)'},
-          cue:'LEAN FORWARD 30°. 55 lbs baseline. Feel glute medius.' }
-      ]},
-      { label:'Ab Finisher 🎯', exercises:[
-        { id:'f-cable-crunch', name:'Cable Crunch', muscle:'abs',
-          sets:[{wt:0,reps:'15-20'},{wt:0,reps:'15-20'}],
-          chips:{sets:'2 Sets',reps:'15-20 reps',tag:'Nippard Abs'},
-          cue:'🔒 BACK RECOVERY: Kneel facing cable. Hands at temples. Crunch DOWN — flex spine, not arms. Full stretch at top. Eliminates spinal loading.' }
       ]}
     ]
   },
@@ -1148,7 +1181,7 @@ const REST_CONTENT = {
     {icon:'😴',text:'Sleep is visceral fat medicine. Two weeks of poor sleep = 11% more visceral fat with zero weight change (RCT). Protect tonight\'s window. Magnesium before bed.'}
   ]},
   sat:{ title:'SPRINT + RECOVERY', icon:'⚡', sub:'Second HIIT session. Then full recharge.', tips:[
-    {icon:'⚡',text:'SPRINT PROTOCOL (2nd weekly HIIT session): 5-min warm-up walk → 6 × 30-sec MAX effort sprints (manual treadmill, lean hard) → 75-sec walking recovery between each (trial, was 90s) → 5-min cool-down. Total: ~24 min. Zone 4–5 target: 140–165+ bpm. Wed + Sat sprints = ~48 min pure HIIT. Add Tuesday class and you clear the 90-min/week visceral fat threshold.'},
+    {icon:'⚡',text:'SPRINT PROTOCOL (2nd weekly HIIT session): 5-min warm-up walk → 6 × 30-sec MAX effort sprints (manual treadmill, lean hard) → 75-sec walking recovery between each (trial, was 90s) → 5-min cool-down. Total: ~24 min. Zone 4–5 target: 140–165+ bpm. Wed + Sat sprints = ~48 min pure HIIT. Add a group class any day (swap button on any workout day) and you clear the 90-min/week visceral fat threshold.'},
     {icon:'📈',text:'Progressive overload: Start at 4 rounds. Add 1 round every 2 weeks alongside Wednesday. Both days progress together. Goal = 8 rounds each by Week 8.'},
     {icon:'♨️',text:'POST-SPRINT SAUNA: 20–30 min @ 175°F. No rush today — weekend. This is the best day to extend the session. Do not exceed 200°F. Amplifies VO2 max and anabolic signaling beyond exercise alone.'},
     {icon:'🚶',text:'After sauna: done. No more cardio. Zone 1–2 walking only if you feel like moving. Legs are tomorrow — protect recovery.'},
@@ -1521,6 +1554,19 @@ const ALTERNATIVE_ACTIVITIES = {
       { id: 'a-box-kicks', name: 'Kickboxing (Kicks + Punches)', muscle: 'cardio', sets: [{reps:'12 min'}], cue: 'Front kicks, roundhouse kicks, knees. Core engaged.' },
       { id: 'a-box-cool', name: 'Cool-Down + Stretch (Shoulders, Hips, Legs)', muscle: 'cooldown', sets: [{reps:'6 min'}], optional: true, cue: 'Release tension. Breathe.' }
     ]
+  },
+  hiit: {
+    id: 'hiit',
+    title: '🔥 Group HIIT Class',
+    emoji: '🔥',
+    description: 'Coached group class — boxing gym, HIIT studio, bootcamp. Counts toward your 90-min/week HIIT threshold.',
+    type: 'timed',
+    duration: 45,
+    exercises: [
+      { id: 'a-hiit-warmup', name: 'Class Warm-Up + Mobility', muscle: 'warmup', sets: [{reps:'5 min'}], optional: true, cue: 'Follow the coach. Loosen hips and shoulders.' },
+      { id: 'a-hiit-main', name: 'Main Class Block (Zone 4 — 140–155 bpm)', muscle: 'cardio', sets: [{reps:'35-40 min'}], cue: 'Target HR 140–155 bpm throughout. ~35–40 min toward your 90-min/week visceral fat HIIT threshold (Dr. Rhonda Patrick protocol).' },
+      { id: 'a-hiit-cool', name: 'Cool-Down + Log Galaxy Watch HR', muscle: 'cooldown', sets: [{reps:'5 min'}], optional: true, cue: 'Bring HR under 120. Log avg + max HR from Galaxy Watch above.' }
+    ]
   }
 };
 
@@ -1676,15 +1722,22 @@ let restOverrides = {}; // { exId: seconds } — user-customized rest per exerci
 let swapOverrides = {}; // { exId: { HG: altName, LT: altName } } — user-selected exercise swaps, scoped per gym location (BUG-LEGCURL-SWAP fix)
 let prStreaks = {};     // { exId: count } — consecutive sessions with new PRs
 let notesStore = {};   // { exId: { todayNote, lastWeekNote, weekCount } }
-let fortCancelled = false;
+let groupActivityOverride = {}; // FEAT-15: { dateStr: activityId } — swap any day's session for a group class / activity
 let backRecoveryMode = false;
 let vacationMode = false; // FEAT-8: Gym-free maintenance routine
-let dayTypeOverride = {}; // { dateStr: 'upper'|'push'|'pull'|'legs'|'fort'|'flex' }
+let dayTypeOverride = {}; // { dateStr: 'upper'|'push'|'pull'|'legs' }
 let prReadyFlags = new Set(); // exercise names flagged pr_ready=true in Supabase
 let sessionLocation = 'HG'; // 'HG' = Home Gym, 'LT' = Lifetime Fitness
+let dailyHabits = {};        // FEAT-11: { 'YYYY-MM-DD': { protein, sleep, alcohol, sprint, walk } } — localStorage + daily_habits table
+let sprintDates = new Set(); // FEAT-11: dates with a logged sprint session (Supabase workouts, type 'sprint')
+let checkinRows = [];        // FEAT-12: weekly_checkins rows, newest first
+let bodyComp = [];           // FEAT-13: latest body_composition scans with a visceral fat grade, newest first
+let resetProtocol = { active:false, entryDate:null }; // FEAT-14: post-break reset week
+const RESET_TYPE_MAP = { push:'upper', pull:'legs' };  // reset week runs upper/lower only
+let sessionPlan = {}; // FEAT-9: { dateStr: { added:[exercise], removed:[exId], order:[exId] } } — per-day edits to the preset list
 
 const SUPABASE_URL  = 'https://fnjjfnsdxibjbzldfgit.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZuampmbnNkeGliamJ6bGRmZ2l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY1MDM2MjAsImV4cCI6MjA4MjA3OTYyMH0.oZYn5OXKZH2h1wGfIj_R1L8Hlk3ytGFBgDCyGqUcatk'; // true = show home lower body sub instead of FORT class
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZuampmbnNkeGliamJ6bGRmZ2l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY1MDM2MjAsImV4cCI6MjA4MjA3OTYyMH0.oZYn5OXKZH2h1wGfIj_R1L8Hlk3ytGFBgDCyGqUcatk';
 const CIRC = 2 * Math.PI * 60; // 377
 
 // ============================================================
@@ -1760,8 +1813,11 @@ async function init() {
   // Load all persisted data
   await loadAll();
 
+  // FEAT-14: a reset week that has hit 7 consecutive logged days ends itself
+  checkResetAutoExit();
+
   // Sync PRs from Supabase before first render (dayTypeOverride is now loaded)
-  const _initType = dayTypeOverride[getDateStr()] || WEEK[currentDayIdx].type;
+  const _initType = scheduledType(currentDayIdx);
   if (_initType !== 'rest') {
     showPRSyncPill();
     await syncPRsFromSupabase(_initType);
@@ -1772,6 +1828,10 @@ async function init() {
   setTimeout(() => {
     document.getElementById('loadOverlay').classList.add('hidden');
   }, 400);
+
+  // FEAT-12: on Sundays the protocol check-in gates the week before the session loads;
+  // FEAT-14: otherwise a 7+ day gap since the last logged session offers a reset week
+  if (!maybeShowCheckin()) maybeOfferResetProtocol();
 }
 
 async function loadAll() {
@@ -1807,12 +1867,19 @@ async function loadAll() {
   } catch(e) { swapOverrides = {}; }
   try { const v = await getStored('pr-streaks'); if (v) prStreaks = JSON.parse(v); } catch(e) { prStreaks = {}; }
 
-  // Restore fort-cancelled flag for today
+  // FEAT-15: Restore any-day group activity overrides
   try {
-    const key = `fort-cancelled-${getDateStr()}`;
-    const v = await getStored(key);
-    fortCancelled = !!(v);
-  } catch(e) { fortCancelled = false; }
+    const v = await getStored('group-activity-overrides');
+    if (v) groupActivityOverride = JSON.parse(v);
+  } catch(e) { groupActivityOverride = {}; }
+
+  // FEAT-9: Restore per-day session plans (keep two weeks so a saved session's list can still be reviewed)
+  try {
+    const v = await getStored('session-plan');
+    sessionPlan = v ? JSON.parse(v) : {};
+    const cutoff = getDateStr(-14);
+    for (const d of Object.keys(sessionPlan)) if (d < cutoff) delete sessionPlan[d];
+  } catch(e) { sessionPlan = {}; }
 
   // Restore back recovery mode
   try {
@@ -1828,6 +1895,13 @@ async function loadAll() {
   } catch(e) { vacationMode = false; }
   updateVacationModePill();
 
+  // FEAT-14: Restore reset protocol state
+  try {
+    const v = localStorage.getItem('reset-protocol');
+    if (v) resetProtocol = { active:false, entryDate:null, ...JSON.parse(v) };
+  } catch(e) { resetProtocol = { active:false, entryDate:null }; }
+  updateResetModePill();
+
   // FEAT-4: Restore selected activity preference
   try {
     const a = localStorage.getItem('selected-activity');
@@ -1838,6 +1912,8 @@ async function loadAll() {
   try {
     const v = await getStored('day-type-overrides');
     if (v) dayTypeOverride = JSON.parse(v);
+    // FORT was removed (FEAT-15); a persisted 'fort' override would render an empty day
+    for (const d of Object.keys(dayTypeOverride)) if (dayTypeOverride[d] === 'fort') delete dayTypeOverride[d];
   } catch(e) { dayTypeOverride = {}; }
 
   // Restore session location
@@ -1895,6 +1971,32 @@ async function loadAll() {
     }
   } catch(e) { /* non-fatal */ }
 
+  // FEAT-11 / FEAT-12: accountability data — habits, sprint dates, weekly check-ins (all non-fatal)
+  try { const v = localStorage.getItem('daily-habits'); if (v) dailyHabits = JSON.parse(v); } catch(e) { dailyHabits = {}; }
+  const sbGet = { headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` } };
+  await Promise.all([
+    fetch(`${SUPABASE_URL}/rest/v1/daily_habits?habit_date=gte.${getDateStr(-90)}&select=habit_date,protein,sleep,alcohol,sprint,walk`, sbGet)
+      .then(r => r.ok ? r.json() : [])
+      .then(rows => {
+        if (!Array.isArray(rows)) return;
+        rows.forEach(r => { dailyHabits[r.habit_date] = { protein: !!r.protein, sleep: !!r.sleep, alcohol: !!r.alcohol, sprint: !!r.sprint, walk: !!r.walk }; });
+        persistHabitsLocal();
+      })
+      .catch(() => {}),
+    fetch(`${SUPABASE_URL}/rest/v1/workouts?workout_type=eq.sprint&select=workout_date&order=workout_date.desc&limit=200`, sbGet)
+      .then(r => r.ok ? r.json() : [])
+      .then(rows => { if (Array.isArray(rows)) sprintDates = new Set(rows.map(r => r.workout_date)); })
+      .catch(() => {}),
+    fetch(`${SUPABASE_URL}/rest/v1/weekly_checkins?select=week_start,checkin_date,sprints_this_week,alcohol,sleep_before_10pm,protein_225g,fasted_walks,score&order=week_start.desc&limit=8`, sbGet)
+      .then(r => r.ok ? r.json() : [])
+      .then(rows => { if (Array.isArray(rows)) checkinRows = rows; })
+      .catch(() => {}),
+    fetch(`${SUPABASE_URL}/rest/v1/body_composition?select=measurement_date,visceral_fat_grade&visceral_fat_grade=not.is.null&order=measurement_date.desc&limit=2`, sbGet)
+      .then(r => r.ok ? r.json() : [])
+      .then(rows => { if (Array.isArray(rows)) bodyComp = rows; })
+      .catch(() => {}),
+  ]);
+
   // Load today's session — try window.storage first, fall back to localStorage crash save
   try {
     const todayKey = `session-${getDateStr()}`;
@@ -1919,6 +2021,567 @@ async function loadAll() {
       }
     } catch(e2) { sessionState = {}; }
   }
+}
+
+// ============================================================
+// FEAT-11: ACCOUNTABILITY DASHBOARD — streaks that surface drift before the scale does
+// ============================================================
+function dateOffset(dateStr, n) { const d = new Date(dateStr + 'T12:00:00'); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); }
+function daysBetween(a, b) { return Math.round((new Date(b + 'T12:00:00') - new Date(a + 'T12:00:00')) / 86400000); }
+function weekStartOf(dateStr) { const d = new Date(dateStr + 'T12:00:00'); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return d.toISOString().slice(0, 10); }
+
+function habitFor(date) { return dailyHabits[date] || {}; }
+function persistHabitsLocal() { try { localStorage.setItem('daily-habits', JSON.stringify(dailyHabits)); } catch(e) {} }
+
+async function setHabit(date, field, val) {
+  dailyHabits[date] = { protein:false, sleep:false, alcohol:false, sprint:false, walk:false, ...(dailyHabits[date] || {}), [field]: !!val };
+  persistHabitsLocal();
+  mountDashboard();
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/daily_habits?on_conflict=habit_date`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}`, Prefer: 'resolution=merge-duplicates' },
+      body: JSON.stringify({ habit_date: date, ...dailyHabits[date], updated_at: new Date().toISOString() })
+    });
+  } catch(e) { /* local copy is the fallback */ }
+}
+function toggleHabit(field) { const d = getDateStr(); setHabit(d, field, !habitFor(d)[field]); }
+
+function allSprintDates() {
+  const s = new Set(sprintDates);
+  historyStore.forEach(h => { if (h.title && h.title.includes('SPRINT')) s.add(h.date); });
+  Object.entries(dailyHabits).forEach(([d, h]) => { if (h.sprint) s.add(d); });
+  return s;
+}
+function sprintsInWeek(weekStart) {
+  let n = 0;
+  allSprintDates().forEach(d => { if (weekStartOf(d) === weekStart) n++; });
+  return n;
+}
+// Consecutive weeks with 2+ sprints. The in-progress week counts once it hits 2 but never breaks the streak.
+function sprintWeekStreak() {
+  const thisWeek = weekStartOf(getDateStr());
+  const thisCount = sprintsInWeek(thisWeek);
+  let week = thisCount >= 2 ? thisWeek : dateOffset(thisWeek, -7);
+  let streak = 0;
+  while (sprintsInWeek(week) >= 2 && streak < 104) { streak++; week = dateOffset(week, -7); }
+  return { streak, thisCount };
+}
+// Consecutive days with the habit confirmed, ending today (or yesterday if today isn't logged yet).
+function habitStreak(field) {
+  const today = getDateStr();
+  let d = habitFor(today)[field] ? today : dateOffset(today, -1);
+  let n = 0;
+  while (habitFor(d)[field] && n < 366) { n++; d = dateOffset(d, -1); }
+  return n;
+}
+// Latest of: an explicit daily alcohol log, or the end of the most recent check-in week that reported alcohol
+function lastAlcoholDate() {
+  const days = Object.keys(dailyHabits).filter(d => dailyHabits[d].alcohol).sort();
+  const fromHabits = days.length ? days[days.length - 1] : null;
+  const row = checkinRows.find(r => r.alcohol === true);
+  const fromCheckin = row ? dateOffset(row.week_start, 6) : null;
+  if (fromHabits && fromCheckin) return fromHabits > fromCheckin ? fromHabits : fromCheckin;
+  return fromHabits || fromCheckin;
+}
+function alcoholFreeDays() {
+  const last = lastAlcoholDate();
+  return last ? Math.max(0, daysBetween(last, getDateStr())) : null;
+}
+
+function dashboardHTML() {
+  const today = getDateStr();
+  const h = habitFor(today);
+  const sp = sprintWeekStreak();
+  const alc = alcoholFreeDays();
+  const prot = habitStreak('protein');
+  const slp = habitStreak('sleep');
+  const cls = n => n > 0 ? 'hot' : 'cold';
+  const unit = (n, u) => `<span style="font-size:12px">${u}${n === 1 ? '' : 's'}</span>`;
+  const dateLbl = new Date().toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+  return `<div class="dash-panel" id="dashPanel">
+    <div class="dash-title"><span>📋 Accountability</span><span class="dash-date">${dateLbl}</span></div>
+    ${resetProtocol.active ? resetBannerHTML() : ''}
+    <div class="dash-grid">
+      <div class="dash-tile">
+        <div class="dash-tile-label">🔥 Sprint streak</div>
+        <div class="dash-tile-val ${cls(sp.streak)}">${sp.streak} ${unit(sp.streak, 'wk')}</div>
+        <div class="dash-tile-sub">2+ sprints/week · this week <strong style="color:${sp.thisCount >= 2 ? 'var(--green)' : 'var(--orange)'}">${sp.thisCount}/2</strong></div>
+      </div>
+      <div class="dash-tile">
+        <div class="dash-tile-label">🚫 Alcohol-free</div>
+        <div class="dash-tile-val ${alc === null ? 'cold' : cls(alc)}">${alc === null ? '—' : alc + ' ' + unit(alc, 'day')}</div>
+        <button class="dash-toggle ${h.alcohol ? 'warn' : ''}" onclick="toggleHabit('alcohol')">${h.alcohol ? '🍺 Logged today · undo' : 'Had a drink today'}</button>
+      </div>
+      <div class="dash-tile">
+        <div class="dash-tile-label">🥩 Protein 225g+</div>
+        <div class="dash-tile-val ${cls(prot)}">${prot} ${unit(prot, 'day')}</div>
+        <button class="dash-toggle ${h.protein ? 'on' : ''}" onclick="toggleHabit('protein')">${h.protein ? '✓ Hit 225g today' : '○ Hit 225g today?'}</button>
+      </div>
+      <div class="dash-tile">
+        <div class="dash-tile-label">😴 Bed by 10PM</div>
+        <div class="dash-tile-val ${cls(slp)}">${slp} ${unit(slp, 'day')}</div>
+        <button class="dash-toggle ${h.sleep ? 'on' : ''}" onclick="toggleHabit('sleep')">${h.sleep ? '✓ In bed by 10 last night' : '○ In bed by 10 last night?'}</button>
+      </div>
+    </div>
+    ${vfWidgetHTML()}
+    ${checkinStatusHTML()}
+  </div>`;
+}
+
+// FEAT-13: visceral fat grade — the number this whole protocol exists to move
+function vfStatus(g) {
+  if (g <= 10) return { label:'GREEN',  color:'var(--green)',  note:'Target zone — hold it' };
+  if (g <= 12) return { label:'YELLOW', color:'var(--accent)', note:'Trending right — keep the sprints' };
+  if (g === 13) return { label:'ORANGE', color:'var(--orange)', note:'Elevated — protocol week' };
+  return { label:'RED · ACTION REQUIRED', color:'var(--red)', note:'Sprints + fasted walks + zero alcohol' };
+}
+function vfWidgetHTML() {
+  const cur = bodyComp[0], prev = bodyComp[1];
+  if (!cur) return `<div class="vf-row vf-empty">🩻 Visceral fat grade — no Fitdays scans logged yet</div>`;
+  const g = parseInt(cur.visceral_fat_grade, 10);
+  const st = vfStatus(g);
+  const pg = prev ? parseInt(prev.visceral_fat_grade, 10) : null;
+  const arrow = pg === null ? ''
+    : g < pg ? `<span style="color:var(--green)">▼ down from ${pg}</span>`
+    : g > pg ? `<span style="color:var(--red)">▲ up from ${pg}</span>`
+    : `<span style="color:var(--dim2)">→ unchanged from last scan</span>`;
+  const age = daysBetween(cur.measurement_date, getDateStr());
+  const ageLbl = age <= 0 ? 'today' : `${age} day${age === 1 ? '' : 's'} ago`;
+  const nudge = age > 14 ? `<div class="vf-nudge">⚠️ ${age} days since your last scan — step on the Fitdays scale</div>` : '';
+  return `<div class="vf-row" style="border-color:${st.color}">
+    <div class="vf-grade" style="color:${st.color}">${g}</div>
+    <div class="vf-body">
+      <div class="dash-tile-label">🩻 Visceral fat grade · <span style="color:${st.color}">${st.label}</span></div>
+      <div class="vf-meta">${arrow}${arrow ? ' · ' : ''}${st.note}</div>
+      <div class="vf-meta" style="color:${age > 14 ? 'var(--orange)' : 'var(--dim)'}">Scanned ${formatDate(cur.measurement_date)} · ${ageLbl}</div>
+    </div>
+  </div>${nudge}`;
+}
+
+// ============================================================
+// FEAT-12: SUNDAY PROTOCOL CHECK-IN — mandatory before the week closes out
+// ============================================================
+let checkinDraft = {};
+
+// Sunday closes the week that started the previous Monday
+function checkinWeekStart() { return weekStartOf(getDateStr()); }
+
+function storedCheckin(ws) {
+  const remote = checkinRows.find(r => r.week_start === ws && r.score !== null && r.score !== undefined);
+  if (remote) return remote;
+  try { const v = localStorage.getItem(`checkin-done-${ws}`); return v ? JSON.parse(v) : null; } catch(e) { return null; }
+}
+
+function checkinScore(d) {
+  let s = 0;
+  if ((d.sprints ?? 0) >= 2) s++;
+  if (d.alcohol === false) s++;
+  if (d.sleep === 'yes' || d.sleep === 'most') s++;
+  if (d.protein === true) s++;
+  if ((d.walks ?? 0) >= 3) s++;
+  return s;
+}
+function checkinComplete(d) {
+  return ['sprints','alcohol','sleep','protein','walks'].every(k => d[k] !== undefined);
+}
+function scoreColor(s) { return s >= 4 ? 'var(--green)' : s === 3 ? 'var(--accent)' : 'var(--red)'; }
+
+function maybeShowCheckin() {
+  if (new Date().getDay() !== 0) return false;
+  const ws = checkinWeekStart();
+  if (storedCheckin(ws)) return false;
+  try { if (sessionStorage.getItem('checkin-snoozed')) return false; } catch(e) {}
+  openCheckin(ws);
+  return true;
+}
+
+function openCheckin(ws) {
+  ws = ws || checkinWeekStart();
+  const logged = sprintsInWeek(ws);
+  checkinDraft = { ws, sprints: Math.min(logged, 3) };
+  renderCheckinForm();
+  document.getElementById('checkinOverlay').classList.add('open');
+}
+function ciPick(field, val) { checkinDraft[field] = val; renderCheckinForm(); }
+function snoozeCheckin() {
+  try { sessionStorage.setItem('checkin-snoozed', '1'); } catch(e) {}
+  closeCheckin();
+}
+function closeCheckin() {
+  document.getElementById('checkinOverlay').classList.remove('open');
+  maybeOfferResetProtocol();
+}
+
+function renderCheckinForm() {
+  const d = checkinDraft;
+  const box = document.getElementById('checkinBox');
+  const lit = v => typeof v === 'string' ? `'${v}'` : String(v);
+  const opt = (field, val, label, bad) =>
+    `<button class="ci-opt ${d[field] === val ? 'sel' + (bad ? ' bad' : '') : ''}" onclick="ciPick('${field}',${lit(val)})">${label}</button>`;
+  const weekLbl = `${formatDate(d.ws)} – ${formatDate(dateOffset(d.ws, 6))}`;
+  const logged = sprintsInWeek(d.ws);
+  box.innerHTML = `
+    <div class="checkin-title">📝 SUNDAY PROTOCOL CHECK-IN</div>
+    <div class="checkin-sub">Week of ${weekLbl}. Five honest answers before the week closes — the score is the early-warning system.</div>
+
+    <div class="ci-q">
+      <div class="ci-q-label"><span>⚡ Sprints this week</span><span class="ci-q-hint">${logged} logged in app</span></div>
+      <div class="ci-opts">${opt('sprints',0,'0',true)}${opt('sprints',1,'1',true)}${opt('sprints',2,'2')}${opt('sprints',3,'2+')}</div>
+      ${d.sprints !== undefined && d.sprints < 2 ? '<div class="ci-warn">⚠️ Under 2 sprints — the visceral fat protocol needs two a week</div>' : ''}
+    </div>
+    <div class="ci-q">
+      <div class="ci-q-label"><span>🍺 Any alcohol this week?</span></div>
+      <div class="ci-opts">${opt('alcohol',true,'Yes',true)}${opt('alcohol',false,'No')}</div>
+    </div>
+    <div class="ci-q">
+      <div class="ci-q-label"><span>😴 In bed before 10PM</span></div>
+      <div class="ci-opts">${opt('sleep','yes','Yes')}${opt('sleep','most','Most nights')}${opt('sleep','no','No',true)}</div>
+    </div>
+    <div class="ci-q">
+      <div class="ci-q-label"><span>🥩 225g protein most days</span></div>
+      <div class="ci-opts">${opt('protein',true,'Yes')}${opt('protein',false,'No',true)}</div>
+    </div>
+    <div class="ci-q">
+      <div class="ci-q-label"><span>🚶 Fasted walks (days)</span><span class="ci-q-hint">3+ scores</span></div>
+      <div class="ci-opts">${[0,1,2,3,4,5,6,7].map(n => opt('walks', n, String(n), n < 3)).join('')}</div>
+    </div>
+    <div class="ci-q">
+      <div class="ci-q-label"><span>Notes (optional)</span></div>
+      <textarea class="ci-notes" id="ciNotes" placeholder="Travel, illness, wins, anything the numbers don't show…">${d.notes || ''}</textarea>
+    </div>
+    <button class="ci-submit" id="ciSubmit" onclick="submitCheckin()" ${checkinComplete(d) ? '' : 'disabled'}>SUBMIT CHECK-IN${checkinComplete(d) ? ` · SCORE ${checkinScore(d)}/5` : ''}</button>
+    <button class="ci-later" onclick="snoozeCheckin()">Not now — ask me again next time I open the app</button>`;
+}
+
+async function submitCheckin() {
+  const d = checkinDraft;
+  if (!checkinComplete(d)) return;
+  const score = checkinScore(d);
+  const notes = (document.getElementById('ciNotes')?.value || '').trim();
+  const row = {
+    week_start: d.ws, checkin_date: getDateStr(),
+    sprints_this_week: d.sprints, alcohol: d.alcohol, sleep_before_10pm: d.sleep,
+    protein_225g: d.protein, fasted_walks: d.walks, score, notes: notes || null
+  };
+  try { localStorage.setItem(`checkin-done-${d.ws}`, JSON.stringify(row)); } catch(e) {}
+  checkinRows = [row, ...checkinRows.filter(r => r.week_start !== d.ws)];
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/weekly_checkins`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}`, Prefer: 'return=minimal' },
+      body: JSON.stringify(row)
+    });
+  } catch(e) { /* local copy is the fallback */ }
+  renderCheckinResult(row);
+  mountDashboard();
+}
+
+function openCheckinResult() {
+  const row = storedCheckin(checkinWeekStart()) || checkinRows.find(r => r.score !== null && r.score !== undefined);
+  if (!row) return openCheckin();
+  renderCheckinResult(row);
+  document.getElementById('checkinOverlay').classList.add('open');
+}
+
+function renderCheckinResult(row) {
+  const box = document.getElementById('checkinBox');
+  const score = row.score;
+  // 4-week trend, oldest → newest, ending at the reviewed week
+  const weeks = [3,2,1,0].map(n => dateOffset(row.week_start, -7 * n));
+  const trend = weeks.map(ws => {
+    const r = ws === row.week_start ? row : checkinRows.find(x => x.week_start === ws);
+    const s = r && r.score !== null && r.score !== undefined ? r.score : null;
+    const h = s === null ? 6 : Math.max(6, (s / 5) * 52);
+    return `<div class="ci-trend-col">
+      <div class="ci-trend-val">${s === null ? '—' : s}</div>
+      <div class="ci-trend-bar ${s === null ? 'none' : s < 3 ? 'low' : ''}" style="height:${h}px"></div>
+      <div class="ci-trend-lbl">${formatDate(ws).slice(4)}</div>
+    </div>`;
+  }).join('');
+  const recovery = score < 3 ? `<div class="ci-recovery">
+      <strong>⚠️ RECOVERY PRIORITY THIS WEEK</strong><br>
+      Score under 3 — the protocol slipped. Next 7 days: two sprints (Wed + Sat, non-negotiable) · fasted walk every morning · zero alcohol · 225g protein · in bed by 10. Lift at reference weights, no PR chasing, until the score is back to 3+.
+      ${resetProtocol.active ? '' : `<button class="ci-submit" style="background:var(--red);color:var(--white);margin-top:10px" onclick="enterResetProtocol()">🔄 START RESET WEEK NOW</button>`}
+    </div>` : score === 5 ? `<div class="ci-recovery" style="background:var(--green-dim);border-color:rgba(77,255,170,0.35)"><strong style="color:var(--green)">🏆 PERFECT WEEK</strong> — every lever pulled. Visceral fat has nowhere to hide.</div>` : '';
+  box.innerHTML = `
+    <div class="checkin-title">📝 WEEK OF ${formatDate(row.week_start).toUpperCase()}</div>
+    <div class="ci-score" style="color:${scoreColor(score)}">${score}<span style="font-size:22px;color:var(--dim2)">/5</span></div>
+    <div class="ci-score-sub">Protocol score · ${score >= 4 ? 'on track' : score === 3 ? 'holding' : 'drifting'}</div>
+    <div class="ci-trend">${trend}</div>
+    <div class="ci-score-sub" style="margin-bottom:6px">4-week trend</div>
+    ${recovery}
+    <button class="ci-submit" onclick="closeCheckin()">LOAD TODAY'S SESSION ›</button>`;
+}
+
+function checkinStatusHTML() {
+  const ws = checkinWeekStart();
+  const row = storedCheckin(ws);
+  if (row) return `<div class="ci-status"><span>📝 Weekly check-in · score <strong style="color:${scoreColor(row.score)}">${row.score}/5</strong></span><button onclick="openCheckinResult()">Trend</button></div>`;
+  if (new Date().getDay() === 0) return `<div class="ci-status"><span>📝 Sunday check-in due</span><button onclick="openCheckin()">Check in</button></div>`;
+  const last = checkinRows.find(r => r.score !== null && r.score !== undefined);
+  return `<div class="ci-status"><span>📝 Weekly check-in opens Sunday${last ? ` · last score <strong style="color:${scoreColor(last.score)}">${last.score}/5</strong>` : ''}</span></div>`;
+}
+
+// ============================================================
+// FEAT-14: POST-BREAK RESET PROTOCOL — auto-offered after a 7+ day gap
+// ============================================================
+function scheduledType(idx) {
+  let t = dayTypeOverride[getDateStr()] || WEEK[idx].type;
+  if (resetProtocol.active && RESET_TYPE_MAP[t]) t = RESET_TYPE_MAP[t];
+  return t;
+}
+function loggedDateSet() {
+  const s = new Set(completedDates);
+  historyStore.forEach(h => { if (h.date) s.add(h.date); });
+  return s;
+}
+function lastLoggedDate() {
+  const dates = [...loggedDateSet()].sort();
+  return dates.length ? dates[dates.length - 1] : null;
+}
+// Consecutive logged days ending today (or yesterday), counted only from the reset entry date
+function consecutiveLoggedDays() {
+  const logged = loggedDateSet();
+  const floor = resetProtocol.entryDate || '0000-00-00';
+  const today = getDateStr();
+  let d = logged.has(today) ? today : dateOffset(today, -1);
+  let n = 0;
+  while (logged.has(d) && d >= floor && n < 60) { n++; d = dateOffset(d, -1); }
+  return n;
+}
+function persistResetProtocol() { try { localStorage.setItem('reset-protocol', JSON.stringify(resetProtocol)); } catch(e) {} }
+
+function maybeOfferResetProtocol() {
+  if (resetProtocol.active) return false;
+  const last = lastLoggedDate();
+  if (!last) return false;
+  const gap = daysBetween(last, getDateStr());
+  if (gap < 7) return false;
+  try { if (localStorage.getItem('reset-prompt-dismissed') === last) return false; } catch(e) {}
+  showResetPrompt(gap, last);
+  return true;
+}
+
+function showResetPrompt(gap, last) {
+  const box = document.getElementById('resetBox');
+  const title = gap ? `🔄 ${gap} DAYS SINCE YOUR LAST SESSION` : '🔄 START A RESET WEEK?';
+  const sub = gap
+    ? `Last logged: ${formatDate(last)}. A 7+ day gap is where the protocol usually unravels — a reset week rebuilds the habit stack before the heavy lifting.`
+    : 'Use this after travel, illness or a rough stretch. It rebuilds the habit stack before you chase numbers again.';
+  box.innerHTML = `
+    <div class="checkin-title">${title}</div>
+    <div class="checkin-sub">${sub}</div>
+    <div class="reset-list">
+      <div>⚡ Sprints + fasted walks are the priority</div>
+      <div>💪 Upper / Lower only — push and pull days fold into them</div>
+      <div>🏆 PRs shown as reference, not targets</div>
+      <div>☑️ Daily checklist on the dashboard: sprint · walk · protein · sleep</div>
+      <div>✅ Ends itself after 7 consecutive logged days</div>
+    </div>
+    <button class="ci-submit" onclick="enterResetProtocol()">START RESET WEEK</button>
+    <button class="ci-later" onclick="dismissResetPrompt()">${gap ? "Not now — I'm picking up where I left off" : 'Cancel'}</button>`;
+  document.getElementById('resetOverlay').classList.add('open');
+}
+function closeResetPrompt() { document.getElementById('resetOverlay').classList.remove('open'); }
+function dismissResetPrompt() {
+  try { localStorage.setItem('reset-prompt-dismissed', lastLoggedDate() || ''); } catch(e) {}
+  closeResetPrompt();
+}
+
+function enterResetProtocol() {
+  resetProtocol = { active:true, entryDate:getDateStr() };
+  persistResetProtocol();
+  closeResetPrompt();
+  document.getElementById('checkinOverlay').classList.remove('open');
+  Object.keys(prSyncCache).forEach(k => delete prSyncCache[k]);
+  updateResetModePill();
+  updateHeader();
+  showToast('🔄 Reset week started');
+  renderWorkoutView();
+}
+function exitResetProtocol(auto) {
+  resetProtocol = { active:false, entryDate:null };
+  persistResetProtocol();
+  updateResetModePill();
+  updateHeader();
+  showToast(auto ? '✅ 7 days logged — reset complete, full protocol is back' : '↩ Reset week ended');
+  renderWorkoutView();
+}
+function checkResetAutoExit() {
+  if (resetProtocol.active && consecutiveLoggedDays() >= 7) exitResetProtocol(true);
+}
+
+function updateResetModePill() {
+  const pill = document.getElementById('resetModePill');
+  if (!pill) return;
+  if (resetProtocol.active) {
+    const day = daysBetween(resetProtocol.entryDate, getDateStr()) + 1;
+    pill.className = 'rehab-mode-pill rehab-active';
+    pill.innerHTML = `<span class="rehab-pill-label" style="color:var(--blue)">🔄 RESET WEEK · DAY ${day}</span><button class="rehab-pill-toggle" onclick="exitResetProtocol(false)">End</button>`;
+  } else {
+    pill.className = 'rehab-mode-pill';
+    pill.innerHTML = `<button class="rehab-activate-btn" onclick="showResetPrompt(0, null)">🔄 Reset Week</button>`;
+  }
+}
+
+function resetBannerHTML() {
+  const today = getDateStr();
+  const day = daysBetween(resetProtocol.entryDate, today) + 1;
+  const streak = consecutiveLoggedDays();
+  const h = habitFor(today);
+  const sprintToday = allSprintDates().has(today) || !!h.sprint;
+  const item = (on, field, label) => `<button class="reset-check ${on ? 'on' : ''}" onclick="toggleHabit('${field}')">${on ? '✓' : '○'} ${label}</button>`;
+  return `<div class="reset-banner" id="resetBanner">
+    <div class="reset-top">
+      <div>
+        <div class="reset-title">🔄 RESET WEEK · DAY ${day}</div>
+        <div class="reset-sub">${streak}/7 consecutive days logged · upper/lower only · PRs are reference, not targets</div>
+      </div>
+      <button class="ga-back-btn" onclick="exitResetProtocol(false)">End</button>
+    </div>
+    <div class="reset-checks">
+      ${item(sprintToday, 'sprint', 'Sprint')}
+      ${item(!!h.walk, 'walk', 'Fasted walk')}
+      ${item(!!h.protein, 'protein', 'Protein 225g')}
+      ${item(!!h.sleep, 'sleep', 'Bed by 10')}
+    </div>
+  </div>`;
+}
+
+// ============================================================
+// FEAT-9: PICK & CHOOSE — the preset is a starting point, the session list is yours
+// ============================================================
+function todayPlan() { return sessionPlan[getDateStr()] || { added:[], removed:[], order:[] }; }
+function ensurePlan() {
+  const d = getDateStr();
+  if (!sessionPlan[d]) sessionPlan[d] = { added:[], removed:[], order:[] };
+  return sessionPlan[d];
+}
+function planHasEdits() {
+  const p = todayPlan();
+  return (p.added || []).length > 0 || (p.removed || []).length > 0 || (p.order || []).length > 0;
+}
+function persistSessionPlan() {
+  try { localStorage.setItem('session-plan', JSON.stringify(sessionPlan)); } catch(e) {}
+  try { window.storage.set('session-plan', JSON.stringify(sessionPlan)).catch(()=>{}); } catch(e) {}
+}
+function isPickedExercise(exId) { return (todayPlan().added || []).some(e => e.id === exId); }
+
+// Session sections for a preset day: preset minus removals, plus picks; a custom order collapses to one list
+function getSessionSections(type) {
+  const workout = WORKOUTS[type];
+  if (!workout) return [];
+  const plan = todayPlan();
+  const removed = new Set(plan.removed || []);
+  const sections = workout.sections
+    .map(s => ({ label: s.label, exercises: s.exercises.filter(e => !removed.has(e.id)) }))
+    .filter(s => s.exercises.length);
+  const picks = (plan.added || []).filter(e => !removed.has(e.id));
+  if (picks.length) sections.push({ label: 'Your Picks ✚', exercises: picks });
+  if ((plan.order || []).length) {
+    const all = sections.flatMap(s => s.exercises);
+    const byId = Object.fromEntries(all.map(e => [e.id, e]));
+    const ordered = plan.order.map(id => byId[id]).filter(Boolean);
+    const rest = all.filter(e => !plan.order.includes(e.id));
+    return [{ label: `${workout.title} · your order`, exercises: [...ordered, ...rest] }];
+  }
+  return sections;
+}
+function getSessionExercises(type) { return getSessionSections(type).flatMap(s => s.exercises); }
+
+// A library pick reuses the preset definition (and id, so PRs/notes/swaps carry over) when one exists
+function makePickedExercise(name, muscle, poolEntry) {
+  const preset = findExByNameAnywhere(name);
+  if (preset) return JSON.parse(JSON.stringify(preset));
+  const id = 'x-' + name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  return {
+    id, name, muscle,
+    sets: [{wt:0,reps:'8-12'},{wt:0,reps:'8-12'},{wt:0,reps:'8-12'}],
+    chips: { sets:'3 Sets', reps:'8-12 reps', tag: poolEntry ? `${poolEntry.tier} tier` : 'Pick' },
+    cue: 'Added on the fly — set a working weight on the first set and progress from there.'
+  };
+}
+
+function showPickSheet(type) {
+  const overlay = document.getElementById('pickOverlay');
+  const list = document.getElementById('pickOptionsList');
+  if (!overlay || !list || !WORKOUTS[type]) return;
+  const inUse = new Set(getSessionExercises(type).map(e => (getSwap(e.id) || e.name).toLowerCase()));
+  const equipLabel = { machine:'Machine', smith:'Smith', cable:'Cable', free:'Free Weight' };
+  const tierColor = { 'S+': 'var(--accent)', 'S': '#22c55e', 'A': 'var(--purple)' };
+  const groups = Object.entries(ROTATION_POOLS).map(([muscle, pool]) => {
+    const opts = pool.filter(p => !inUse.has(p.name.toLowerCase()));
+    if (!opts.length) return '';
+    const rows = opts.map(p => `<div class="swap-option" onclick="addSessionEx('${p.name.replace(/'/g,"\\'")}','${muscle}','${type}')">
+        <span class="swap-option-name">${p.name}</span>
+        <span class="swap-option-tag" style="color:${tierColor[p.tier] || 'var(--dim2)'}">${p.tier} · ${equipLabel[p.equip] || p.equip}</span>
+      </div>`).join('');
+    return `<div class="swap-equip-group"><div class="swap-equip-label">${muscle.replace('_', ' ')}</div>${rows}</div>`;
+  }).join('');
+  list.innerHTML = groups || `<div style="font-size:11px;color:var(--dim2);padding:8px 0">Everything in the library is already in today's session.</div>`;
+  overlay.classList.add('open');
+}
+function closePickSheet(e) {
+  if (e && e.target !== document.getElementById('pickOverlay')) return;
+  document.getElementById('pickOverlay').classList.remove('open');
+}
+
+function addSessionEx(name, muscle, type) {
+  if (!WORKOUTS[type]) return;
+  const plan = ensurePlan();
+  const poolEntry = (ROTATION_POOLS[muscle] || []).find(p => p.name === name);
+  const ex = makePickedExercise(name, muscle, poolEntry);
+  if (getSessionExercises(type).some(e => e.id === ex.id)) { closePickSheet(); showToast("Already in today's session"); return; }
+  plan.removed = (plan.removed || []).filter(id => id !== ex.id); // re-adding a removed preset just restores it
+  const presetOfToday = WORKOUTS[type].sections.some(s => s.exercises.some(e => e.id === ex.id));
+  if (!presetOfToday && !(plan.added || []).some(e => e.id === ex.id)) (plan.added = plan.added || []).push(ex);
+  if ((plan.order || []).length) plan.order.push(ex.id);
+  persistSessionPlan();
+  closePickSheet();
+  showToast(`✚ ${name} added to today`);
+  renderWorkoutView();
+}
+
+function removeSessionEx(exId, type) {
+  const plan = ensurePlan();
+  const wasPick = (plan.added || []).some(e => e.id === exId);
+  if (wasPick) plan.added = plan.added.filter(e => e.id !== exId);
+  else if (!(plan.removed || []).includes(exId)) (plan.removed = plan.removed || []).push(exId);
+  plan.order = (plan.order || []).filter(id => id !== exId);
+  persistSessionPlan();
+  const ex = getExById(exId);
+  showToast(`✕ ${ex ? (getSwap(exId) || ex.name) : 'Exercise'} removed for today`);
+  renderWorkoutView();
+}
+
+function moveSessionEx(exId, dir, type) {
+  const ids = getSessionExercises(type).map(e => e.id);
+  const i = ids.indexOf(exId);
+  const j = i + dir;
+  if (i < 0 || j < 0 || j >= ids.length) return;
+  [ids[i], ids[j]] = [ids[j], ids[i]];
+  ensurePlan().order = ids;
+  persistSessionPlan();
+  renderWorkoutView();
+  const card = document.getElementById(`card-${exId}`);
+  if (card) { card.classList.add('expanded'); card.scrollIntoView({ behavior:'smooth', block:'center' }); }
+}
+
+function resetSessionPlan() {
+  delete sessionPlan[getDateStr()];
+  persistSessionPlan();
+  showToast('↺ Preset list restored');
+  renderWorkoutView();
+}
+
+// The dashboard sits above whatever the TODAY tab rendered (workout, sprint, recovery, vacation, activity)
+function mountDashboard() {
+  const scroll = document.getElementById('mainScroll');
+  if (!scroll || currentView !== 'workout') return;
+  const old = document.getElementById('dashPanel');
+  if (old) old.remove();
+  scroll.insertAdjacentHTML('afterbegin', dashboardHTML());
 }
 
 // ============================================================
@@ -1993,14 +2656,16 @@ function buildDayPills() {
 function updateHeader() {
   const days = ['SUNDAY','MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY'];
   document.getElementById('hdrDay').textContent = days[new Date().getDay()];
-  document.getElementById('hdrType').textContent = WEEK[currentDayIdx].label;
+  const day = WEEK[currentDayIdx];
+  const folded = resetProtocol.active && RESET_TYPE_MAP[day.type];
+  document.getElementById('hdrType').textContent = folded ? `${folded === 'legs' ? 'LOWER' : 'UPPER'} · RESET` : day.label;
 }
 
 async function selectDay(idx) {
   currentDayIdx = idx;
   buildDayPills();
   if (currentView === 'workout') {
-    const _selType = dayTypeOverride[getDateStr()] || WEEK[idx].type;
+    const _selType = scheduledType(idx);
     if (_selType !== 'rest') {
       showPRSyncPill();
       await syncPRsFromSupabase(_selType);
@@ -2031,6 +2696,11 @@ function renderCurrentView() {
 // WORKOUT VIEW
 // ============================================================
 function renderWorkoutView() {
+  renderWorkoutBody();
+  mountDashboard();
+}
+
+function renderWorkoutBody() {
   const day = WEEK[currentDayIdx];
   const scroll = document.getElementById('mainScroll');
 
@@ -2044,54 +2714,29 @@ function renderWorkoutView() {
     renderRecoveryDay(day.key); return;
   }
 
-  // Compute effective workout type (may be overridden for this date)
   const todayDateStr = getDateStr();
-  const effectiveType = dayTypeOverride[todayDateStr] || day.type;
+
+  // FEAT-15: any day can be swapped for a group class / activity
+  if (groupActivityOverride[todayDateStr] && ALTERNATIVE_ACTIVITIES[groupActivityOverride[todayDateStr]]) {
+    renderAlternativeActivity(groupActivityOverride[todayDateStr], true); return;
+  }
+
+  // Compute effective workout type (date override, then reset-week upper/lower folding)
+  const effectiveType = scheduledType(currentDayIdx);
 
   if (effectiveType === 'rest') { renderRestDay(day.key); return; }
 
   const workout = WORKOUTS[effectiveType];
   if (!workout) { scroll.innerHTML = '<div class="empty-state">No workout data for this day.</div>'; return; }
 
-  const sectionsForProgress = (effectiveType === 'fort' && fortCancelled)
-    ? workout.sections.filter(s => s.label !== 'If At FORT')
-    : (effectiveType === 'fort' && !fortCancelled)
-      ? workout.sections.filter(s => s.label === 'If At FORT' || s.label.includes('Ab'))
-      : workout.sections;
-
+  const sessionSections = getSessionSections(effectiveType);
   const allExIds = [];
-  sectionsForProgress.forEach(s => s.exercises.forEach(e => allExIds.push(e.id)));
+  sessionSections.forEach(s => s.exercises.forEach(e => allExIds.push(e.id)));
 
   // Check rotation alerts
   const rotationAlerts = getRotationAlerts(effectiveType);
 
   let html = '';
-
-  // FORT cancelled banner (only when scheduled type is FORT and no override)
-  if (day.type === 'fort' && !dayTypeOverride[todayDateStr]) {
-    if (fortCancelled) {
-      html += `<div class="fort-cancel-banner">
-        <div class="fort-cancel-top">
-          <div class="fort-cancel-title">🏠 HOME LOWER DAY</div>
-          <div class="fort-mode-indicator">✓ FORT CANCELLED</div>
-        </div>
-        <div class="fort-cancel-sub">Swapped to your full home gym lower body protocol. All the gains, none of the commute.</div>
-        <div class="fort-cancel-btns">
-          <button class="fort-btn fort-btn-fort" onclick="toggleFortCancelled()">↩ FORT Was On After All</button>
-        </div>
-      </div>`;
-    } else {
-      html += `<div class="fort-cancel-banner">
-        <div class="fort-cancel-top">
-          <div class="fort-cancel-title">📍 FORT / LOWER DAY</div>
-        </div>
-        <div class="fort-cancel-sub">Heading to FORT? Go get it. Class got cancelled? Hit the home gym lower body sub below.</div>
-        <div class="fort-cancel-btns">
-          <button class="fort-btn fort-btn-go" onclick="toggleFortCancelled()">🏠 FORT Cancelled — Home Lower Day</button>
-        </div>
-      </div>`;
-    }
-  }
 
   // Location selector
   const hgActive = sessionLocation === 'HG' ? ' loc-active' : '';
@@ -2104,8 +2749,8 @@ function renderWorkoutView() {
 
   // Workout header
   html += `<div class="w-header">
-    <div class="w-title"><span>${workout.emoji}</span>${fortCancelled && effectiveType==='fort' ? 'HOME LOWER DAY' : workout.title}</div>
-    <div class="w-chips">${(fortCancelled && effectiveType==='fort' ? ['Home Gym Lower Body','Hassan Protocol'] : workout.chips).map(c => `<span class="wchip bg-${effectiveType} c-${effectiveType}">${c}</span>`).join('')}</div>
+    <div class="w-title"><span>${workout.emoji}</span>${workout.title}</div>
+    <div class="w-chips">${workout.chips.map(c => `<span class="wchip bg-${effectiveType} c-${effectiveType}">${c}</span>`).join('')}</div>
     <div class="prog-row">
       <span class="prog-label">Progress</span>
       <div class="mini-bar"><div class="mini-bar-fill bar-${effectiveType}" id="dayProg" style="width:0%"></div></div>
@@ -2114,8 +2759,8 @@ function renderWorkoutView() {
   </div>`;
 
   // Type selector row
-  const workoutTypes = ['upper', 'push', 'pull', 'legs', 'fort'];
-  const typeLabels = { upper: 'UPPER', push: 'PUSH', pull: 'PULL', legs: 'LEGS', fort: 'FLEX' };
+  const workoutTypes = resetProtocol.active ? ['upper', 'legs'] : ['upper', 'push', 'pull', 'legs'];
+  const typeLabels = resetProtocol.active ? { upper: 'UPPER', legs: 'LOWER' } : { upper: 'UPPER', push: 'PUSH', pull: 'PULL', legs: 'LEGS' };
   html += `<div class="w-type-selector">
     <span class="type-selector-label">Pick a type:</span>`;
   workoutTypes.forEach(wType => {
@@ -2127,8 +2772,14 @@ function renderWorkoutView() {
   }
   html += `</div>`;
 
+  // FEAT-15: group class / activity swap available on any day
+  html += `<div class="ga-row">
+    <span class="type-selector-label">Class instead?</span>
+    <button class="ga-btn" onclick="event.stopPropagation();showGroupActivitySheet()">🥊 Swap today for a group class / activity</button>
+  </div>`;
+
   // Done banner
-  const doneBannerTitle = (fortCancelled && effectiveType==='fort') ? 'HOME LOWER DAY COMPLETE' : `${workout.title} COMPLETE`;
+  const doneBannerTitle = `${workout.title} COMPLETE`;
   html += `<div class="done-banner" id="doneBanner">
     <div class="done-emoji">${workout.emoji}</div>
     <div class="done-title">${doneBannerTitle}</div>
@@ -2198,14 +2849,7 @@ function renderWorkoutView() {
     </div>
   </div>`;
 
-  // Exercises — if FORT day and cancelled, skip "If At FORT" section, show only sub + abs
-  const sectionsToRender = (effectiveType === 'fort' && fortCancelled)
-    ? workout.sections.filter(s => s.label !== 'If At FORT')
-    : (effectiveType === 'fort' && !fortCancelled)
-      ? workout.sections.filter(s => s.label === 'If At FORT' || s.label.includes('Ab'))
-      : workout.sections;
-
-  sectionsToRender.forEach(section => {
+  sessionSections.forEach(section => {
     html += `<div class="sec-label">${section.label}</div>`;
     section.exercises.forEach(exRaw => {
       const ex = getExForLocation(exRaw);
@@ -2216,6 +2860,10 @@ function renderWorkoutView() {
       html += buildExCard(ex, isDone, savedWeights, hasPRThisSession, effectiveType);
     });
   });
+
+  // FEAT-9: the preset is a starting point — add from the library, remove, reorder
+  html += `<button class="pick-add-btn" onclick="showPickSheet('${effectiveType}')">✚ ADD EXERCISE FROM LIBRARY</button>`;
+  if (planHasEdits()) html += `<button class="pick-reset" onclick="resetSessionPlan()">↺ Restore today's preset list</button>`;
 
   // Notes + Save
   const savedNotes = (sessionState['__notes__'] || {}).notes || '';
@@ -2250,16 +2898,18 @@ function renderWorkoutView() {
 function buildExCard(ex, isDone, savedWeights, hasPR, type) {
   const doneClass = isDone ? 'done' : '';
   const prCardClass = hasPR ? 'pr-card' : '';
-  const isPRReady = prReadyFlags.has(ex.name);
+  // FEAT-14: during a reset week PRs are shown as reference only — no targets, no PR-ready push
+  const refOnly = resetProtocol.active;
+  const isPRReady = prReadyFlags.has(ex.name) && !refOnly;
   const prReadyClass = isPRReady ? 'pr-ready' : '';
   const c = ex.chips || {};
   let chipsHtml = '';
   if (c.sets) chipsHtml += `<span class="chip chip-sets">${c.sets}</span>`;
   if (c.reps) chipsHtml += `<span class="chip chip-reps">${c.reps}</span>`;
   if (hasPR) chipsHtml += `<span class="chip chip-pr-badge">🏆 PR SESSION</span>`;
-  else if (c.pr) chipsHtml += `<span class="chip chip-pr">${c.pr}</span>`;
+  else if (c.pr) chipsHtml += refOnly ? `<span class="chip chip-ref">REF · ${c.pr}</span>` : `<span class="chip chip-pr">${c.pr}</span>`;
   if (isPRReady) chipsHtml += `<span class="chip" style="background:rgba(255,140,0,0.15);color:#ff8c00;border:1px solid rgba(255,140,0,0.4);">🔥 PR READY</span>`;
-  if (c.target) chipsHtml += `<span class="chip chip-target">${c.target}</span>`;
+  if (c.target && !refOnly) chipsHtml += `<span class="chip chip-target">${c.target}</span>`;
   if (c.tag) chipsHtml += `<span class="chip chip-hassan">${c.tag}</span>`;
 
   const prBadgeHtml = hasPR ? `<span class="pr-badge">🏆 NEW PR</span>` : '';
@@ -2369,13 +3019,23 @@ function buildExCard(ex, isDone, savedWeights, hasPR, type) {
     detail += `<button class="skip-btn ${skipBtnState}" id="skip-${ex.id}" onclick="skipExercise('${ex.id}','${type}')" style="background:var(--dim1);color:var(--dim2);margin-top:8px;">${skipBtnText}</button>`;
   }
 
+  // FEAT-9: reorder / remove controls on preset workout days
+  if (WORKOUTS[type]) {
+    detail += `<div class="pick-row">
+      <button class="pick-mini" onclick="event.stopPropagation();moveSessionEx('${ex.id}',-1,'${type}')" title="Move up">▲</button>
+      <button class="pick-mini" onclick="event.stopPropagation();moveSessionEx('${ex.id}',1,'${type}')" title="Move down">▼</button>
+      <button class="pick-mini pick-remove" onclick="event.stopPropagation();removeSessionEx('${ex.id}','${type}')">✕ Remove from today</button>
+    </div>`;
+  }
+  const pickedTag = isPickedExercise(ex.id) ? `<span class="pick-tag">✚ PICK</span>` : '';
+
   return `<div class="ex-card ${doneClass} ${prCardClass} ${prReadyClass}" id="card-${ex.id}" data-exid="${ex.id}">
     <div class="ex-hdr" onclick="toggleCard('${ex.id}')">
       <button class="check-btn" onclick="toggleDone(event,'${ex.id}','${type}')">✓</button>
       <div class="ex-info">
         <div class="ex-name-row">
           <span class="ex-name">${displayName}</span>
-          ${prBadgeHtml}${rotFlagHtml}${levelUpHtml}
+          ${prBadgeHtml}${rotFlagHtml}${levelUpHtml}${pickedTag}
         </div>
         <div class="ex-chips">${chipsHtml}</div>
       </div>
@@ -2464,7 +3124,7 @@ function getRotationAlerts(workoutType) {
   if (!workout) return [];
   const alerts = [];
 
-  workout.sections.forEach(section => {
+  getSessionSections(workoutType).forEach(section => {
     section.exercises.forEach(ex => {
       const freq = exerciseFreq[ex.id] || 0;
       if (freq >= 3) {
@@ -2484,15 +3144,51 @@ function dismissAlert(id) {
   if (el) el.classList.remove('visible');
 }
 
-function toggleFortCancelled() {
-  fortCancelled = !fortCancelled;
-  // Persist choice for today so page reload remembers
-  const key = `fort-cancelled-${getDateStr()}`;
-  if (fortCancelled) {
-    window.storage.set(key, '1').catch(()=>{});
-  } else {
-    window.storage.delete(key).catch(()=>{});
-  }
+// ── FEAT-15: ANY-DAY GROUP ACTIVITY SWAP ─────────────────────
+function persistGroupActivityOverrides() {
+  try { window.storage.set('group-activity-overrides', JSON.stringify(groupActivityOverride)).catch(()=>{}); } catch(e) {}
+  try { localStorage.setItem('group-activity-overrides', JSON.stringify(groupActivityOverride)); } catch(e) {}
+}
+
+function groupActivityOptions() {
+  return Object.values(ALTERNATIVE_ACTIVITIES).filter(a => a.type !== 'timer');
+}
+
+function activityShortTitle(a) {
+  return a.title.replace(/^\S+\s/, '');
+}
+
+function showGroupActivitySheet() {
+  const overlay = document.getElementById('gaOverlay');
+  const list = document.getElementById('gaOptionsList');
+  if (!overlay || !list) return;
+  list.innerHTML = groupActivityOptions().map(a => `
+    <div class="swap-option" onclick="setGroupActivity('${a.id}')">
+      <span class="swap-option-name">${a.emoji} ${activityShortTitle(a)}</span>
+      <span class="swap-option-tag">${a.duration ? a.duration + ' MIN' : 'CLASS'}</span>
+    </div>`).join('');
+  overlay.classList.add('open');
+}
+
+function closeGroupActivitySheet(e) {
+  if (e && e.target !== document.getElementById('gaOverlay')) return;
+  document.getElementById('gaOverlay').classList.remove('open');
+}
+
+function setGroupActivity(activityId) {
+  const a = ALTERNATIVE_ACTIVITIES[activityId];
+  if (!a) return;
+  groupActivityOverride[getDateStr()] = activityId;
+  persistGroupActivityOverrides();
+  closeGroupActivitySheet();
+  showToast(`${a.emoji} Today → ${activityShortTitle(a)}`);
+  renderWorkoutView();
+}
+
+function clearGroupActivity() {
+  delete groupActivityOverride[getDateStr()];
+  persistGroupActivityOverrides();
+  showToast('↩ Back to scheduled session');
   renderWorkoutView();
 }
 
@@ -2568,10 +3264,9 @@ function showSwapSheet(exId, muscle, type, originalName) {
   const currentName = getSwap(exId) || originalName;
   current.innerHTML = `<strong>${currentName}</strong>`;
 
-  // Collect all display names already in use for this workout day (to exclude)
-  const w = WORKOUTS[type];
+  // Collect all display names already in use for this session (to exclude)
   const inUse = new Set([currentName]);
-  if (w) w.sections.forEach(s => s.exercises.forEach(e => inUse.add(getSwap(e.id) || e.name)));
+  if (WORKOUTS[type]) getSessionExercises(type).forEach(e => inUse.add(getSwap(e.id) || e.name));
 
   const pool = ROTATION_POOLS[muscle] || [];
   const alts = pool.filter(e => !inUse.has(e.name));
@@ -2831,6 +3526,11 @@ function getExById(id) {
       if (ex) return ex;
     }
   }
+  // FEAT-9: exercises picked from the library for a session
+  for (const p of Object.values(sessionPlan)) {
+    const ex = (p.added || []).find(e => e.id === id);
+    if (ex) return ex;
+  }
   return null;
 }
 
@@ -2871,6 +3571,9 @@ function buildExNameToIdMap() {
         }
       }
     }
+  }
+  for (const p of Object.values(sessionPlan)) {
+    (p.added || []).forEach(ex => { if (ex.name && ex.id && !map[ex.name.toLowerCase()]) map[ex.name.toLowerCase()] = ex.id; });
   }
   return map;
 }
@@ -2942,7 +3645,7 @@ async function syncPRsFromSupabase(workoutType) {
 function startTimerForEx(exId, type) {
   const workout = WORKOUTS[type];
   if (!workout) return;
-  const allExes = workout.sections.flatMap(s => s.exercises);
+  const allExes = getSessionExercises(type);
   let exName = '', nextName = null, ex = null;
   for (const e of allExes) {
     if (e.id === exId) { exName = getSwap(exId) || e.name; ex = e; }
@@ -3021,7 +3724,7 @@ function completeSet(exId, setIdx, type) {
     // Find next INCOMPLETE exercise (respects out-of-order completion)
     const workout = WORKOUTS[type];
     if (workout) {
-      const allExes = workout.sections.flatMap(s => s.exercises);
+      const allExes = getSessionExercises(type);
       let foundCurrent = false;
       // First pass: look for next incomplete exercise AFTER current
       for (const e of allExes) {
@@ -3116,8 +3819,7 @@ function getSessionDuration() {
 function updateDayProgressDOM(type) {
   const workout = WORKOUTS[type];
   if (!workout) return;
-  const ids = workout.sections.flatMap(s => s.exercises.map(e => e.id));
-  updateDayProgress(ids);
+  updateDayProgress(getSessionExercises(type).map(e => e.id));
 }
 
 function updateDayProgress(allExIds) {
@@ -3168,13 +3870,8 @@ async function saveWorkout(type, dayKey) {
   const exercises = [];
   let newPRs = [];
 
-  // Use sections that are currently rendered (respects fort cancelled state)
-  const sectionsToSave = (type === 'fort' && fortCancelled)
-    ? workout.sections.filter(s => s.label !== 'If At FORT')
-    : (type === 'fort' && !fortCancelled)
-      ? workout.sections.filter(s => s.label === 'If At FORT' || s.label.includes('Ab'))
-      : workout.sections;
-
+  // FEAT-9: preset workout days save the session list (picks added, removals honoured)
+  const sectionsToSave = WORKOUTS[type] ? getSessionSections(type) : workout.sections;
   for (const section of sectionsToSave) {
     for (const ex of section.exercises) {
       const state = sessionState[ex.id] || {};
@@ -3198,7 +3895,7 @@ async function saveWorkout(type, dayKey) {
   const watch = sessionState['__watch__'] || {};
   const entry = {
     id: Date.now(), date: getDateStr(), dayKey,
-    type, title: (type === 'fort' && fortCancelled) ? 'HOME LOWER DAY' : workout.title,
+    type, title: workout.title,
     emoji: workout.emoji,
     exercises, newPRs,
     notes: (sessionState['__notes__']||{}).notes || '',
@@ -3231,9 +3928,11 @@ async function saveWorkout(type, dayKey) {
 
   // Also save to Supabase for cloud persistence and PR sync
   try {
+    // workouts.workout_type CHECK allows upper/push/pull/legs/arms/flex/sprint/recovery — the
+    // app's internal 'rest' type (activities, vacation) maps to 'flex' so the row isn't rejected
     const supabasePayload = {
       workout_date: getDateStr(),
-      workout_type: type,
+      workout_type: type === 'rest' ? 'flex' : type,
       location: sessionLocation === 'HG' ? 'Home Gym' : 'Lifetime Fitness',
       exercises: exercises,
       duration_minutes: sessionStart ? Math.floor((Date.now() - sessionStart) / 60000) : null,
@@ -3373,11 +4072,8 @@ function generateSessionSummary(type) {
   lines.push('');
   lines.push(type === 'recovery' ? '🏥 REHAB EXERCISES' : '💪 EXERCISES');
 
-  const sections = (type === 'fort' && fortCancelled)
-    ? workout.sections.filter(s => s.label !== 'If At FORT')
-    : workout.sections;
-
-  sections.forEach(section => {
+  const summarySections = WORKOUTS[type] ? getSessionSections(type) : workout.sections;
+  summarySections.forEach(section => {
     section.exercises.forEach(ex => {
       const state   = sessionState[ex.id] || {};
       const weights = state.weights || ex.sets.map(s => s.wt);
@@ -3608,7 +4304,7 @@ function renderSummaryView() {
   // Recent week summary
   html += `<div class="sec-label">Recent Sessions</div>`;
 
-  ['upper','push','pull','legs','fort'].forEach(type => {
+  ['upper','push','pull','legs'].forEach(type => {
     const sessions = recentByType[type];
     if (!sessions || sessions.length === 0) return;
     const cur = sessions[0];
@@ -3720,8 +4416,8 @@ function renderSummaryView() {
 // HISTORY VIEW — Live query from Supabase Edge Function
 // ============================================================
 const HISTORY_API = 'https://fnjjfnsdxibjbzldfgit.supabase.co/functions/v1/workout-history';
-const WORKOUT_EMOJIS = { legs:'🦵', push:'🔥', pull:'💙', upper:'💪', lower:'🟢', fort:'🏙️', cardio:'🏃', arms:'💪', 'full body':'⚡' };
-const WORKOUT_LABELS_H = { legs:'Legs', push:'Push Day', pull:'Pull Day', upper:'Upper Day', lower:'Lower Day', fort:'FORT / Lower', cardio:'Cardio', arms:'Arms', 'full body':'Full Body' };
+const WORKOUT_EMOJIS = { legs:'🦵', push:'🔥', pull:'💙', upper:'💪', lower:'🟢', sprint:'⚡', flex:'🥊', recovery:'🦴', cardio:'🏃', arms:'💪', 'full body':'⚡' };
+const WORKOUT_LABELS_H = { legs:'Legs', push:'Push Day', pull:'Pull Day', upper:'Upper Day', lower:'Lower Day', sprint:'Sprint', flex:'Class / Flex', recovery:'Recovery', cardio:'Cardio', arms:'Arms', 'full body':'Full Body' };
 
 let historyCache = null;       // full data from API
 let historyFilter = 'all';     // current type filter
@@ -3741,7 +4437,7 @@ async function renderHistoryView() {
         <button class="hist-search-clear ${historySearch ? 'visible' : ''}" id="histClear" onclick="clearHistorySearch()">✕</button>
       </div>
       <div class="hist-filter-row" id="histFilters">
-        ${['all','legs','push','pull','upper','fort','cardio'].map(f =>
+        ${['all','legs','push','pull','upper','sprint','flex'].map(f =>
           `<button class="hf-btn ${historyFilter===f?'active':''}" onclick="setHistoryFilter('${f}')">${f==='all'?'All':WORKOUT_LABELS_H[f]||f}</button>`
         ).join('')}
       </div>
@@ -4264,6 +4960,7 @@ function invalidateProgressCache() {
 // Invalidate cache when a new workout is saved so History refreshes
 function invalidateHistoryCache() {
   historyCache = null;
+  checkResetAutoExit(); // FEAT-14: local history already has today's save
   // Re-fetch completed dates so day pills update immediately after saving
   fetch('https://fnjjfnsdxibjbzldfgit.supabase.co/functions/v1/workout-history?limit=200')
     .then(r => r.json())
@@ -4271,6 +4968,7 @@ function invalidateHistoryCache() {
       if (json.ok && Array.isArray(json.workouts)) {
         completedDates = new Set(json.workouts.map(w => w.workout_date));
         buildDayPills();
+        checkResetAutoExit();
       }
     })
     .catch(() => {});
@@ -4624,24 +5322,35 @@ function renderSprintDay(dayKey, content) {
 }
 
 // FEAT-4: Render selected alternative activity (yoga, pilates, dance, boxing)
-function renderAlternativeActivity(activityId) {
+function renderAlternativeActivity(activityId, fromGroupSwap = false) {
   const activity = ALTERNATIVE_ACTIVITIES[activityId];
-  if (!activity) return renderSprintDay('wed', REST_CONTENT.wed);
+  if (!activity) return fromGroupSwap ? clearGroupActivity() : renderSprintDay('wed', REST_CONTENT.wed);
 
   const scroll = document.getElementById('mainScroll');
-  const isDone = sessionState['activity_done'] || false;
 
-  let html = `
+  let html = '';
+  if (fromGroupSwap) {
+    const scheduled = WEEK[currentDayIdx];
+    html += `<div class="ga-banner" style="margin-top:6px">
+      <span><strong>GROUP SWAP</strong> · replacing today's ${scheduled.label} session</span>
+      <button class="ga-back-btn" onclick="clearGroupActivity()">↩ Back to ${scheduled.label}</button>
+    </div>`;
+  }
+
+  html += `
   <div style="padding:13px">
-    <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1px;margin-bottom:8px;color:var(--white);">${activity.emoji} ${activity.title.toUpperCase()}</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1px;margin-bottom:8px;color:var(--white);">${activity.emoji} ${activityShortTitle(activity).toUpperCase()}</div>
     <div style="font-size:11px;color:var(--dim2);margin-bottom:14px;">${activity.description}</div>
   </div>`;
 
-  // Activity selector pill
+  // Activity selector pills — the sprint timer is only offered on scheduled sprint days
+  const options = fromGroupSwap ? groupActivityOptions() : Object.values(ALTERNATIVE_ACTIVITIES);
+  const pick = fromGroupSwap ? 'setGroupActivity' : 'selectActivity';
+  const pillBase = "padding:6px 12px;border-radius:6px;border:1px solid var(--border2);background:var(--card2);color:var(--white);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.5px;";
   html += `<div style="padding:0 13px;margin-bottom:8px;display:flex;gap:6px;flex-wrap:wrap;justify-content:center;">`;
-  Object.values(ALTERNATIVE_ACTIVITIES).forEach(a => {
-    const active = a.id === activityId ? 'style="background:var(--accent);color:var(--black);font-weight:bold"' : '';
-    html += `<button class="pill" ${active} onclick="selectActivity('${a.id}')" style="padding:6px 12px;border-radius:4px;border:1px solid var(--dim1);background:var(--dim3);cursor:pointer;">${a.emoji} ${a.id.toUpperCase()}</button>`;
+  options.forEach(a => {
+    const active = a.id === activityId ? 'background:var(--accent);color:var(--black);border-color:var(--accent);' : '';
+    html += `<button class="pill" onclick="${pick}('${a.id}')" style="${pillBase}${active}">${a.emoji} ${a.id.toUpperCase()}</button>`;
   });
   html += `</div>`;
 
@@ -4691,6 +5400,7 @@ function renderAlternativeActivity(activityId) {
 
   scroll.innerHTML = html;
   scroll.scrollTop = 0;
+  updateDayProgress((activity.exercises || []).map(e => e.id));
 }
 
 function selectActivity(activityId) {
@@ -5039,6 +5749,36 @@ init();
     <div class="swap-section-label">Alternatives</div>
     <div class="swap-options" id="swapOptionsList"></div>
     <button class="swap-undo-btn" id="swapUndoBtn" onclick="undoSwap()" style="display:none">↩ Restore Original</button>
+  </div>
+</div>
+
+<!-- GROUP ACTIVITY SHEET (FEAT-15) -->
+<div class="swap-overlay" id="gaOverlay" onclick="closeGroupActivitySheet(event)">
+  <div class="swap-sheet">
+    <div class="swap-sheet-hdr">
+      <span class="swap-sheet-title">🥊 SWAP TODAY FOR A CLASS / ACTIVITY</span>
+      <button class="swap-close-btn" onclick="closeGroupActivitySheet()">✕</button>
+    </div>
+    <div class="swap-section-label">Replaces today's planned session · saves to history as Class / Flex</div>
+    <div class="swap-options" id="gaOptionsList"></div>
+  </div>
+</div>
+
+<!-- WEEKLY CHECK-IN (FEAT-12) -->
+<div class="checkin-overlay" id="checkinOverlay"><div class="checkin-box" id="checkinBox"></div></div>
+
+<!-- RESET PROTOCOL PROMPT (FEAT-14) -->
+<div class="checkin-overlay reset-overlay" id="resetOverlay"><div class="checkin-box" id="resetBox"></div></div>
+
+<!-- EXERCISE LIBRARY PICKER (FEAT-9) -->
+<div class="swap-overlay" id="pickOverlay" onclick="closePickSheet(event)">
+  <div class="swap-sheet">
+    <div class="swap-sheet-hdr">
+      <span class="swap-sheet-title">✚ ADD EXERCISE TO TODAY</span>
+      <button class="swap-close-btn" onclick="closePickSheet()">✕</button>
+    </div>
+    <div class="swap-section-label">Library · S+ / S / A tier · grouped by muscle · today's day type is kept for logging</div>
+    <div class="swap-options" id="pickOptionsList"></div>
   </div>
 </div>
 </body>

@@ -2,8 +2,8 @@
 
 **Purpose:** Personal strength training tracker with adaptive workout protocols, PR management, recovery modes, and multi-location gym support.
 
-**Current Version:** v11.1 (2026-03-18)  
-**Development Branch:** `claude/tender-newton-pHu5K`  
+**Current Version:** v12.2 (2026-09-14)  
+**Development Branch:** per session (latest: `claude/gracious-cori-y8e1ry`) — never push to `main` directly; merge after a Vercel preview check  
 **Deployment:** Vercel (single HTML file + Supabase backend)
 
 ---
@@ -66,6 +66,32 @@ commit_sha     (text)       — Git commit hash
 deployed_at    (timestamp)  — Deployment timestamp
 app_state      (text)       — Release notes / changelog
 ```
+
+#### `daily_habits` Table (FEAT-11 / FEAT-14)
+```
+habit_date     (date, PK)   — YYYY-MM-DD
+protein        (bool)       — hit 225g+
+sleep          (bool)       — in bed by 10PM (last night)
+alcohol        (bool)       — had a drink that day (resets the alcohol-free streak)
+sprint / walk  (bool)       — reset-week checklist items
+Anon: select / insert / update. Upsert on habit_date.
+```
+
+#### `weekly_checkins` Table (FEAT-12)
+```
+week_start     (date)       — Monday of the reviewed week (Sunday check-in closes it)
+sprints_this_week (int 0-10), alcohol (bool), sleep_before_10pm ('yes'|'most'|'no'),
+protein_225g (bool), fasted_walks (int 0-7), score (int 0-5), notes (text)
+Anon: select / insert (no update — the app inserts once per week_start).
+```
+
+#### `body_composition` Table (FEAT-13, read-only from the app)
+```
+measurement_date (date), visceral_fat_grade (int), weight_lbs, body_fat_percentage, …
+Written by the Fitdays import flow; the app only reads the two latest grades.
+```
+
+**`workouts.workout_type` CHECK:** `upper | push | pull | legs | arms | flex | sprint | recovery`. The app's internal `rest` type (activities, vacation) is saved as `flex`.
 
 ---
 
@@ -206,13 +232,13 @@ const SESSION_STALE_HOURS = 24;  // Sessions older than this are abandoned
 ## 4. MAJOR FEATURES
 
 ### 4.1 Workout Types & Weekly Rotation
-- **Upper Day (Mon)** — Upper body strength focus
-- **Push Day (Tue)** — Horizontal + vertical press emphasis
-- **Pull Day (Thu)** — Row + pulldown emphasis
-- **Leg Day (Fri/Sun)** — Lower body compound
-- **Flex Day (Wed/Sat)** — Swappable based on recovery mode
-- **Sprint (Wed alt)** — Hassan Protocol leg focus with Galaxy Watch data
+- **Mon Upper · Tue Lower (Leg Day programming, fixed since FEAT-15) · Wed Sprint · Thu Push · Fri Pull · Sat Sprint · Sun Legs**
+- **Sprint days (Wed/Sat)** — sprint timer, or an alternative activity (FEAT-4)
+- **Group class swap (FEAT-15)** — any workout day can be replaced by yoga / pilates / dance / boxing / Group HIIT Class (`groupActivityOverride[date]`)
+- **Pick & choose (FEAT-9)** — per-day session list = preset − removed + library picks, optionally reordered (`sessionPlan[date]`)
+- **Reset Protocol week (FEAT-14)** — push→upper, pull→legs, PRs reference-only, daily checklist, auto-exit after 7 logged days (`resetProtocol`)
 - **Vacation Mode (all days)** — Gym-free maintenance routines
+- **Render precedence in `renderWorkoutBody`:** vacation → back recovery → group activity → (reset folds the type) → rest/sprint → preset workout. The accountability dashboard (FEAT-11/12/13) is mounted above every TODAY render by `renderWorkoutView`.
 
 ### 4.2 Back Recovery Mode
 Global toggle (🦴 pill in header) that:
@@ -283,8 +309,7 @@ Triggers 150s rest between sets (heavy ATP recovery).
 - Unique constraint ensures no duplicate notes per date/gym
 
 ### 4.10 Rotation & Workout Flexing
-- **FORT Tuesday (FEAT-3)** — Swaps Tue to home lower body if gym unavailable
-- **Daily type override** — Map dates to custom workout types (dayTypeOverride)
+- **Daily type override** — Map dates to custom workout types (dayTypeOverride); FORT NYC and its Tuesday toggle were removed in v12.2
 - **Flex day assignments** — Wed/Sat can be recovery or sprint based on rotation
 - **Vacation Mode** — Switches all days to gym-free routines with bodyweight/minimal equipment
 
@@ -466,7 +491,11 @@ workout-crash-YYYY-MM-DD        // Crash recovery backup
 session-location                // HG or LT
 back-recovery-enabled           // Boolean
 day-type-override-YYYY-MM-DD    // Type override
-fort-cancelled-YYYY-MM-DD       // FORT Tuesday flag
+group-activity-overrides        // { date: activityId } (FEAT-15)
+session-plan                    // { date: { added, removed, order } } (FEAT-9)
+daily-habits                    // { date: { protein, sleep, alcohol, sprint, walk } } cache (FEAT-11)
+checkin-done-YYYY-MM-DD         // this week's submitted check-in (FEAT-12); sessionStorage checkin-snoozed
+reset-protocol                  // { active, entryDate } (FEAT-14); reset-prompt-dismissed = last logged date
 pr-store                        // JSON stringified PRs
 pr-streaks                      // JSON stringified streaks
 exercise-freq                   // Exercise usage tracking
