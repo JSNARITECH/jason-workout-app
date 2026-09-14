@@ -633,6 +633,17 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .ci-recovery strong{color:var(--red);}
 .ci-status{margin-top:8px;font-size:10px;color:var(--dim2);display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--card2);border:1px solid var(--border2);border-radius:9px;padding:7px 10px;}
 .ci-status button{background:none;border:1px solid var(--border2);color:var(--accent);border-radius:7px;padding:4px 8px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;flex-shrink:0;}
+
+/* RESET PROTOCOL WEEK (FEAT-14) */
+.reset-banner{background:rgba(77,170,255,0.08);border:1px solid rgba(77,170,255,0.35);border-radius:11px;padding:10px 11px;margin-bottom:9px;}
+.reset-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px;}
+.reset-title{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;color:var(--blue);}
+.reset-sub{font-size:9px;color:var(--dim2);line-height:1.35;margin-top:2px;}
+.reset-checks{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
+.reset-check{padding:7px 8px;border-radius:8px;border:1px solid var(--border2);background:var(--card2);color:var(--dim2);font-size:10px;font-weight:700;letter-spacing:0.5px;cursor:pointer;font-family:'DM Sans',sans-serif;text-align:left;}
+.reset-check.on{background:var(--green-dim);border-color:rgba(77,255,170,0.4);color:var(--green);}
+.reset-list{display:flex;flex-direction:column;gap:6px;font-size:11px;color:var(--dim2);margin-bottom:14px;line-height:1.4;}
+.chip-ref{background:var(--border2);color:var(--dim2);border:1px dashed var(--dim);}
 </style>
 </head>
 <body>
@@ -658,6 +669,7 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
     <div class="g-progress"><div class="g-progress-fill" id="gBar"></div></div>
     <div id="recoveryModePill" class="rehab-mode-pill"></div>
     <div id="vacationModePill" class="rehab-mode-pill"></div>
+    <div id="resetModePill" class="rehab-mode-pill"></div>
   </div>
 
   <div class="scroll-area" id="mainScroll"></div>
@@ -1710,6 +1722,8 @@ let dailyHabits = {};        // FEAT-11: { 'YYYY-MM-DD': { protein, sleep, alcoh
 let sprintDates = new Set(); // FEAT-11: dates with a logged sprint session (Supabase workouts, type 'sprint')
 let checkinRows = [];        // FEAT-12: weekly_checkins rows, newest first
 let bodyComp = [];           // FEAT-13: latest body_composition scans with a visceral fat grade, newest first
+let resetProtocol = { active:false, entryDate:null }; // FEAT-14: post-break reset week
+const RESET_TYPE_MAP = { push:'upper', pull:'legs' };  // reset week runs upper/lower only
 
 const SUPABASE_URL  = 'https://fnjjfnsdxibjbzldfgit.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZuampmbnNkeGliamJ6bGRmZ2l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY1MDM2MjAsImV4cCI6MjA4MjA3OTYyMH0.oZYn5OXKZH2h1wGfIj_R1L8Hlk3ytGFBgDCyGqUcatk';
@@ -1788,8 +1802,11 @@ async function init() {
   // Load all persisted data
   await loadAll();
 
+  // FEAT-14: a reset week that has hit 7 consecutive logged days ends itself
+  checkResetAutoExit();
+
   // Sync PRs from Supabase before first render (dayTypeOverride is now loaded)
-  const _initType = dayTypeOverride[getDateStr()] || WEEK[currentDayIdx].type;
+  const _initType = scheduledType(currentDayIdx);
   if (_initType !== 'rest') {
     showPRSyncPill();
     await syncPRsFromSupabase(_initType);
@@ -1801,8 +1818,9 @@ async function init() {
     document.getElementById('loadOverlay').classList.add('hidden');
   }, 400);
 
-  // FEAT-12: on Sundays the protocol check-in gates the week before the session loads
-  maybeShowCheckin();
+  // FEAT-12: on Sundays the protocol check-in gates the week before the session loads;
+  // FEAT-14: otherwise a 7+ day gap since the last logged session offers a reset week
+  if (!maybeShowCheckin()) maybeOfferResetProtocol();
 }
 
 async function loadAll() {
@@ -1857,6 +1875,13 @@ async function loadAll() {
     vacationMode = !!(v);
   } catch(e) { vacationMode = false; }
   updateVacationModePill();
+
+  // FEAT-14: Restore reset protocol state
+  try {
+    const v = localStorage.getItem('reset-protocol');
+    if (v) resetProtocol = { active:false, entryDate:null, ...JSON.parse(v) };
+  } catch(e) { resetProtocol = { active:false, entryDate:null }; }
+  updateResetModePill();
 
   // FEAT-4: Restore selected activity preference
   try {
@@ -2057,6 +2082,7 @@ function dashboardHTML() {
   const dateLbl = new Date().toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
   return `<div class="dash-panel" id="dashPanel">
     <div class="dash-title"><span>📋 Accountability</span><span class="dash-date">${dateLbl}</span></div>
+    ${resetProtocol.active ? resetBannerHTML() : ''}
     <div class="dash-grid">
       <div class="dash-tile">
         <div class="dash-tile-label">🔥 Sprint streak</div>
@@ -2163,7 +2189,10 @@ function snoozeCheckin() {
   try { sessionStorage.setItem('checkin-snoozed', '1'); } catch(e) {}
   closeCheckin();
 }
-function closeCheckin() { document.getElementById('checkinOverlay').classList.remove('open'); }
+function closeCheckin() {
+  document.getElementById('checkinOverlay').classList.remove('open');
+  maybeOfferResetProtocol();
+}
 
 function renderCheckinForm() {
   const d = checkinDraft;
@@ -2254,6 +2283,7 @@ function renderCheckinResult(row) {
   const recovery = score < 3 ? `<div class="ci-recovery">
       <strong>⚠️ RECOVERY PRIORITY THIS WEEK</strong><br>
       Score under 3 — the protocol slipped. Next 7 days: two sprints (Wed + Sat, non-negotiable) · fasted walk every morning · zero alcohol · 225g protein · in bed by 10. Lift at reference weights, no PR chasing, until the score is back to 3+.
+      ${resetProtocol.active ? '' : `<button class="ci-submit" style="background:var(--red);color:var(--white);margin-top:10px" onclick="enterResetProtocol()">🔄 START RESET WEEK NOW</button>`}
     </div>` : score === 5 ? `<div class="ci-recovery" style="background:var(--green-dim);border-color:rgba(77,255,170,0.35)"><strong style="color:var(--green)">🏆 PERFECT WEEK</strong> — every lever pulled. Visceral fat has nowhere to hide.</div>` : '';
   box.innerHTML = `
     <div class="checkin-title">📝 WEEK OF ${formatDate(row.week_start).toUpperCase()}</div>
@@ -2272,6 +2302,132 @@ function checkinStatusHTML() {
   if (new Date().getDay() === 0) return `<div class="ci-status"><span>📝 Sunday check-in due</span><button onclick="openCheckin()">Check in</button></div>`;
   const last = checkinRows.find(r => r.score !== null && r.score !== undefined);
   return `<div class="ci-status"><span>📝 Weekly check-in opens Sunday${last ? ` · last score <strong style="color:${scoreColor(last.score)}">${last.score}/5</strong>` : ''}</span></div>`;
+}
+
+// ============================================================
+// FEAT-14: POST-BREAK RESET PROTOCOL — auto-offered after a 7+ day gap
+// ============================================================
+function scheduledType(idx) {
+  let t = dayTypeOverride[getDateStr()] || WEEK[idx].type;
+  if (resetProtocol.active && RESET_TYPE_MAP[t]) t = RESET_TYPE_MAP[t];
+  return t;
+}
+function loggedDateSet() {
+  const s = new Set(completedDates);
+  historyStore.forEach(h => { if (h.date) s.add(h.date); });
+  return s;
+}
+function lastLoggedDate() {
+  const dates = [...loggedDateSet()].sort();
+  return dates.length ? dates[dates.length - 1] : null;
+}
+// Consecutive logged days ending today (or yesterday), counted only from the reset entry date
+function consecutiveLoggedDays() {
+  const logged = loggedDateSet();
+  const floor = resetProtocol.entryDate || '0000-00-00';
+  const today = getDateStr();
+  let d = logged.has(today) ? today : dateOffset(today, -1);
+  let n = 0;
+  while (logged.has(d) && d >= floor && n < 60) { n++; d = dateOffset(d, -1); }
+  return n;
+}
+function persistResetProtocol() { try { localStorage.setItem('reset-protocol', JSON.stringify(resetProtocol)); } catch(e) {} }
+
+function maybeOfferResetProtocol() {
+  if (resetProtocol.active) return false;
+  const last = lastLoggedDate();
+  if (!last) return false;
+  const gap = daysBetween(last, getDateStr());
+  if (gap < 7) return false;
+  try { if (localStorage.getItem('reset-prompt-dismissed') === last) return false; } catch(e) {}
+  showResetPrompt(gap, last);
+  return true;
+}
+
+function showResetPrompt(gap, last) {
+  const box = document.getElementById('resetBox');
+  const title = gap ? `🔄 ${gap} DAYS SINCE YOUR LAST SESSION` : '🔄 START A RESET WEEK?';
+  const sub = gap
+    ? `Last logged: ${formatDate(last)}. A 7+ day gap is where the protocol usually unravels — a reset week rebuilds the habit stack before the heavy lifting.`
+    : 'Use this after travel, illness or a rough stretch. It rebuilds the habit stack before you chase numbers again.';
+  box.innerHTML = `
+    <div class="checkin-title">${title}</div>
+    <div class="checkin-sub">${sub}</div>
+    <div class="reset-list">
+      <div>⚡ Sprints + fasted walks are the priority</div>
+      <div>💪 Upper / Lower only — push and pull days fold into them</div>
+      <div>🏆 PRs shown as reference, not targets</div>
+      <div>☑️ Daily checklist on the dashboard: sprint · walk · protein · sleep</div>
+      <div>✅ Ends itself after 7 consecutive logged days</div>
+    </div>
+    <button class="ci-submit" onclick="enterResetProtocol()">START RESET WEEK</button>
+    <button class="ci-later" onclick="dismissResetPrompt()">${gap ? "Not now — I'm picking up where I left off" : 'Cancel'}</button>`;
+  document.getElementById('resetOverlay').classList.add('open');
+}
+function closeResetPrompt() { document.getElementById('resetOverlay').classList.remove('open'); }
+function dismissResetPrompt() {
+  try { localStorage.setItem('reset-prompt-dismissed', lastLoggedDate() || ''); } catch(e) {}
+  closeResetPrompt();
+}
+
+function enterResetProtocol() {
+  resetProtocol = { active:true, entryDate:getDateStr() };
+  persistResetProtocol();
+  closeResetPrompt();
+  document.getElementById('checkinOverlay').classList.remove('open');
+  Object.keys(prSyncCache).forEach(k => delete prSyncCache[k]);
+  updateResetModePill();
+  updateHeader();
+  showToast('🔄 Reset week started');
+  renderWorkoutView();
+}
+function exitResetProtocol(auto) {
+  resetProtocol = { active:false, entryDate:null };
+  persistResetProtocol();
+  updateResetModePill();
+  updateHeader();
+  showToast(auto ? '✅ 7 days logged — reset complete, full protocol is back' : '↩ Reset week ended');
+  renderWorkoutView();
+}
+function checkResetAutoExit() {
+  if (resetProtocol.active && consecutiveLoggedDays() >= 7) exitResetProtocol(true);
+}
+
+function updateResetModePill() {
+  const pill = document.getElementById('resetModePill');
+  if (!pill) return;
+  if (resetProtocol.active) {
+    const day = daysBetween(resetProtocol.entryDate, getDateStr()) + 1;
+    pill.className = 'rehab-mode-pill rehab-active';
+    pill.innerHTML = `<span class="rehab-pill-label" style="color:var(--blue)">🔄 RESET WEEK · DAY ${day}</span><button class="rehab-pill-toggle" onclick="exitResetProtocol(false)">End</button>`;
+  } else {
+    pill.className = 'rehab-mode-pill';
+    pill.innerHTML = `<button class="rehab-activate-btn" onclick="showResetPrompt(0, null)">🔄 Reset Week</button>`;
+  }
+}
+
+function resetBannerHTML() {
+  const today = getDateStr();
+  const day = daysBetween(resetProtocol.entryDate, today) + 1;
+  const streak = consecutiveLoggedDays();
+  const h = habitFor(today);
+  const sprintToday = allSprintDates().has(today) || !!h.sprint;
+  const item = (on, field, label) => `<button class="reset-check ${on ? 'on' : ''}" onclick="toggleHabit('${field}')">${on ? '✓' : '○'} ${label}</button>`;
+  return `<div class="reset-banner" id="resetBanner">
+    <div class="reset-top">
+      <div>
+        <div class="reset-title">🔄 RESET WEEK · DAY ${day}</div>
+        <div class="reset-sub">${streak}/7 consecutive days logged · upper/lower only · PRs are reference, not targets</div>
+      </div>
+      <button class="ga-back-btn" onclick="exitResetProtocol(false)">End</button>
+    </div>
+    <div class="reset-checks">
+      ${item(sprintToday, 'sprint', 'Sprint')}
+      ${item(!!h.walk, 'walk', 'Fasted walk')}
+      ${item(!!h.protein, 'protein', 'Protein 225g')}
+      ${item(!!h.sleep, 'sleep', 'Bed by 10')}
+    </div>
+  </div>`;
 }
 
 // The dashboard sits above whatever the TODAY tab rendered (workout, sprint, recovery, vacation, activity)
@@ -2355,14 +2511,16 @@ function buildDayPills() {
 function updateHeader() {
   const days = ['SUNDAY','MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY'];
   document.getElementById('hdrDay').textContent = days[new Date().getDay()];
-  document.getElementById('hdrType').textContent = WEEK[currentDayIdx].label;
+  const day = WEEK[currentDayIdx];
+  const folded = resetProtocol.active && RESET_TYPE_MAP[day.type];
+  document.getElementById('hdrType').textContent = folded ? `${folded === 'legs' ? 'LOWER' : 'UPPER'} · RESET` : day.label;
 }
 
 async function selectDay(idx) {
   currentDayIdx = idx;
   buildDayPills();
   if (currentView === 'workout') {
-    const _selType = dayTypeOverride[getDateStr()] || WEEK[idx].type;
+    const _selType = scheduledType(idx);
     if (_selType !== 'rest') {
       showPRSyncPill();
       await syncPRsFromSupabase(_selType);
@@ -2418,8 +2576,8 @@ function renderWorkoutBody() {
     renderAlternativeActivity(groupActivityOverride[todayDateStr], true); return;
   }
 
-  // Compute effective workout type (may be overridden for this date)
-  const effectiveType = dayTypeOverride[todayDateStr] || day.type;
+  // Compute effective workout type (date override, then reset-week upper/lower folding)
+  const effectiveType = scheduledType(currentDayIdx);
 
   if (effectiveType === 'rest') { renderRestDay(day.key); return; }
 
@@ -2455,8 +2613,8 @@ function renderWorkoutBody() {
   </div>`;
 
   // Type selector row
-  const workoutTypes = ['upper', 'push', 'pull', 'legs'];
-  const typeLabels = { upper: 'UPPER', push: 'PUSH', pull: 'PULL', legs: 'LEGS' };
+  const workoutTypes = resetProtocol.active ? ['upper', 'legs'] : ['upper', 'push', 'pull', 'legs'];
+  const typeLabels = resetProtocol.active ? { upper: 'UPPER', legs: 'LOWER' } : { upper: 'UPPER', push: 'PUSH', pull: 'PULL', legs: 'LEGS' };
   html += `<div class="w-type-selector">
     <span class="type-selector-label">Pick a type:</span>`;
   workoutTypes.forEach(wType => {
@@ -2590,16 +2748,18 @@ function renderWorkoutBody() {
 function buildExCard(ex, isDone, savedWeights, hasPR, type) {
   const doneClass = isDone ? 'done' : '';
   const prCardClass = hasPR ? 'pr-card' : '';
-  const isPRReady = prReadyFlags.has(ex.name);
+  // FEAT-14: during a reset week PRs are shown as reference only — no targets, no PR-ready push
+  const refOnly = resetProtocol.active;
+  const isPRReady = prReadyFlags.has(ex.name) && !refOnly;
   const prReadyClass = isPRReady ? 'pr-ready' : '';
   const c = ex.chips || {};
   let chipsHtml = '';
   if (c.sets) chipsHtml += `<span class="chip chip-sets">${c.sets}</span>`;
   if (c.reps) chipsHtml += `<span class="chip chip-reps">${c.reps}</span>`;
   if (hasPR) chipsHtml += `<span class="chip chip-pr-badge">🏆 PR SESSION</span>`;
-  else if (c.pr) chipsHtml += `<span class="chip chip-pr">${c.pr}</span>`;
+  else if (c.pr) chipsHtml += refOnly ? `<span class="chip chip-ref">REF · ${c.pr}</span>` : `<span class="chip chip-pr">${c.pr}</span>`;
   if (isPRReady) chipsHtml += `<span class="chip" style="background:rgba(255,140,0,0.15);color:#ff8c00;border:1px solid rgba(255,140,0,0.4);">🔥 PR READY</span>`;
-  if (c.target) chipsHtml += `<span class="chip chip-target">${c.target}</span>`;
+  if (c.target && !refOnly) chipsHtml += `<span class="chip chip-target">${c.target}</span>`;
   if (c.tag) chipsHtml += `<span class="chip chip-hassan">${c.tag}</span>`;
 
   const prBadgeHtml = hasPR ? `<span class="pr-badge">🏆 NEW PR</span>` : '';
@@ -4631,6 +4791,7 @@ function invalidateProgressCache() {
 // Invalidate cache when a new workout is saved so History refreshes
 function invalidateHistoryCache() {
   historyCache = null;
+  checkResetAutoExit(); // FEAT-14: local history already has today's save
   // Re-fetch completed dates so day pills update immediately after saving
   fetch('https://fnjjfnsdxibjbzldfgit.supabase.co/functions/v1/workout-history?limit=200')
     .then(r => r.json())
@@ -4638,6 +4799,7 @@ function invalidateHistoryCache() {
       if (json.ok && Array.isArray(json.workouts)) {
         completedDates = new Set(json.workouts.map(w => w.workout_date));
         buildDayPills();
+        checkResetAutoExit();
       }
     })
     .catch(() => {});
@@ -5435,5 +5597,8 @@ init();
 
 <!-- WEEKLY CHECK-IN (FEAT-12) -->
 <div class="checkin-overlay" id="checkinOverlay"><div class="checkin-box" id="checkinBox"></div></div>
+
+<!-- RESET PROTOCOL PROMPT (FEAT-14) -->
+<div class="checkin-overlay reset-overlay" id="resetOverlay"><div class="checkin-box" id="resetBox"></div></div>
 </body>
 </html>
