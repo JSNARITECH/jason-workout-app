@@ -592,6 +592,14 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .dash-toggle{margin-top:4px;padding:5px 8px;border-radius:7px;border:1px solid var(--border2);background:none;color:var(--dim2);font-size:9px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;text-align:left;}
 .dash-toggle.on{background:var(--green-dim);border-color:rgba(77,255,170,0.4);color:var(--green);}
 .dash-toggle.warn{background:var(--red-dim);border-color:rgba(255,77,77,0.4);color:var(--red);}
+
+/* VISCERAL FAT GRADE WIDGET (FEAT-13) */
+.vf-row{display:flex;gap:11px;align-items:center;margin-top:8px;background:var(--card2);border:1px solid var(--border2);border-left-width:3px;border-radius:10px;padding:9px 11px;}
+.vf-row.vf-empty{font-size:10px;color:var(--dim2);}
+.vf-grade{font-family:'Bebas Neue',sans-serif;font-size:34px;line-height:1;min-width:34px;text-align:center;}
+.vf-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;}
+.vf-meta{font-size:9px;color:var(--dim2);line-height:1.3;}
+.vf-nudge{margin-top:6px;font-size:10px;color:var(--orange);background:var(--orange-dim);border:1px solid rgba(255,154,77,0.35);border-radius:8px;padding:6px 9px;font-weight:600;}
 </style>
 </head>
 <body>
@@ -1668,6 +1676,7 @@ let sessionLocation = 'HG'; // 'HG' = Home Gym, 'LT' = Lifetime Fitness
 let dailyHabits = {};        // FEAT-11: { 'YYYY-MM-DD': { protein, sleep, alcohol, sprint, walk } } — localStorage + daily_habits table
 let sprintDates = new Set(); // FEAT-11: dates with a logged sprint session (Supabase workouts, type 'sprint')
 let checkinRows = [];        // FEAT-12: weekly_checkins rows, newest first
+let bodyComp = [];           // FEAT-13: latest body_composition scans with a visceral fat grade, newest first
 
 const SUPABASE_URL  = 'https://fnjjfnsdxibjbzldfgit.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZuampmbnNkeGliamJ6bGRmZ2l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY1MDM2MjAsImV4cCI6MjA4MjA3OTYyMH0.oZYn5OXKZH2h1wGfIj_R1L8Hlk3ytGFBgDCyGqUcatk';
@@ -1902,6 +1911,10 @@ async function loadAll() {
       .then(r => r.ok ? r.json() : [])
       .then(rows => { if (Array.isArray(rows)) checkinRows = rows; })
       .catch(() => {}),
+    fetch(`${SUPABASE_URL}/rest/v1/body_composition?select=measurement_date,visceral_fat_grade&visceral_fat_grade=not.is.null&order=measurement_date.desc&limit=2`, sbGet)
+      .then(r => r.ok ? r.json() : [])
+      .then(rows => { if (Array.isArray(rows)) bodyComp = rows; })
+      .catch(() => {}),
   ]);
 
   // Load today's session — try window.storage first, fall back to localStorage crash save
@@ -2027,7 +2040,38 @@ function dashboardHTML() {
         <button class="dash-toggle ${h.sleep ? 'on' : ''}" onclick="toggleHabit('sleep')">${h.sleep ? '✓ In bed by 10 last night' : '○ In bed by 10 last night?'}</button>
       </div>
     </div>
+    ${vfWidgetHTML()}
   </div>`;
+}
+
+// FEAT-13: visceral fat grade — the number this whole protocol exists to move
+function vfStatus(g) {
+  if (g <= 10) return { label:'GREEN',  color:'var(--green)',  note:'Target zone — hold it' };
+  if (g <= 12) return { label:'YELLOW', color:'var(--accent)', note:'Trending right — keep the sprints' };
+  if (g === 13) return { label:'ORANGE', color:'var(--orange)', note:'Elevated — protocol week' };
+  return { label:'RED · ACTION REQUIRED', color:'var(--red)', note:'Sprints + fasted walks + zero alcohol' };
+}
+function vfWidgetHTML() {
+  const cur = bodyComp[0], prev = bodyComp[1];
+  if (!cur) return `<div class="vf-row vf-empty">🩻 Visceral fat grade — no Fitdays scans logged yet</div>`;
+  const g = parseInt(cur.visceral_fat_grade, 10);
+  const st = vfStatus(g);
+  const pg = prev ? parseInt(prev.visceral_fat_grade, 10) : null;
+  const arrow = pg === null ? ''
+    : g < pg ? `<span style="color:var(--green)">▼ down from ${pg}</span>`
+    : g > pg ? `<span style="color:var(--red)">▲ up from ${pg}</span>`
+    : `<span style="color:var(--dim2)">→ unchanged from last scan</span>`;
+  const age = daysBetween(cur.measurement_date, getDateStr());
+  const ageLbl = age <= 0 ? 'today' : `${age} day${age === 1 ? '' : 's'} ago`;
+  const nudge = age > 14 ? `<div class="vf-nudge">⚠️ ${age} days since your last scan — step on the Fitdays scale</div>` : '';
+  return `<div class="vf-row" style="border-color:${st.color}">
+    <div class="vf-grade" style="color:${st.color}">${g}</div>
+    <div class="vf-body">
+      <div class="dash-tile-label">🩻 Visceral fat grade · <span style="color:${st.color}">${st.label}</span></div>
+      <div class="vf-meta">${arrow}${arrow ? ' · ' : ''}${st.note}</div>
+      <div class="vf-meta" style="color:${age > 14 ? 'var(--orange)' : 'var(--dim)'}">Scanned ${formatDate(cur.measurement_date)} · ${ageLbl}</div>
+    </div>
+  </div>${nudge}`;
 }
 
 // The dashboard sits above whatever the TODAY tab rendered (workout, sprint, recovery, vacation, activity)
