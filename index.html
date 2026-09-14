@@ -117,18 +117,13 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .rotation-ex:hover,.rotation-ex:active{background:rgba(192,132,252,0.2);}
 .rotation-dismiss{font-size:10px;color:var(--dim);margin-top:8px;cursor:pointer;text-decoration:underline;}
 
-/* FORT CANCELLED BANNER */
-.fort-cancel-banner{background:rgba(255,77,77,0.08);border:1px solid rgba(255,77,77,0.25);border-radius:14px;padding:14px 15px;margin-bottom:14px;}
-.fort-cancel-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
-.fort-cancel-title{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1px;color:var(--red);}
-.fort-cancel-sub{font-size:11px;color:var(--dim2);line-height:1.4;margin-bottom:10px;}
-.fort-cancel-btns{display:flex;gap:8px;}
-.fort-btn{flex:1;padding:9px 10px;border-radius:10px;border:none;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all 0.2s;}
-.fort-btn-go{background:var(--green);color:#000;}
-.fort-btn-go:active{background:#3ddda0;}
-.fort-btn-fort{background:var(--border2);color:var(--dim2);}
-.fort-btn-fort:active{background:var(--border);}
-.fort-mode-indicator{display:flex;align-items:center;gap:7px;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:5px 10px;border-radius:8px;background:rgba(77,255,170,0.1);color:var(--green);border:1px solid rgba(77,255,170,0.2);}
+/* GROUP ACTIVITY SWAP (FEAT-15) */
+.ga-row{display:flex;gap:8px;align-items:center;margin:-4px 0 12px;flex-wrap:wrap;}
+.ga-btn{flex:1;padding:8px 10px;border-radius:9px;border:1px dashed rgba(255,77,77,0.4);background:var(--red-dim);color:var(--red);font-family:'DM Sans',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;}
+.ga-btn:active{opacity:0.7;}
+.ga-banner{background:var(--red-dim);border:1px solid rgba(255,77,77,0.3);border-radius:12px;padding:10px 13px;margin:0 13px 10px;display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px;color:var(--dim2);}
+.ga-banner strong{color:var(--red);}
+.ga-back-btn{background:var(--border2);border:none;color:var(--white);border-radius:8px;padding:7px 10px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;flex-shrink:0;}
 
 /* SECTION LABEL */
 .sec-label{font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:3px;color:var(--dim);margin:16px 0 7px;display:flex;align-items:center;gap:8px;}
@@ -497,11 +492,11 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 
 /* COLORS */
 .c-push{color:var(--orange);}.c-pull{color:var(--blue);}.c-legs{color:var(--accent);}
-.c-upper{color:var(--purple);}.c-lower{color:var(--green);}.c-fort{color:var(--red);}.c-rest{color:var(--dim2);}
+.c-upper{color:var(--purple);}.c-lower{color:var(--green);}.c-flex{color:var(--red);}.c-sprint{color:var(--accent);}.c-rest{color:var(--dim2);}
 .bg-push{background:var(--orange-dim);}.bg-pull{background:var(--blue-dim);}.bg-legs{background:var(--accent-dim);}
-.bg-upper{background:var(--purple-dim);}.bg-lower{background:var(--green-dim);}.bg-fort{background:var(--red-dim);}
+.bg-upper{background:var(--purple-dim);}.bg-lower{background:var(--green-dim);}.bg-flex{background:var(--red-dim);}
 .bar-push{background:var(--orange);}.bar-pull{background:var(--blue);}.bar-legs{background:var(--accent);}
-.bar-upper{background:var(--purple);}.bar-lower{background:var(--green);}.bar-fort{background:var(--red);}
+.bar-upper{background:var(--purple);}.bar-lower{background:var(--green);}.bar-flex{background:var(--red);}
 
 /* BPM IMPORT + ZONE BARS */
 .bpm-import-btn{width:100%;margin-top:10px;padding:8px 12px;border-radius:9px;border:1px dashed rgba(192,132,252,0.4);background:var(--purple-dim);color:var(--purple);font-size:10px;font-weight:700;letter-spacing:1.5px;cursor:pointer;font-family:'DM Sans',sans-serif;text-transform:uppercase;transition:all 0.2s;}
@@ -678,7 +673,7 @@ const APP_VERSION = 'v12.1';
 // ============================================================
 const WEEK = [
   { key:'mon', name:'Mon', type:'upper',  emoji:'💪', label:'UPPER' },
-  { key:'tue', name:'Tue', type:'fort',   emoji:'🥊', label:'FLEX/HIIT' },
+  { key:'tue', name:'Tue', type:'legs',   emoji:'🦵', label:'LOWER' },
   { key:'wed', name:'Wed', type:'rest',   emoji:'⚡', label:'SPRINT' },
   { key:'thu', name:'Thu', type:'push',   emoji:'🔥', label:'PUSH' },
   { key:'fri', name:'Fri', type:'pull',   emoji:'💙', label:'PULL' },
@@ -977,46 +972,6 @@ const WORKOUTS = {
       ]}
     ]
   },
-  fort:{
-    title:'TUESDAY FLEX DAY', emoji:'🥊',
-    chips:['Boxing · HIIT Class · Lower Body','Counts toward 90-min/wk HIIT target'],
-    sections:[
-      { label:'If At A Class (Boxing / HIIT)', exercises:[
-        { id:'f-class', name:'Boxing / HIIT Class', muscle:'full',
-          sets:[{wt:0,reps:'Full session'}],
-          chips:{sets:'Full Class',reps:'Zone 4 — 140-155 bpm'},
-          cue:'Target HR: 140–155 bpm throughout. This session = ~35-40 min toward your 90-min/week visceral fat HIIT threshold (Dr. Rhonda Patrick protocol). Log HR avg + max from Galaxy Watch after.' }
-      ]},
-      { label:'If Lower Day (Home Sub)', exercises:[
-        { id:'f-ext', name:'Leg Extension', muscle:'quads',
-          sets:[{wt:99,reps:'6'},{wt:121,reps:'FAIL'}],
-          chips:{sets:'2 Sets',reps:'6 reps',pr:'PR: 121 lbs',tag:'Hassan'},
-          hassan:true, cue:'Quad squeeze. Pause at peak.' },
-        { id:'f-squat', name:'Smith Machine Squat', muscle:'quads',
-          sets:[{wt:145,reps:'8'},{wt:165,reps:'8-10'}],
-          chips:{sets:'2 Sets',reps:'8-12 reps',pr:'PR: 155×10',target:'Target: 165 lbs'},
-          cue:'Feet forward. Sit back. Drive knees OUT. Protect lower back.' },
-        { id:'f-lunge', name:'DB Walking Lunges', muscle:'quads',
-          sets:[{wt:35,reps:'20 each'},{wt:40,reps:'20 each'}],
-          chips:{sets:'2 Sets',reps:'20 reps/leg',pr:'PR: 35 lb DBs',target:'Target: 40 lb DBs'},
-          cue:'Medium strides. Minimize rear leg push. Knee tracks toes.' },
-        { id:'f-curl', name:'Nordic Curl', muscle:'hams',
-          sets:[{wt:0,reps:'6-8'},{wt:0,reps:'6-8'}],
-          chips:{sets:'2 Sets',reps:'6-8 reps',pr:'PR: BW×8'},
-          cue:'No lying leg curl machine at Home Gym — anchor feet under a bench/partner, lower under control as far as possible, push back up.' },
-        { id:'f-abduct', name:'Hip Abduction Machine', muscle:'glutes',
-          sets:[{wt:55,reps:'15-20'},{wt:66,reps:'15-20'}],
-          chips:{sets:'2 Sets',reps:'15-20 reps',pr:'PR: 55 lbs (NEW baseline)'},
-          cue:'LEAN FORWARD 30°. 55 lbs baseline. Feel glute medius.' }
-      ]},
-      { label:'Ab Finisher 🎯', exercises:[
-        { id:'f-cable-crunch', name:'Cable Crunch', muscle:'abs',
-          sets:[{wt:0,reps:'15-20'},{wt:0,reps:'15-20'}],
-          chips:{sets:'2 Sets',reps:'15-20 reps',tag:'Nippard Abs'},
-          cue:'🔒 BACK RECOVERY: Kneel facing cable. Hands at temples. Crunch DOWN — flex spine, not arms. Full stretch at top. Eliminates spinal loading.' }
-      ]}
-    ]
-  },
   sat_mobility:{
     title:'SATURDAY DYNAMIC STRETCH', emoji:'🧘',
     chips:['Hip Mobility · Recovery · Deep Squat Position'],
@@ -1148,7 +1103,7 @@ const REST_CONTENT = {
     {icon:'😴',text:'Sleep is visceral fat medicine. Two weeks of poor sleep = 11% more visceral fat with zero weight change (RCT). Protect tonight\'s window. Magnesium before bed.'}
   ]},
   sat:{ title:'SPRINT + RECOVERY', icon:'⚡', sub:'Second HIIT session. Then full recharge.', tips:[
-    {icon:'⚡',text:'SPRINT PROTOCOL (2nd weekly HIIT session): 5-min warm-up walk → 6 × 30-sec MAX effort sprints (manual treadmill, lean hard) → 75-sec walking recovery between each (trial, was 90s) → 5-min cool-down. Total: ~24 min. Zone 4–5 target: 140–165+ bpm. Wed + Sat sprints = ~48 min pure HIIT. Add Tuesday class and you clear the 90-min/week visceral fat threshold.'},
+    {icon:'⚡',text:'SPRINT PROTOCOL (2nd weekly HIIT session): 5-min warm-up walk → 6 × 30-sec MAX effort sprints (manual treadmill, lean hard) → 75-sec walking recovery between each (trial, was 90s) → 5-min cool-down. Total: ~24 min. Zone 4–5 target: 140–165+ bpm. Wed + Sat sprints = ~48 min pure HIIT. Add a group class any day (swap button on any workout day) and you clear the 90-min/week visceral fat threshold.'},
     {icon:'📈',text:'Progressive overload: Start at 4 rounds. Add 1 round every 2 weeks alongside Wednesday. Both days progress together. Goal = 8 rounds each by Week 8.'},
     {icon:'♨️',text:'POST-SPRINT SAUNA: 20–30 min @ 175°F. No rush today — weekend. This is the best day to extend the session. Do not exceed 200°F. Amplifies VO2 max and anabolic signaling beyond exercise alone.'},
     {icon:'🚶',text:'After sauna: done. No more cardio. Zone 1–2 walking only if you feel like moving. Legs are tomorrow — protect recovery.'},
@@ -1521,6 +1476,19 @@ const ALTERNATIVE_ACTIVITIES = {
       { id: 'a-box-kicks', name: 'Kickboxing (Kicks + Punches)', muscle: 'cardio', sets: [{reps:'12 min'}], cue: 'Front kicks, roundhouse kicks, knees. Core engaged.' },
       { id: 'a-box-cool', name: 'Cool-Down + Stretch (Shoulders, Hips, Legs)', muscle: 'cooldown', sets: [{reps:'6 min'}], optional: true, cue: 'Release tension. Breathe.' }
     ]
+  },
+  hiit: {
+    id: 'hiit',
+    title: '🔥 Group HIIT Class',
+    emoji: '🔥',
+    description: 'Coached group class — boxing gym, HIIT studio, bootcamp. Counts toward your 90-min/week HIIT threshold.',
+    type: 'timed',
+    duration: 45,
+    exercises: [
+      { id: 'a-hiit-warmup', name: 'Class Warm-Up + Mobility', muscle: 'warmup', sets: [{reps:'5 min'}], optional: true, cue: 'Follow the coach. Loosen hips and shoulders.' },
+      { id: 'a-hiit-main', name: 'Main Class Block (Zone 4 — 140–155 bpm)', muscle: 'cardio', sets: [{reps:'35-40 min'}], cue: 'Target HR 140–155 bpm throughout. ~35–40 min toward your 90-min/week visceral fat HIIT threshold (Dr. Rhonda Patrick protocol).' },
+      { id: 'a-hiit-cool', name: 'Cool-Down + Log Galaxy Watch HR', muscle: 'cooldown', sets: [{reps:'5 min'}], optional: true, cue: 'Bring HR under 120. Log avg + max HR from Galaxy Watch above.' }
+    ]
   }
 };
 
@@ -1676,15 +1644,15 @@ let restOverrides = {}; // { exId: seconds } — user-customized rest per exerci
 let swapOverrides = {}; // { exId: { HG: altName, LT: altName } } — user-selected exercise swaps, scoped per gym location (BUG-LEGCURL-SWAP fix)
 let prStreaks = {};     // { exId: count } — consecutive sessions with new PRs
 let notesStore = {};   // { exId: { todayNote, lastWeekNote, weekCount } }
-let fortCancelled = false;
+let groupActivityOverride = {}; // FEAT-15: { dateStr: activityId } — swap any day's session for a group class / activity
 let backRecoveryMode = false;
 let vacationMode = false; // FEAT-8: Gym-free maintenance routine
-let dayTypeOverride = {}; // { dateStr: 'upper'|'push'|'pull'|'legs'|'fort'|'flex' }
+let dayTypeOverride = {}; // { dateStr: 'upper'|'push'|'pull'|'legs' }
 let prReadyFlags = new Set(); // exercise names flagged pr_ready=true in Supabase
 let sessionLocation = 'HG'; // 'HG' = Home Gym, 'LT' = Lifetime Fitness
 
 const SUPABASE_URL  = 'https://fnjjfnsdxibjbzldfgit.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZuampmbnNkeGliamJ6bGRmZ2l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY1MDM2MjAsImV4cCI6MjA4MjA3OTYyMH0.oZYn5OXKZH2h1wGfIj_R1L8Hlk3ytGFBgDCyGqUcatk'; // true = show home lower body sub instead of FORT class
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZuampmbnNkeGliamJ6bGRmZ2l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY1MDM2MjAsImV4cCI6MjA4MjA3OTYyMH0.oZYn5OXKZH2h1wGfIj_R1L8Hlk3ytGFBgDCyGqUcatk';
 const CIRC = 2 * Math.PI * 60; // 377
 
 // ============================================================
@@ -1807,12 +1775,11 @@ async function loadAll() {
   } catch(e) { swapOverrides = {}; }
   try { const v = await getStored('pr-streaks'); if (v) prStreaks = JSON.parse(v); } catch(e) { prStreaks = {}; }
 
-  // Restore fort-cancelled flag for today
+  // FEAT-15: Restore any-day group activity overrides
   try {
-    const key = `fort-cancelled-${getDateStr()}`;
-    const v = await getStored(key);
-    fortCancelled = !!(v);
-  } catch(e) { fortCancelled = false; }
+    const v = await getStored('group-activity-overrides');
+    if (v) groupActivityOverride = JSON.parse(v);
+  } catch(e) { groupActivityOverride = {}; }
 
   // Restore back recovery mode
   try {
@@ -1838,6 +1805,8 @@ async function loadAll() {
   try {
     const v = await getStored('day-type-overrides');
     if (v) dayTypeOverride = JSON.parse(v);
+    // FORT was removed (FEAT-15); a persisted 'fort' override would render an empty day
+    for (const d of Object.keys(dayTypeOverride)) if (dayTypeOverride[d] === 'fort') delete dayTypeOverride[d];
   } catch(e) { dayTypeOverride = {}; }
 
   // Restore session location
@@ -2044,8 +2013,14 @@ function renderWorkoutView() {
     renderRecoveryDay(day.key); return;
   }
 
-  // Compute effective workout type (may be overridden for this date)
   const todayDateStr = getDateStr();
+
+  // FEAT-15: any day can be swapped for a group class / activity
+  if (groupActivityOverride[todayDateStr] && ALTERNATIVE_ACTIVITIES[groupActivityOverride[todayDateStr]]) {
+    renderAlternativeActivity(groupActivityOverride[todayDateStr], true); return;
+  }
+
+  // Compute effective workout type (may be overridden for this date)
   const effectiveType = dayTypeOverride[todayDateStr] || day.type;
 
   if (effectiveType === 'rest') { renderRestDay(day.key); return; }
@@ -2053,45 +2028,13 @@ function renderWorkoutView() {
   const workout = WORKOUTS[effectiveType];
   if (!workout) { scroll.innerHTML = '<div class="empty-state">No workout data for this day.</div>'; return; }
 
-  const sectionsForProgress = (effectiveType === 'fort' && fortCancelled)
-    ? workout.sections.filter(s => s.label !== 'If At FORT')
-    : (effectiveType === 'fort' && !fortCancelled)
-      ? workout.sections.filter(s => s.label === 'If At FORT' || s.label.includes('Ab'))
-      : workout.sections;
-
   const allExIds = [];
-  sectionsForProgress.forEach(s => s.exercises.forEach(e => allExIds.push(e.id)));
+  workout.sections.forEach(s => s.exercises.forEach(e => allExIds.push(e.id)));
 
   // Check rotation alerts
   const rotationAlerts = getRotationAlerts(effectiveType);
 
   let html = '';
-
-  // FORT cancelled banner (only when scheduled type is FORT and no override)
-  if (day.type === 'fort' && !dayTypeOverride[todayDateStr]) {
-    if (fortCancelled) {
-      html += `<div class="fort-cancel-banner">
-        <div class="fort-cancel-top">
-          <div class="fort-cancel-title">🏠 HOME LOWER DAY</div>
-          <div class="fort-mode-indicator">✓ FORT CANCELLED</div>
-        </div>
-        <div class="fort-cancel-sub">Swapped to your full home gym lower body protocol. All the gains, none of the commute.</div>
-        <div class="fort-cancel-btns">
-          <button class="fort-btn fort-btn-fort" onclick="toggleFortCancelled()">↩ FORT Was On After All</button>
-        </div>
-      </div>`;
-    } else {
-      html += `<div class="fort-cancel-banner">
-        <div class="fort-cancel-top">
-          <div class="fort-cancel-title">📍 FORT / LOWER DAY</div>
-        </div>
-        <div class="fort-cancel-sub">Heading to FORT? Go get it. Class got cancelled? Hit the home gym lower body sub below.</div>
-        <div class="fort-cancel-btns">
-          <button class="fort-btn fort-btn-go" onclick="toggleFortCancelled()">🏠 FORT Cancelled — Home Lower Day</button>
-        </div>
-      </div>`;
-    }
-  }
 
   // Location selector
   const hgActive = sessionLocation === 'HG' ? ' loc-active' : '';
@@ -2104,8 +2047,8 @@ function renderWorkoutView() {
 
   // Workout header
   html += `<div class="w-header">
-    <div class="w-title"><span>${workout.emoji}</span>${fortCancelled && effectiveType==='fort' ? 'HOME LOWER DAY' : workout.title}</div>
-    <div class="w-chips">${(fortCancelled && effectiveType==='fort' ? ['Home Gym Lower Body','Hassan Protocol'] : workout.chips).map(c => `<span class="wchip bg-${effectiveType} c-${effectiveType}">${c}</span>`).join('')}</div>
+    <div class="w-title"><span>${workout.emoji}</span>${workout.title}</div>
+    <div class="w-chips">${workout.chips.map(c => `<span class="wchip bg-${effectiveType} c-${effectiveType}">${c}</span>`).join('')}</div>
     <div class="prog-row">
       <span class="prog-label">Progress</span>
       <div class="mini-bar"><div class="mini-bar-fill bar-${effectiveType}" id="dayProg" style="width:0%"></div></div>
@@ -2114,8 +2057,8 @@ function renderWorkoutView() {
   </div>`;
 
   // Type selector row
-  const workoutTypes = ['upper', 'push', 'pull', 'legs', 'fort'];
-  const typeLabels = { upper: 'UPPER', push: 'PUSH', pull: 'PULL', legs: 'LEGS', fort: 'FLEX' };
+  const workoutTypes = ['upper', 'push', 'pull', 'legs'];
+  const typeLabels = { upper: 'UPPER', push: 'PUSH', pull: 'PULL', legs: 'LEGS' };
   html += `<div class="w-type-selector">
     <span class="type-selector-label">Pick a type:</span>`;
   workoutTypes.forEach(wType => {
@@ -2127,8 +2070,14 @@ function renderWorkoutView() {
   }
   html += `</div>`;
 
+  // FEAT-15: group class / activity swap available on any day
+  html += `<div class="ga-row">
+    <span class="type-selector-label">Class instead?</span>
+    <button class="ga-btn" onclick="event.stopPropagation();showGroupActivitySheet()">🥊 Swap today for a group class / activity</button>
+  </div>`;
+
   // Done banner
-  const doneBannerTitle = (fortCancelled && effectiveType==='fort') ? 'HOME LOWER DAY COMPLETE' : `${workout.title} COMPLETE`;
+  const doneBannerTitle = `${workout.title} COMPLETE`;
   html += `<div class="done-banner" id="doneBanner">
     <div class="done-emoji">${workout.emoji}</div>
     <div class="done-title">${doneBannerTitle}</div>
@@ -2198,14 +2147,7 @@ function renderWorkoutView() {
     </div>
   </div>`;
 
-  // Exercises — if FORT day and cancelled, skip "If At FORT" section, show only sub + abs
-  const sectionsToRender = (effectiveType === 'fort' && fortCancelled)
-    ? workout.sections.filter(s => s.label !== 'If At FORT')
-    : (effectiveType === 'fort' && !fortCancelled)
-      ? workout.sections.filter(s => s.label === 'If At FORT' || s.label.includes('Ab'))
-      : workout.sections;
-
-  sectionsToRender.forEach(section => {
+  workout.sections.forEach(section => {
     html += `<div class="sec-label">${section.label}</div>`;
     section.exercises.forEach(exRaw => {
       const ex = getExForLocation(exRaw);
@@ -2484,15 +2426,51 @@ function dismissAlert(id) {
   if (el) el.classList.remove('visible');
 }
 
-function toggleFortCancelled() {
-  fortCancelled = !fortCancelled;
-  // Persist choice for today so page reload remembers
-  const key = `fort-cancelled-${getDateStr()}`;
-  if (fortCancelled) {
-    window.storage.set(key, '1').catch(()=>{});
-  } else {
-    window.storage.delete(key).catch(()=>{});
-  }
+// ── FEAT-15: ANY-DAY GROUP ACTIVITY SWAP ─────────────────────
+function persistGroupActivityOverrides() {
+  try { window.storage.set('group-activity-overrides', JSON.stringify(groupActivityOverride)).catch(()=>{}); } catch(e) {}
+  try { localStorage.setItem('group-activity-overrides', JSON.stringify(groupActivityOverride)); } catch(e) {}
+}
+
+function groupActivityOptions() {
+  return Object.values(ALTERNATIVE_ACTIVITIES).filter(a => a.type !== 'timer');
+}
+
+function activityShortTitle(a) {
+  return a.title.replace(/^\S+\s/, '');
+}
+
+function showGroupActivitySheet() {
+  const overlay = document.getElementById('gaOverlay');
+  const list = document.getElementById('gaOptionsList');
+  if (!overlay || !list) return;
+  list.innerHTML = groupActivityOptions().map(a => `
+    <div class="swap-option" onclick="setGroupActivity('${a.id}')">
+      <span class="swap-option-name">${a.emoji} ${activityShortTitle(a)}</span>
+      <span class="swap-option-tag">${a.duration ? a.duration + ' MIN' : 'CLASS'}</span>
+    </div>`).join('');
+  overlay.classList.add('open');
+}
+
+function closeGroupActivitySheet(e) {
+  if (e && e.target !== document.getElementById('gaOverlay')) return;
+  document.getElementById('gaOverlay').classList.remove('open');
+}
+
+function setGroupActivity(activityId) {
+  const a = ALTERNATIVE_ACTIVITIES[activityId];
+  if (!a) return;
+  groupActivityOverride[getDateStr()] = activityId;
+  persistGroupActivityOverrides();
+  closeGroupActivitySheet();
+  showToast(`${a.emoji} Today → ${activityShortTitle(a)}`);
+  renderWorkoutView();
+}
+
+function clearGroupActivity() {
+  delete groupActivityOverride[getDateStr()];
+  persistGroupActivityOverrides();
+  showToast('↩ Back to scheduled session');
   renderWorkoutView();
 }
 
@@ -3168,14 +3146,7 @@ async function saveWorkout(type, dayKey) {
   const exercises = [];
   let newPRs = [];
 
-  // Use sections that are currently rendered (respects fort cancelled state)
-  const sectionsToSave = (type === 'fort' && fortCancelled)
-    ? workout.sections.filter(s => s.label !== 'If At FORT')
-    : (type === 'fort' && !fortCancelled)
-      ? workout.sections.filter(s => s.label === 'If At FORT' || s.label.includes('Ab'))
-      : workout.sections;
-
-  for (const section of sectionsToSave) {
+  for (const section of workout.sections) {
     for (const ex of section.exercises) {
       const state = sessionState[ex.id] || {};
       const weights = state.weights || ex.sets.map(s => s.wt);
@@ -3198,7 +3169,7 @@ async function saveWorkout(type, dayKey) {
   const watch = sessionState['__watch__'] || {};
   const entry = {
     id: Date.now(), date: getDateStr(), dayKey,
-    type, title: (type === 'fort' && fortCancelled) ? 'HOME LOWER DAY' : workout.title,
+    type, title: workout.title,
     emoji: workout.emoji,
     exercises, newPRs,
     notes: (sessionState['__notes__']||{}).notes || '',
@@ -3231,9 +3202,11 @@ async function saveWorkout(type, dayKey) {
 
   // Also save to Supabase for cloud persistence and PR sync
   try {
+    // workouts.workout_type CHECK allows upper/push/pull/legs/arms/flex/sprint/recovery — the
+    // app's internal 'rest' type (activities, vacation) maps to 'flex' so the row isn't rejected
     const supabasePayload = {
       workout_date: getDateStr(),
-      workout_type: type,
+      workout_type: type === 'rest' ? 'flex' : type,
       location: sessionLocation === 'HG' ? 'Home Gym' : 'Lifetime Fitness',
       exercises: exercises,
       duration_minutes: sessionStart ? Math.floor((Date.now() - sessionStart) / 60000) : null,
@@ -3373,11 +3346,7 @@ function generateSessionSummary(type) {
   lines.push('');
   lines.push(type === 'recovery' ? '🏥 REHAB EXERCISES' : '💪 EXERCISES');
 
-  const sections = (type === 'fort' && fortCancelled)
-    ? workout.sections.filter(s => s.label !== 'If At FORT')
-    : workout.sections;
-
-  sections.forEach(section => {
+  workout.sections.forEach(section => {
     section.exercises.forEach(ex => {
       const state   = sessionState[ex.id] || {};
       const weights = state.weights || ex.sets.map(s => s.wt);
@@ -3608,7 +3577,7 @@ function renderSummaryView() {
   // Recent week summary
   html += `<div class="sec-label">Recent Sessions</div>`;
 
-  ['upper','push','pull','legs','fort'].forEach(type => {
+  ['upper','push','pull','legs'].forEach(type => {
     const sessions = recentByType[type];
     if (!sessions || sessions.length === 0) return;
     const cur = sessions[0];
@@ -3720,8 +3689,8 @@ function renderSummaryView() {
 // HISTORY VIEW — Live query from Supabase Edge Function
 // ============================================================
 const HISTORY_API = 'https://fnjjfnsdxibjbzldfgit.supabase.co/functions/v1/workout-history';
-const WORKOUT_EMOJIS = { legs:'🦵', push:'🔥', pull:'💙', upper:'💪', lower:'🟢', fort:'🏙️', cardio:'🏃', arms:'💪', 'full body':'⚡' };
-const WORKOUT_LABELS_H = { legs:'Legs', push:'Push Day', pull:'Pull Day', upper:'Upper Day', lower:'Lower Day', fort:'FORT / Lower', cardio:'Cardio', arms:'Arms', 'full body':'Full Body' };
+const WORKOUT_EMOJIS = { legs:'🦵', push:'🔥', pull:'💙', upper:'💪', lower:'🟢', sprint:'⚡', flex:'🥊', recovery:'🦴', cardio:'🏃', arms:'💪', 'full body':'⚡' };
+const WORKOUT_LABELS_H = { legs:'Legs', push:'Push Day', pull:'Pull Day', upper:'Upper Day', lower:'Lower Day', sprint:'Sprint', flex:'Class / Flex', recovery:'Recovery', cardio:'Cardio', arms:'Arms', 'full body':'Full Body' };
 
 let historyCache = null;       // full data from API
 let historyFilter = 'all';     // current type filter
@@ -3741,7 +3710,7 @@ async function renderHistoryView() {
         <button class="hist-search-clear ${historySearch ? 'visible' : ''}" id="histClear" onclick="clearHistorySearch()">✕</button>
       </div>
       <div class="hist-filter-row" id="histFilters">
-        ${['all','legs','push','pull','upper','fort','cardio'].map(f =>
+        ${['all','legs','push','pull','upper','sprint','flex'].map(f =>
           `<button class="hf-btn ${historyFilter===f?'active':''}" onclick="setHistoryFilter('${f}')">${f==='all'?'All':WORKOUT_LABELS_H[f]||f}</button>`
         ).join('')}
       </div>
@@ -4624,24 +4593,35 @@ function renderSprintDay(dayKey, content) {
 }
 
 // FEAT-4: Render selected alternative activity (yoga, pilates, dance, boxing)
-function renderAlternativeActivity(activityId) {
+function renderAlternativeActivity(activityId, fromGroupSwap = false) {
   const activity = ALTERNATIVE_ACTIVITIES[activityId];
-  if (!activity) return renderSprintDay('wed', REST_CONTENT.wed);
+  if (!activity) return fromGroupSwap ? clearGroupActivity() : renderSprintDay('wed', REST_CONTENT.wed);
 
   const scroll = document.getElementById('mainScroll');
-  const isDone = sessionState['activity_done'] || false;
 
-  let html = `
+  let html = '';
+  if (fromGroupSwap) {
+    const scheduled = WEEK[currentDayIdx];
+    html += `<div class="ga-banner" style="margin-top:6px">
+      <span><strong>GROUP SWAP</strong> · replacing today's ${scheduled.label} session</span>
+      <button class="ga-back-btn" onclick="clearGroupActivity()">↩ Back to ${scheduled.label}</button>
+    </div>`;
+  }
+
+  html += `
   <div style="padding:13px">
-    <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1px;margin-bottom:8px;color:var(--white);">${activity.emoji} ${activity.title.toUpperCase()}</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1px;margin-bottom:8px;color:var(--white);">${activity.emoji} ${activityShortTitle(activity).toUpperCase()}</div>
     <div style="font-size:11px;color:var(--dim2);margin-bottom:14px;">${activity.description}</div>
   </div>`;
 
-  // Activity selector pill
+  // Activity selector pills — the sprint timer is only offered on scheduled sprint days
+  const options = fromGroupSwap ? groupActivityOptions() : Object.values(ALTERNATIVE_ACTIVITIES);
+  const pick = fromGroupSwap ? 'setGroupActivity' : 'selectActivity';
+  const pillBase = "padding:6px 12px;border-radius:6px;border:1px solid var(--border2);background:var(--card2);color:var(--white);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.5px;";
   html += `<div style="padding:0 13px;margin-bottom:8px;display:flex;gap:6px;flex-wrap:wrap;justify-content:center;">`;
-  Object.values(ALTERNATIVE_ACTIVITIES).forEach(a => {
-    const active = a.id === activityId ? 'style="background:var(--accent);color:var(--black);font-weight:bold"' : '';
-    html += `<button class="pill" ${active} onclick="selectActivity('${a.id}')" style="padding:6px 12px;border-radius:4px;border:1px solid var(--dim1);background:var(--dim3);cursor:pointer;">${a.emoji} ${a.id.toUpperCase()}</button>`;
+  options.forEach(a => {
+    const active = a.id === activityId ? 'background:var(--accent);color:var(--black);border-color:var(--accent);' : '';
+    html += `<button class="pill" onclick="${pick}('${a.id}')" style="${pillBase}${active}">${a.emoji} ${a.id.toUpperCase()}</button>`;
   });
   html += `</div>`;
 
@@ -4691,6 +4671,7 @@ function renderAlternativeActivity(activityId) {
 
   scroll.innerHTML = html;
   scroll.scrollTop = 0;
+  updateDayProgress((activity.exercises || []).map(e => e.id));
 }
 
 function selectActivity(activityId) {
@@ -5039,6 +5020,18 @@ init();
     <div class="swap-section-label">Alternatives</div>
     <div class="swap-options" id="swapOptionsList"></div>
     <button class="swap-undo-btn" id="swapUndoBtn" onclick="undoSwap()" style="display:none">↩ Restore Original</button>
+  </div>
+</div>
+
+<!-- GROUP ACTIVITY SHEET (FEAT-15) -->
+<div class="swap-overlay" id="gaOverlay" onclick="closeGroupActivitySheet(event)">
+  <div class="swap-sheet">
+    <div class="swap-sheet-hdr">
+      <span class="swap-sheet-title">🥊 SWAP TODAY FOR A CLASS / ACTIVITY</span>
+      <button class="swap-close-btn" onclick="closeGroupActivitySheet()">✕</button>
+    </div>
+    <div class="swap-section-label">Replaces today's planned session · saves to history as Class / Flex</div>
+    <div class="swap-options" id="gaOptionsList"></div>
   </div>
 </div>
 </body>
