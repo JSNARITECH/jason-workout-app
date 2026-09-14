@@ -1,5 +1,12 @@
 # Workout App Changelog
 
+## v12.3 — 2026-09-14
+### Added
+- **Make-up sprint on any day** — "Swap today's session" on Mon/Tue/Thu/Fri/Sun now offers ⚡ Make-Up Sprint above the classes. It launches the real sprint interval timer (same warm-up / 6×30s / 75s rest / cool-down engine and save path as Wed/Sat), shows a banner with a one-tap way back, and the saved session counts toward the sprint streak and the Sunday check-in.
+- **Make-up sprint eligibility badge** — the option reads yesterday/today/tomorrow's leg load (schedule + overrides + swaps) and this week's sprint count: DONE (already logged today) and BLOCKED (sprinted yesterday) are not tappable; CAUTION for heavy legs yesterday (4–6 rounds), AM ONLY for heavy legs tomorrow, AT CEILING at 3+/week, a warning when it would replace Leg Day; OK on pull day, IDEAL otherwise. The reason and timing note repeat on the sprint screen.
+### Fixed
+- Saving a sprint or workout now refreshes the accountability dashboard immediately (sprint count, reset-week logged days) instead of on the next render.
+
 ## v12.2 — 2026-09-14
 ### Added
 - **FEAT-11 Accountability dashboard** — top of the TODAY tab on every day type: sprint streak (consecutive weeks with 2+ sprints), alcohol-free days, protein 225g+ and bed-by-10PM daily toggles. Toggles persist to localStorage and the new `daily_habits` table.

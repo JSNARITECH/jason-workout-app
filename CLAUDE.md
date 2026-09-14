@@ -234,7 +234,7 @@ const SESSION_STALE_HOURS = 24;  // Sessions older than this are abandoned
 ### 4.1 Workout Types & Weekly Rotation
 - **Mon Upper · Tue Lower (Leg Day programming, fixed since FEAT-15) · Wed Sprint · Thu Push · Fri Pull · Sat Sprint · Sun Legs**
 - **Sprint days (Wed/Sat)** — sprint timer, or an alternative activity (FEAT-4)
-- **Group class swap (FEAT-15)** — any workout day can be replaced by yoga / pilates / dance / boxing / Group HIIT Class (`groupActivityOverride[date]`)
+- **Group class swap (FEAT-15)** — any workout day can be replaced by yoga / pilates / dance / boxing / Group HIIT Class (`groupActivityOverride[date]`), or by a **make-up sprint** (`'sprint'` → `renderMakeupSprintDay`, which reuses the real Wed/Sat interval timer and save path). `sprintEligibility()` gates the make-up option from adjacent-day leg load (`LEG_LOAD`, `dayLoadType`) and the week's sprint count — DONE/BLOCKED are non-tappable, CAUTION/AM ONLY/AT CEILING warn, OK/IDEAL clear
 - **Pick & choose (FEAT-9)** — per-day session list = preset − removed + library picks, optionally reordered (`sessionPlan[date]`)
 - **Reset Protocol week (FEAT-14)** — push→upper, pull→legs, PRs reference-only, daily checklist, auto-exit after 7 logged days (`resetProtocol`)
 - **Vacation Mode (all days)** — Gym-free maintenance routines
