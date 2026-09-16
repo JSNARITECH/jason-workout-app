@@ -1817,6 +1817,9 @@ async function init() {
   // Load all persisted data
   await loadAll();
 
+  // Sprint round target from Supabase app_config (falls back to 6 on failure)
+  await loadSprintTargetRounds();
+
   // FEAT-14: a reset week that has hit 7 consecutive logged days ends itself
   checkResetAutoExit();
 
@@ -5251,11 +5254,15 @@ function renderRestDay(dayKey) {
 // ============================================================
 // SPRINT TIMER ENGINE
 // ============================================================
+// Default round count — overwritten by loadSprintTargetRounds() from Supabase
+// app_config (key: sprint_target_rounds). Falls back to 6 if the fetch fails.
+let sprintTargetRounds = 6;
+
 let sprintState = {
   running: false,
   phase: 'idle',   // idle | warmup | sprint | rest | cooldown | done
   round: 0,
-  totalRounds: 6,
+  totalRounds: sprintTargetRounds,
   elapsed: 0,
   phaseDuration: 0,
   interval: null,
@@ -5288,8 +5295,46 @@ const SPRINT_PHASES = {
   done:     { label: 'SESSION COMPLETE', secs: 0,   cue: 'Head straight to the sauna. 20 min @ 175°F. Non-optional.' }
 };
 
+// FEAT: sprint_target_rounds — pulls the default round count from Supabase app_config
+// so it can be tuned without a code push. Falls back to the sprintTargetRounds default (6)
+// if the fetch fails or the row is missing.
+async function loadSprintTargetRounds() {
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/app_config?key=eq.sprint_target_rounds&select=value`,
+      { headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` } }
+    );
+    if (res.ok) {
+      const rows = await res.json();
+      const n = parseInt(rows?.[0]?.value, 10);
+      if (Number.isFinite(n) && n > 0) sprintTargetRounds = n;
+    }
+  } catch (e) {
+    // network/parse failure — keep the fallback of 6
+  }
+  refreshSprintProtocolTips();
+}
+
+// Warm-up + N sprints + (N-1) rests between them + cool-down, from the live phase durations.
+function sprintTotalMinutes(rounds) {
+  const secs = SPRINT_PHASES.warmup.secs + rounds * SPRINT_PHASES.sprint.secs
+    + Math.max(0, rounds - 1) * SPRINT_PHASES.rest.secs + SPRINT_PHASES.cooldown.secs;
+  return Math.round(secs / 60);
+}
+
+// REST_CONTENT's Wed/Sat "SPRINT PROTOCOL" tips bake the round count + time estimate into
+// static text — regenerate them once the real target is known. Friday AM's make-up sprint
+// (renderMakeupSprintDay) reuses REST_CONTENT.wed, so this covers that case too.
+function refreshSprintProtocolTips() {
+  const rounds = sprintTargetRounds;
+  const totalMin = sprintTotalMinutes(rounds);
+  const base = `5-min warm-up walk → ${rounds} × 30-sec MAX effort sprints (manual treadmill, lean hard) → 75-sec walking recovery between each (trial, was 90s) → 5-min cool-down. Total: ~${totalMin} min. Zone 4–5 target: 140–165+ bpm.`;
+  REST_CONTENT.wed.tips[1].text = `SPRINT PROTOCOL — counts toward your 90-min/week HIIT threshold: ${base} Dr. O'Mara data: short maximal sprints eliminate visceral fat faster than any other cardio modality.`;
+  REST_CONTENT.sat.tips[0].text = `SPRINT PROTOCOL (2nd weekly HIIT session): ${base} Wed + Sat sprints = ~${totalMin * 2} min pure HIIT. Add a group class any day (swap button on any workout day) and you clear the 90-min/week visceral fat threshold.`;
+}
+
 function renderSprintDay(dayKey, content) {
-  sprintState = { running: false, phase: 'idle', round: 0, totalRounds: 6, elapsed: 0, phaseDuration: 0, interval: null, hrAvg: '', hrMax: '' };
+  sprintState = { running: false, phase: 'idle', round: 0, totalRounds: sprintTargetRounds, elapsed: 0, phaseDuration: 0, interval: null, hrAvg: '', hrMax: '' };
   const watch = sessionState['__watch__'] || {};
 
   const tipsHtml = content.tips.slice(2).map(t =>
@@ -5306,7 +5351,7 @@ function renderSprintDay(dayKey, content) {
     <div class="sprint-rounds-adj">
       <button class="sprint-rounds-adj-btn" onclick="adjustRounds(-1)">−</button>
       <div style="text-align:center">
-        <div class="sprint-rounds-adj-val" id="spRoundsVal">6</div>
+        <div class="sprint-rounds-adj-val" id="spRoundsVal">${sprintState.totalRounds}</div>
         <div class="sprint-rounds-adj-label">rounds</div>
       </div>
       <button class="sprint-rounds-adj-btn" onclick="adjustRounds(1)">+</button>
