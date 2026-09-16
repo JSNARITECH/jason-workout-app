@@ -1,5 +1,16 @@
 # Workout App Changelog
 
+## v12.4 — 2026-09-16
+### Added
+- **🍖 FUEL button** in the bottom nav — opens the new keto macro tracker at `/macros.html`. The tracker carries a 🏋️ LIFT button back, so the two apps read as one system without merging their code.
+- **Macro tracker (macros.html v1.0)** — protein-first keto logging against 225g/day, calorie targets pulled live from the latest `body_composition` scan (not hardcoded), 30g net-carb ceiling, and an 18:6 / 16:8 fasting-window indicator that nudges when the window is closing with protein still short.
+  - Tap-to-log food tiles for the ~34 foods actually on the menu, quantity stepper sized per unit, long-press to favorite, carb-flag warnings on shellfish.
+  - **Meal composer** — the five template days are starting points whose individual meals swap freely, with a running protein total against 225g.
+  - **Portion editing** — any logged entry reopens with "Ate half" / "Didn't eat it", because plated and eaten are different numbers.
+  - **Paste from Claude** — pastes photo-estimate lines (`Ribeye, 14 oz | 98g protein | 1260 cal | 0g net carbs`) into entries.
+  - 30-day trend: protein hit rate, average calories, days over the carb ceiling, bar chart against the target line.
+- New `foods` and `nutrition_log` tables plus five `nutrition-*` edge functions. Both tables have RLS on with no anon policies — the tracker holds no anon key and reaches Supabase only through the service role.
+
 ## v12.3 — 2026-09-14
 ### Added
 - **Make-up sprint on any day** — "Swap today's session" on Mon/Tue/Thu/Fri/Sun now offers ⚡ Make-Up Sprint above the classes. It launches the real sprint interval timer (same warm-up / 6×30s / 75s rest / cool-down engine and save path as Wed/Sat), shows a banner with a one-tap way back, and the saved session counts toward the sprint streak and the Sunday check-in.
