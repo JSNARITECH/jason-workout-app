@@ -1,17 +1,19 @@
 # Jason's Workout App — Comprehensive System Documentation
 
-**Purpose:** Personal strength training tracker with adaptive workout protocols, PR management, recovery modes, and multi-location gym support.
+**Purpose:** Personal strength training tracker with adaptive workout protocols, PR management, recovery modes, and multi-location gym support — plus a keto macro tracker (see §6.5) sharing the same repo, Supabase project and deployment.
 
-**Current Version:** v12.2 (2026-09-14)  
-**Development Branch:** per session (latest: `claude/gracious-cori-y8e1ry`) — never push to `main` directly; merge after a Vercel preview check  
-**Deployment:** Vercel (single HTML file + Supabase backend)
+**Current Version:** v12.2 (2026-09-14) · macro tracker v1.0 (2026-09-16)  
+**Development Branch:** per session (latest: `claude/sweet-hamilton-w4maed`) — never push to `main` directly; merge after a Vercel preview check  
+**Deployment:** Vercel (two static HTML files + Supabase backend)
 
 ---
 
 ## 1. ARCHITECTURE OVERVIEW
 
 ### Stack
-- **Frontend:** Single HTML file (index.html, ~5500 lines) with inline CSS + vanilla JavaScript
+- **Frontend:** Two standalone HTML files, inline CSS + vanilla JavaScript, no build step:
+  - `index.html` (~5500 lines) — workout tracker
+  - `macros.html` (~1100 lines) — keto macro tracker (§6.5), linked from the workout app's nav
 - **Backend:** Supabase (PostgreSQL + REST API + Edge Functions)
 - **Persistence:** Dual-layer — localStorage (client-side) + Supabase (cloud)
 - **Deployment:** Vercel (static hosting) + GitHub Actions (CI/CD version tracking)
@@ -23,6 +25,8 @@
 3. **PR Store initialized empty** — Supabase is source of truth, prevents stale local PRs
 4. **Dual-layer rest timer** — Smart REST_DEFAULTS calculated from exercise type + manual overrides
 5. **Location-scoped data** — Notes, PRs, workouts filtered by Home Gym (HG) / Lifetime Fitness (LT)
+6. **Two apps, not one** — the macro tracker is a separate file linked by nav rather than a fifth tab, so its ~1100 lines never collide with the workout app's globals (§6.5)
+7. **Edge functions for new surfaces** — `macros.html` carries no anon key and reaches Supabase only through `nutrition-*` functions using the service role; index.html's direct `/rest/v1/` calls are the older pattern
 
 ---
 
@@ -92,6 +96,32 @@ Written by the Fitdays import flow; the app only reads the two latest grades.
 ```
 
 **`workouts.workout_type` CHECK:** `upper | push | pull | legs | arms | flex | sprint | recovery`. The app's internal `rest` type (activities, vacation) is saved as `flex`.
+
+#### `foods` Table (Macro Tracker)
+```
+id            (bigserial)  — PK
+name          (text)       — 'Chicken leg quarter (thigh + drumstick), air fried'
+category      (text)       — 'protein' | 'veg' | 'supplement' | 'restaurant' | 'fat'
+unit_label    (text)       — what ONE unit is: 'thigh' | 'quarter' | 'oz cooked' | 'scoop' | 'cup'
+default_qty   (numeric)    — stepper's starting quantity
+protein_g / calories / net_carbs_g / fat_g  — ALL per single unit, never per portion
+is_favorite   (bool)       — surfaces in the Favorites group; toggled by long-press
+carb_flag     (text)       — warning shown in the log sheet (mussels, oysters)
+sort_order    (int)        — ordering within a category
+RLS on, NO anon policies — reachable only through the nutrition-* edge functions.
+```
+
+#### `nutrition_log` Table (Macro Tracker)
+```
+log_date      (date)       — YYYY-MM-DD, indexed desc
+meal_slot     (text)       — 'meal_1' | 'shake' | 'meal_2' | 'snack'
+food_id       (bigint FK)  — null for pasted/manual entries
+food_name     (text)       — DENORMALIZED so history survives food edits
+quantity      (numeric)    — in the food's unit_label
+protein_g / calories / net_carbs_g — computed AT LOG TIME, not derived on read
+entry_source  (text)       — 'preset' | 'photo_estimate' | 'manual'
+RLS on, NO anon policies. Same edge-function-only access as foods.
+```
 
 ---
 
@@ -388,6 +418,73 @@ git push -u origin claude/tender-newton-pHu5K
 
 ---
 
+## 6.5 MACRO TRACKER (macros.html)
+
+A **second app in the same repo and Vercel project**, at `/macros.html`. Not a tab
+of index.html: the workout app is ~5,500 lines with its own `switchView`, `toast`,
+`.tile`, `.entry` etc., and merging would mean renaming every macro identifier to
+avoid collisions. Instead each app's bottom nav carries one button pointing at the
+other — 🍖 FUEL in the workout app, 🏋️ LIFT in the tracker. Both nav bars route by
+explicit button id, so neither added button enters `switchView`.
+
+**Purpose:** protein-first logging for strict keto. Not a general food logger — it
+knows the ~34 foods Jason actually cooks, and logging a meal is meant to be three
+taps while standing in the kitchen.
+
+### The numbers it's built around
+- **Protein 225g/day** — the single most important number; it is deliberately the
+  largest element on the screen and is **never rounded up** (6.5g reads `6.5g`,
+  because half-ounce errors compound across a day)
+- Calories — live from `nutrition-targets`, training/rest toggle
+- **Net carbs 30g ceiling** — ring turns amber past 20g, red past 30g
+- Fasting window: **18:6 weekdays (2pm–8pm), 16:8 weekends (2pm–10pm)**. Under 60
+  minutes left with protein still short → nudge naming the gap in scoops
+
+### Views
+| Tab | What it does |
+|---|---|
+| 🎯 TODAY | Three rings, fasting window, entries grouped by meal slot, gap-closer chips |
+| ➕ LOG | Category-grouped food tiles (favorites first), tap → quantity stepper → log |
+| 📋 DAYS | **Meal composer** — see below |
+| 📈 TREND | 30/14-day protein bar chart vs target line, hit rate, avg cal, days over ceiling, table view |
+
+### Meal composer (the DAYS tab)
+`MEALS[]` holds individual meals tagged by slot; `PRESETS[]` are the five named days
+(Turkey/Thigh, Big Steak, Wing Night, Chipotle Day, Friday) expressed only as *meal
+picks*. Tapping a preset pre-selects its meals, then **any single meal can be
+swapped for any other in that slot** — the running protein total re-totals live and
+says how far the combination lands from 225g. Going over is not an error state
+("32g over — fine, or drop a portion"). This replaced whole-day templates because
+fixed days were the wrong unit: the combinations matter, not the named day.
+
+### Portions: plated ≠ eaten
+Four leg quarters is 124g of protein and half of it routinely comes back. Every
+logged entry is tappable and reopens in the stepper with **"Ate half"** and
+**"Didn't eat it"**. Editing re-derives per-unit macros from the entry itself
+(`protein_g / quantity`), so pasted photo estimates rescale correctly too.
+
+### Optimistic write path — read this before touching it
+1. `logEntry()` appends locally with a `tempId`, renders, saves to localStorage,
+   queues the write, THEN fires the network call. The rings move before the network
+   is consulted; the kitchen is exactly where signal is worst.
+2. `flushQueue()` **has a re-entrancy guard and it is load-bearing.** Logging a day
+   fires several `logEntry` calls in one tick, each requesting a flush. Without the
+   guard, overlapping flushes re-POST rows an earlier flush already had in hand —
+   one tap wrote every row ~3× to Supabase while the client displayed the correct
+   total. Silent history inflation. Keep `flushing` / `flushAgain` intact.
+3. Failures mark the entry and raise a tap-to-retry pill; the queue survives reload
+   and retries on `online` and on visibility change.
+4. `loadToday()` treats the server as truth for persisted rows but preserves local
+   entries still sitting in the queue.
+
+### Paste from Claude
+Accepts lines like `Ribeye, 14 oz cooked | 98g protein | 1260 cal | 0g net carbs`,
+forgiving about spacing/order/bullets, several at once, logged as
+`entry_source = 'photo_estimate'`. **A protein figure is required** for a line to
+parse — otherwise stray prose ("1260 calories of nothing useful") logs itself as food.
+
+---
+
 ## 7. SUPABASE EDGE FUNCTIONS
 
 ### `analyze-bpm` Function
@@ -410,6 +507,30 @@ git push -u origin claude/tender-newton-pHu5K
 ```
 
 **Implementation:** Calls Anthropic Claude API with vision capability, parses response.
+
+### `nutrition-*` Functions (Macro Tracker)
+
+Source lives in `supabase/functions/nutrition-*/index.ts`; all five are registered
+`verify_jwt = false` in `config.toml` and authenticate to PostgREST with
+`SUPABASE_SERVICE_ROLE_KEY` **server-side**. The macro tracker client carries no
+anon key at all — unlike index.html, which still calls `/rest/v1/` directly.
+
+| Function | Method | Contract |
+|---|---|---|
+| `nutrition-foods` | GET | `{ foods: [...] }` ordered by `sort_order, name` |
+| `nutrition-foods` | PATCH `?id=` | `{ is_favorite: bool }` — long-press toggle |
+| `nutrition-log` | POST | Inserts one entry; validates meal_slot + entry_source enums; 201 |
+| `nutrition-log` | DELETE `?id=` | Removes one entry |
+| `nutrition-today` | GET `?date=` | `{ entries, totals }` for that date |
+| `nutrition-history` | GET `?days=` | `{ daily[], summary }` — hit rate, avg cal, days over ceiling (days clamped 1–365) |
+| `nutrition-targets` | GET | Live weight/BMR/calorie targets — see below |
+
+**`nutrition-targets` must never hardcode targets.** It reads the most recent
+`body_composition` row and uses the scale's own `bmr_calories`, falling back to
+Mifflin-St Jeor (10×kg + 6.25×cm − 5×age + 5, using 5'9"/42M) only when the scan
+didn't report one. Calorie target = BMR × activity multiplier (1.15 rest, 1.3
+training), clamped to 2000–2200 / 2200–2400. As Jason's weight drops, the targets
+follow on their own; that's the whole point of the endpoint existing.
 
 ---
 
@@ -504,6 +625,15 @@ swap-overrides                  // Current exercise swaps
 pr-flags                        // PR flag state
 exercise-history                // Completed sessions
 [exercise-id]-notes             // DEPRECATED (use Supabase now)
+
+// --- macros.html (separate origin-shared keys, all prefixed macro-) ---
+macro-foods-cache               // { foods, ts } — 12h TTL, app opens instantly from this
+macro-day-YYYY-MM-DD            // today's entries incl. optimistic ones not yet synced
+macro-queue                     // [{ tempId, row }] writes awaiting POST — drives the retry pill
+macro-composer                  // { meal_1, shake, meal_2, snack } day-builder picks
+macro-daytype-YYYY-MM-DD        // 'training' | 'rest' — picks which calorie target applies
+macro-targets-cache             // last nutrition-targets response
+macro-trend-N                   // last nutrition-history response per range
 ```
 
 ---
