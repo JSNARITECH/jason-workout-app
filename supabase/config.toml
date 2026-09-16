@@ -3,3 +3,18 @@ verify_jwt = false
 
 [functions.analyze-bpm]
 verify_jwt = false
+
+[functions.nutrition-foods]
+verify_jwt = false
+
+[functions.nutrition-log]
+verify_jwt = false
+
+[functions.nutrition-today]
+verify_jwt = false
+
+[functions.nutrition-targets]
+verify_jwt = false
+
+[functions.nutrition-history]
+verify_jwt = false
