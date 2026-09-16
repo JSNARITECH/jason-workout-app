@@ -92,7 +92,12 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .slot-macros b{color:var(--accent);font-weight:700;}
 .entry{display:flex;align-items:center;gap:9px;padding:7px 0;border-top:1px solid var(--border);}
 .entry:first-of-type{border-top:none;}
-.entry-main{flex:1;min-width:0;}
+.entry-main{flex:1;min-width:0;cursor:pointer;}
+.closer-row{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:-4px 0 12px;padding-bottom:2px;}
+.closer-row::-webkit-scrollbar{display:none;}
+.closer{flex-shrink:0;background:var(--card);border:1px solid var(--border2);border-radius:20px;padding:8px 13px;color:var(--white);font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.closer b{color:var(--accent);font-weight:700;}
+.closer-lbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--dim2);font-weight:700;margin:10px 2px 7px;}
 .entry-name{font-size:13px;font-weight:500;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .entry-meta{font-size:10px;color:var(--dim2);margin-top:2px;}
 .entry-p{font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:0.5px;flex-shrink:0;}
@@ -123,14 +128,15 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .btn-ghost{background:none;border-color:var(--border);color:var(--dim2);}
 .btn-sm{padding:8px 12px;font-size:9px;letter-spacing:1.2px;width:auto;display:inline-block;}
 
-/* TEMPLATES */
-.tpl{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:13px 14px;margin-bottom:9px;cursor:pointer;}
-.tpl:active{border-color:var(--accent);}
-.tpl-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:6px;}
-.tpl-name{font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:1px;}
-.tpl-p{font-family:'Bebas Neue',sans-serif;font-size:19px;color:var(--accent);letter-spacing:0.5px;flex-shrink:0;}
-.tpl-body{font-size:11px;color:var(--dim2);line-height:1.55;}
-.tpl-meta{font-size:10px;color:var(--dim);margin-top:6px;letter-spacing:0.3px;}
+/* DAY BUILDER */
+.build-total{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:13px 15px;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;z-index:20;transition:border-color 0.3s;}
+.bt-num{font-family:'Bebas Neue',sans-serif;font-size:34px;line-height:1;letter-spacing:0.5px;}
+.bt-of{font-size:14px;color:var(--dim2);margin-left:4px;letter-spacing:0.5px;}
+.bt-state{font-size:10px;font-weight:700;margin-top:4px;letter-spacing:0.3px;}
+.bt-right{text-align:right;flex-shrink:0;}
+.bt-sub{font-size:11px;color:var(--dim2);font-weight:600;line-height:1.5;}
+.tile.picked{border-color:var(--accent);background:var(--accent-dim);}
+.btn:disabled{opacity:0.45;}
 
 /* SHEET */
 .sheet-back{position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:200;opacity:0;pointer-events:none;transition:opacity 0.22s;}
@@ -153,6 +159,7 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .mp-item{text-align:center;}
 .mp-num{font-family:'Bebas Neue',sans-serif;font-size:24px;line-height:1;}
 .mp-lbl{font-size:8px;color:var(--dim2);letter-spacing:1.5px;text-transform:uppercase;margin-top:3px;font-weight:700;}
+.half-row{display:flex;gap:8px;justify-content:center;margin-bottom:14px;}
 .slot-pills{display:flex;gap:6px;margin-bottom:16px;}
 .slot-pill{flex:1;padding:10px 4px;border:1px solid var(--border);border-radius:10px;background:var(--card);color:var(--dim2);font-size:9px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;}
 .slot-pill.active{background:var(--accent);color:#000;border-color:var(--accent);font-weight:900;}
@@ -262,40 +269,43 @@ const CATS = [
   { id: 'fat',        label: 'Fats' },
 ];
 
-// name fragments resolved against the live food library at load time
-const TEMPLATES = [
-  { name: 'Turkey / Thigh', items: [
-    { match: 'Ground turkey 93/7', qty: 4, slot: 'meal_1' },
-    { match: 'Shirataki noodles', qty: 1, slot: 'meal_1' },
-    { match: 'Isopure whey', qty: 2, slot: 'shake' },
-    { match: 'Chicken thigh, bone-in', qty: 4, slot: 'meal_2' },
-  ]},
-  { name: 'Big Steak', items: [
-    { match: 'Isopure whey', qty: 2, slot: 'shake' },
-    { match: 'Greek yogurt, nonfat', qty: 1, slot: 'meal_1' },
-    { match: 'Chicken thigh, boneless', qty: 8, slot: 'meal_1' },
-    { match: 'Sirloin steak', qty: 16, slot: 'meal_2' },
-  ]},
-  { name: 'Wing Night', items: [
-    { match: 'Chipotle steak', qty: 3, slot: 'meal_1' },
-    { match: 'Isopure whey', qty: 2, slot: 'shake' },
-    { match: 'Chicken wing', qty: 14, slot: 'meal_2' },
-    { match: 'Chomps turkey stick', qty: 2, slot: 'snack' },
-  ]},
-  { name: 'Chipotle Day', items: [
-    { match: 'Chipotle steak', qty: 2, slot: 'meal_1' },
-    { match: 'Greek yogurt, nonfat', qty: 1, slot: 'meal_1' },
-    { match: 'Isopure whey', qty: 2, slot: 'shake' },
-    { match: 'Ground beef 80/20', qty: 2, slot: 'meal_2' },
-    { match: 'Chicken thigh, bone-in', qty: 4, slot: 'meal_2' },
-  ]},
-  { name: 'Friday', items: [
-    { match: 'Egg, large', qty: 3, slot: 'meal_1' },
-    { match: 'Greek yogurt, nonfat', qty: 1, slot: 'meal_1' },
-    { match: 'Isopure whey', qty: 2, slot: 'shake' },
-    { match: 'Chuck steak', qty: 16, slot: 'meal_2' },
-    { match: 'Chomps turkey stick', qty: 2, slot: 'snack' },
-  ]},
+// Meals are the unit that gets swapped — any Meal 1 combines with any Meal 2.
+// `match` is a name fragment resolved against the live food library at load time.
+const MEALS = [
+  { id: 'm1-turkey',    slot: 'meal_1', name: 'Ground turkey + shirataki', items: [{ match: 'Ground turkey 93/7', qty: 4 }, { match: 'Shirataki noodles', qty: 1 }] },
+  { id: 'm1-yog-thigh', slot: 'meal_1', name: 'Yogurt + boneless thighs',  items: [{ match: 'Greek yogurt, nonfat', qty: 1 }, { match: 'Chicken thigh, boneless', qty: 8 }] },
+  { id: 'm1-chip3',     slot: 'meal_1', name: 'Chipotle steak ×3',         items: [{ match: 'Chipotle steak', qty: 3 }] },
+  { id: 'm1-chip-yog',  slot: 'meal_1', name: 'Chipotle steak + yogurt',   items: [{ match: 'Chipotle steak', qty: 2 }, { match: 'Greek yogurt, nonfat', qty: 1 }] },
+  { id: 'm1-eggs',      slot: 'meal_1', name: 'Eggs + yogurt',             items: [{ match: 'Egg, large', qty: 3 }, { match: 'Greek yogurt, nonfat', qty: 1 }] },
+  { id: 'm1-shrimp',    slot: 'meal_1', name: 'Shrimp + avocado',          items: [{ match: 'Shrimp', qty: 2 }, { match: 'Avocado', qty: 1 }] },
+
+  { id: 'sh-2',         slot: 'shake',  name: '2 scoops Isopure',          items: [{ match: 'Isopure whey', qty: 2 }] },
+  { id: 'sh-1',         slot: 'shake',  name: '1 scoop Isopure',           items: [{ match: 'Isopure whey', qty: 1 }] },
+  { id: 'sh-collagen',  slot: 'shake',  name: 'Isopure + collagen',        items: [{ match: 'Isopure whey', qty: 2 }, { match: 'Collagen peptides', qty: 1 }] },
+
+  { id: 'm2-quarter4',  slot: 'meal_2', name: '4 chicken leg quarters',    items: [{ match: 'Chicken leg quarter', qty: 4 }] },
+  { id: 'm2-quarter2',  slot: 'meal_2', name: '2 chicken leg quarters',    items: [{ match: 'Chicken leg quarter', qty: 2 }] },
+  { id: 'm2-thigh4',    slot: 'meal_2', name: '4 bone-in thighs',          items: [{ match: 'Chicken thigh, bone-in', qty: 4 }] },
+  { id: 'm2-wings14',   slot: 'meal_2', name: '14 wings',                  items: [{ match: 'Chicken wing', qty: 14 }] },
+  { id: 'm2-sirloin16', slot: 'meal_2', name: '16oz sirloin',              items: [{ match: 'Sirloin steak', qty: 16 }] },
+  { id: 'm2-sirloin8',  slot: 'meal_2', name: '8oz sirloin + broccoli',    items: [{ match: 'Sirloin steak', qty: 8 }, { match: 'Broccoli', qty: 1 }] },
+  { id: 'm2-chuck16',   slot: 'meal_2', name: '16oz chuck steak',          items: [{ match: 'Chuck steak', qty: 16 }] },
+  { id: 'm2-ribeye10',  slot: 'meal_2', name: '10oz ribeye + asparagus',   items: [{ match: 'Ribeye', qty: 10 }, { match: 'Asparagus', qty: 1 }] },
+  { id: 'm2-beef-thigh',slot: 'meal_2', name: '½ lb ground beef + 4 thighs', items: [{ match: 'Ground beef 80/20', qty: 2 }, { match: 'Chicken thigh, bone-in', qty: 4 }] },
+  { id: 'm2-lamb4',     slot: 'meal_2', name: '4 lamb chops',              items: [{ match: 'Lamb chop', qty: 4 }] },
+
+  { id: 'sn-chomps2',   slot: 'snack',  name: '2 Chomps sticks',           items: [{ match: 'Chomps turkey stick', qty: 2 }] },
+  { id: 'sn-eggs2',     slot: 'snack',  name: '2 hard-boiled eggs',        items: [{ match: 'Egg, large', qty: 2 }] },
+  { id: 'sn-avo',       slot: 'snack',  name: 'Avocado + Chomps',          items: [{ match: 'Avocado', qty: 1 }, { match: 'Chomps turkey stick', qty: 1 }] },
+];
+
+// the five named days, expressed as meal picks you can then swap piece by piece
+const PRESETS = [
+  { name: 'Turkey / Thigh', picks: { meal_1: 'm1-turkey',    shake: 'sh-2', meal_2: 'm2-thigh4' } },
+  { name: 'Big Steak',      picks: { meal_1: 'm1-yog-thigh', shake: 'sh-2', meal_2: 'm2-sirloin16' } },
+  { name: 'Wing Night',     picks: { meal_1: 'm1-chip3',     shake: 'sh-2', meal_2: 'm2-wings14', snack: 'sn-chomps2' } },
+  { name: 'Chipotle Day',   picks: { meal_1: 'm1-chip-yog',  shake: 'sh-2', meal_2: 'm2-beef-thigh' } },
+  { name: 'Friday',         picks: { meal_1: 'm1-eggs',      shake: 'sh-2', meal_2: 'm2-chuck16', snack: 'sn-chomps2' } },
 ];
 
 let foods = [];
@@ -309,6 +319,7 @@ let trendData = null;
 let trendTable = true;
 let sheetState = null;
 let clockTimer = null;
+let composer = { meal_1: null, shake: null, meal_2: null, snack: null };
 
 /* ---------- utils ---------- */
 const $ = (id) => document.getElementById(id);
@@ -412,26 +423,43 @@ function logEntry(row) {
   return entry;
 }
 
+// Logging a whole day fires logEntry several times in one tick, and each one asks
+// for a flush. Without this guard the overlapping flushes each re-POST whatever is
+// still queued, so one tap writes the same row three times.
+let flushing = false;
+let flushAgain = false;
+
 async function flushQueue(manual = false) {
-  if (!queue.length) return;
-  const pending = [...queue];
-  for (const job of pending) {
-    try {
-      const { entry } = await api('/nutrition-log', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(job.row),
-      });
-      const idx = entries.findIndex((e) => e.tempId === job.tempId);
-      if (idx >= 0) entries[idx] = { ...entry };
-      queue = queue.filter((q) => q.tempId !== job.tempId);
-      saveDay(); saveQueue();
-    } catch {
-      const idx = entries.findIndex((e) => e.tempId === job.tempId);
-      if (idx >= 0) { entries[idx]._pending = false; entries[idx]._failed = true; }
-      saveDay(); saveQueue();
-    }
+  if (flushing) { flushAgain = true; return; }
+  if (!queue.length) { if (manual) toast('Synced'); return; }
+
+  flushing = true;
+  try {
+    do {
+      flushAgain = false;
+      for (const job of [...queue]) {
+        if (!queue.some((q) => q.tempId === job.tempId)) continue;
+        try {
+          const { entry } = await api('/nutrition-log', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(job.row),
+          });
+          queue = queue.filter((q) => q.tempId !== job.tempId);
+          const idx = entries.findIndex((e) => e.tempId === job.tempId);
+          if (idx >= 0) entries[idx] = { ...entry };
+          saveDay(); saveQueue();
+        } catch {
+          const idx = entries.findIndex((e) => e.tempId === job.tempId);
+          if (idx >= 0) { entries[idx]._pending = false; entries[idx]._failed = true; }
+          saveDay(); saveQueue();
+        }
+      }
+    } while (flushAgain && queue.length);
+  } finally {
+    flushing = false;
   }
+
   renderToday();
   if (manual) toast(queue.length ? 'Still offline' : 'Synced');
 }
@@ -525,6 +553,51 @@ function ringSvg(pct, color, size = 'lg') {
   </svg>`;
 }
 
+// real food first, whey last — closing a 60g gap shouldn't mean three more shakes
+const GAP_CLOSERS = [
+  'Chicken leg quarter', 'Chicken thigh, bone-in', 'Sirloin steak', 'Chipotle steak',
+  'Greek yogurt, nonfat', 'Egg, large', 'Chomps turkey stick', 'Isopure whey',
+];
+
+// "3× Sirloin steak" reads as three steaks when it means three ounces
+function portionLabel(food, count) {
+  const short = food.name.split(',')[0].split('(')[0].trim();
+  const unit = (food.unit_label || '').toLowerCase();
+  if (unit.startsWith('oz')) return `${count} oz ${short}`;
+  if (unit.startsWith('4oz')) return `${count} × 4oz ${short}`;
+  return `${count} × ${short}`;
+}
+
+function gapClosers(gap) {
+  const out = [];
+  for (const match of GAP_CLOSERS) {
+    const food = findFood(match);
+    if (!food || !food.protein_g) continue;
+    const count = Math.ceil(gap / food.protein_g);
+    if (count < 1 || count > 6) continue;
+    out.push({ food, count, protein: round(food.protein_g * count, 1) });
+    if (out.length === 3) break;
+  }
+  return out;
+}
+
+function logCloser(foodId, count) {
+  const food = foods.find((f) => f.id === foodId);
+  if (!food) return;
+  logEntry({
+    log_date: todayStr(),
+    meal_slot: guessSlot(),
+    food_id: food.id,
+    food_name: food.name,
+    quantity: count,
+    protein_g: round(food.protein_g * count, 1),
+    calories: round(food.calories * count),
+    net_carbs_g: round(food.net_carbs_g * count, 1),
+    entry_source: 'preset',
+  });
+  toast(`+${fmtG(food.protein_g * count)}g protein`);
+}
+
 function carbColor(carbs) {
   if (carbs > CARB_CEILING) return 'var(--red)';
   if (carbs > CARB_WARN) return 'var(--orange)';
@@ -559,7 +632,7 @@ function renderToday() {
         <div class="slot-macros"><b>${fmtG(st.protein_g)}g</b> · ${round(st.calories)} cal · ${fmtG(st.net_carbs_g)}c</div>
       </div>
       ${list.map((e) => `<div class="entry ${e._pending ? 'pending' : ''} ${e._failed ? 'failed' : ''}">
-        <div class="entry-main">
+        <div class="entry-main" onclick="editEntry('${e.id || e.tempId}')">
           <div class="entry-name">${esc(e.food_name)}${e._failed ? ' ⚠' : ''}</div>
           <div class="entry-meta">${round(e.quantity, 2)} × · ${round(e.calories)} cal · ${fmtG(e.net_carbs_g)}g carbs${e.entry_source === 'photo_estimate' ? ' · 📷' : ''}</div>
         </div>
@@ -615,6 +688,14 @@ function renderToday() {
         </div>
       </div>
     </div>
+
+    ${pLeft > 0 && pLeft <= 130 && gapClosers(pLeft).length ? `
+      <div class="closer-lbl">Close the last ${fmtG(pLeft)}g</div>
+      <div class="closer-row">
+        ${gapClosers(pLeft).map((c) => `<button class="closer" onclick="logCloser(${c.food.id},${c.count})">
+          ${esc(portionLabel(c.food, c.count))} <b>+${fmtG(c.protein)}g</b>
+        </button>`).join('')}
+      </div>` : ''}
 
     <div class="fast-card">
       <div class="fast-top">
@@ -730,11 +811,33 @@ function openQty(id) {
   openSheet();
 }
 
+// "I plated four but only ate two" — reopen a logged entry on its own per-unit macros
+function editEntry(idOrTemp) {
+  const entry = entries.find((e) => String(e.id) === String(idOrTemp) || e.tempId === idOrTemp);
+  if (!entry) return;
+  const libFood = entry.food_id ? foods.find((f) => f.id === entry.food_id) : null;
+  const q = Number(entry.quantity) || 1;
+  const food = libFood || {
+    id: null,
+    name: entry.food_name,
+    unit_label: 'portion',
+    protein_g: Number(entry.protein_g) / q,
+    calories: Number(entry.calories) / q,
+    net_carbs_g: Number(entry.net_carbs_g) / q,
+    carb_flag: null,
+  };
+  sheetState = { food, qty: q, slot: entry.meal_slot, step: stepFor(food), edit: entry };
+  renderQtySheet();
+  openSheet();
+}
+
 function renderQtySheet() {
-  const { food, qty, slot, step } = sheetState;
+  const { food, qty, slot, edit } = sheetState;
   const p = round(food.protein_g * qty, 1);
   const c = round(food.calories * qty);
   const nc = round(food.net_carbs_g * qty, 1);
+  // when editing, this entry's own contribution is already counted in today's totals
+  const carbsElsewhere = totals().net_carbs_g - (edit ? Number(edit.net_carbs_g) || 0 : 0);
 
   $('sheetBody').innerHTML = `
     <div class="sheet-title">${esc(food.name)}</div>
@@ -748,17 +851,20 @@ function renderQtySheet() {
       </div>
       <button class="step-btn" onclick="bumpQty(1)">+</button>
     </div>
+    <div class="half-row">
+      <button class="btn btn-ghost btn-sm" onclick="halveQty()">Ate half</button>
+      ${edit ? `<button class="btn btn-ghost btn-sm" onclick="deleteEntry('${edit.id || edit.tempId}');closeSheet()">Didn't eat it</button>` : ''}
+    </div>
     <div class="macro-preview">
       <div class="mp-item"><div class="mp-num" style="color:var(--accent)">${p}</div><div class="mp-lbl">Protein</div></div>
       <div class="mp-item"><div class="mp-num" style="color:var(--blue)">${c}</div><div class="mp-lbl">Calories</div></div>
-      <div class="mp-item"><div class="mp-num" style="color:${carbColor(nc + totals().net_carbs_g)}">${nc}</div><div class="mp-lbl">Net Carbs</div></div>
+      <div class="mp-item"><div class="mp-num" style="color:${carbColor(nc + carbsElsewhere)}">${nc}</div><div class="mp-lbl">Net Carbs</div></div>
     </div>
     <div class="slot-pills">
       ${SLOTS.map((s) => `<button class="slot-pill ${slot === s.id ? 'active' : ''}" onclick="setSlot('${s.id}')">${s.label}</button>`).join('')}
     </div>
-    <button class="btn btn-primary" onclick="confirmQty()">Log it</button>
+    <button class="btn btn-primary" onclick="confirmQty()">${edit ? 'Update' : 'Log it'}</button>
   `;
-  void step;
 }
 
 function bumpQty(dir) {
@@ -766,84 +872,176 @@ function bumpQty(dir) {
   s.qty = Math.max(s.step, round(s.qty + dir * s.step, 2));
   renderQtySheet();
 }
+function halveQty() {
+  const s = sheetState;
+  s.qty = Math.max(0.25, round(s.qty / 2, 2));
+  renderQtySheet();
+}
 function setSlot(id) { sheetState.slot = id; renderQtySheet(); }
 
 function confirmQty() {
-  const { food, qty, slot } = sheetState;
-  logEntry({
+  const { food, qty, slot, edit } = sheetState;
+  const row = {
     log_date: todayStr(),
     meal_slot: slot,
-    food_id: food.id,
+    food_id: food.id ?? null,
     food_name: food.name,
     quantity: qty,
     protein_g: round(food.protein_g * qty, 1),
     calories: round(food.calories * qty),
     net_carbs_g: round(food.net_carbs_g * qty, 1),
-    entry_source: 'preset',
-  });
+    entry_source: edit ? edit.entry_source : 'preset',
+  };
+
+  if (edit) {
+    const before = Number(edit.protein_g) || 0;
+    deleteEntry(edit.id || edit.tempId);
+    logEntry(row);
+    const delta = row.protein_g - before;
+    toast(delta === 0 ? 'Updated' : `${delta > 0 ? '+' : ''}${fmtG(delta)}g protein`);
+  } else {
+    logEntry(row);
+    toast(`+${fmtG(row.protein_g)}g protein`);
+  }
   closeSheet();
-  toast(`+${round(food.protein_g * qty)}g protein`);
   switchView('today');
 }
 
 function openSheet() { $('sheetBack').classList.add('open'); $('sheet').classList.add('open'); }
 function closeSheet() { $('sheetBack').classList.remove('open'); $('sheet').classList.remove('open'); }
 
-/* ---------- PLANS ---------- */
-function resolveTemplate(tpl) {
-  return tpl.items.map((item) => {
-    const food = foods.find((f) => f.name.toLowerCase().startsWith(item.match.toLowerCase()))
-      || foods.find((f) => f.name.toLowerCase().includes(item.match.toLowerCase()));
-    return food ? { food, qty: item.qty, slot: item.slot } : null;
+/* ---------- DAY BUILDER ---------- */
+function findFood(match) {
+  const m = match.toLowerCase();
+  return foods.find((f) => f.name.toLowerCase().startsWith(m))
+    || foods.find((f) => f.name.toLowerCase().includes(m));
+}
+
+function resolveMeal(meal) {
+  return meal.items.map((item) => {
+    const food = findFood(item.match);
+    return food ? { food, qty: item.qty } : null;
   }).filter(Boolean);
 }
 
-function templateTotals(resolved) {
-  return resolved.reduce((a, r) => ({
+function mealTotals(meal) {
+  return resolveMeal(meal).reduce((a, r) => ({
     protein_g: a.protein_g + r.food.protein_g * r.qty,
     calories: a.calories + r.food.calories * r.qty,
     net_carbs_g: a.net_carbs_g + r.food.net_carbs_g * r.qty,
   }), { protein_g: 0, calories: 0, net_carbs_g: 0 });
 }
 
+function pickedMeals() {
+  return SLOTS.map((s) => MEALS.find((m) => m.id === composer[s.id])).filter(Boolean);
+}
+
+function composerTotals() {
+  return pickedMeals().reduce((a, meal) => {
+    const t = mealTotals(meal);
+    return {
+      protein_g: a.protein_g + t.protein_g,
+      calories: a.calories + t.calories,
+      net_carbs_g: a.net_carbs_g + t.net_carbs_g,
+    };
+  }, { protein_g: 0, calories: 0, net_carbs_g: 0 });
+}
+
+function pickMeal(slot, id) {
+  composer[slot] = composer[slot] === id ? null : id;
+  lsSet('macro-composer', composer);
+  renderPlans();
+}
+
+function loadPreset(i) {
+  composer = { meal_1: null, shake: null, meal_2: null, snack: null, ...PRESETS[i].picks };
+  lsSet('macro-composer', composer);
+  renderPlans();
+  $('scrollArea').scrollTop = 0;
+}
+
+function clearComposer() {
+  composer = { meal_1: null, shake: null, meal_2: null, snack: null };
+  lsSet('macro-composer', composer);
+  renderPlans();
+}
+
 function renderPlans() {
   if (!foods.length) { $('viewPlans').innerHTML = '<div class="empty">Loading food library…</div>'; return; }
+  const t = composerTotals();
+  const pTarget = targets?.protein_target_g || PROTEIN_TARGET;
+  const gap = round(pTarget - t.protein_g);
+  const any = pickedMeals().length > 0;
+
+  const state = !any ? { color: 'var(--dim2)', text: 'Pick a meal to start' }
+    : gap > 0 ? { color: 'var(--orange)', text: `${fmtG(gap)}g short — swap a meal for a bigger one` }
+    : gap < -25 ? { color: 'var(--gold)', text: `${fmtG(-gap)}g over — fine, or drop a portion` }
+    : { color: 'var(--accent)', text: '✓ hits your 225g' };
+
   $('viewPlans').innerHTML = `
-    <div class="sec-title">Template Days <span class="sec-note">one tap, then edit</span></div>
-    ${TEMPLATES.map((tpl, i) => {
-      const resolved = resolveTemplate(tpl);
-      const tt = templateTotals(resolved);
-      return `<div class="tpl" onclick="loadTemplate(${i})">
-        <div class="tpl-top">
-          <div class="tpl-name">${esc(tpl.name)}</div>
-          <div class="tpl-p">${round(tt.protein_g)}g</div>
-        </div>
-        <div class="tpl-body">${resolved.map((r) => `${round(r.qty, 2)}× ${esc(r.food.name.split(',')[0])}`).join(' · ')}</div>
-        <div class="tpl-meta">${round(tt.calories)} cal · ${round(tt.net_carbs_g, 1)}g net carbs${tt.protein_g >= PROTEIN_TARGET ? ' · ✓ hits 225g' : ` · ${round(PROTEIN_TARGET - tt.protein_g)}g short`}</div>
-      </div>`;
+    <div class="filter-row">
+      ${PRESETS.map((p, i) => `<button class="chip" onclick="loadPreset(${i})">${esc(p.name)}</button>`).join('')}
+      ${any ? '<button class="chip" onclick="clearComposer()">Clear</button>' : ''}
+    </div>
+
+    <div class="build-total" style="border-color:${any ? state.color : 'var(--border)'}">
+      <div class="bt-left">
+        <div class="bt-num" style="color:${any ? state.color : 'var(--dim)'}">${fmtG(t.protein_g)}<span class="bt-of">/ ${pTarget}g</span></div>
+        <div class="bt-state" style="color:${state.color}">${state.text}</div>
+      </div>
+      <div class="bt-right">
+        <div class="bt-sub">${round(t.calories)} cal</div>
+        <div class="bt-sub" style="color:${t.net_carbs_g > CARB_CEILING ? 'var(--red)' : 'var(--dim2)'}">${fmtG(t.net_carbs_g)}g carbs</div>
+      </div>
+    </div>
+
+    ${SLOTS.map((s) => {
+      const options = MEALS.filter((m) => m.slot === s.id);
+      if (!options.length) return '';
+      return `<div class="sec-title">${s.label}${s.hint ? ` <span class="sec-note">${s.hint}</span>` : ''}</div>
+        <div class="cat-row">
+          ${options.map((m) => {
+            const mt = mealTotals(m);
+            const on = composer[s.id] === m.id;
+            return `<button class="tile ${on ? 'picked' : ''}" onclick="pickMeal('${s.id}','${m.id}')">
+              ${on ? '<span class="tile-star" style="color:var(--accent)">✓</span>' : ''}
+              <div class="tile-name">${esc(m.name)}</div>
+              <div class="tile-macros"><b>${fmtG(mt.protein_g)}g</b> · ${round(mt.calories)} cal</div>
+              <div class="tile-unit">${fmtG(mt.net_carbs_g)}g net carbs</div>
+            </button>`;
+          }).join('')}
+        </div>`;
     }).join('')}
+
+    <div style="height:14px"></div>
+    <button class="btn ${any ? 'btn-primary' : 'btn-ghost'}" ${any ? 'onclick="logComposedDay()"' : 'disabled'}>
+      ${any ? `Log this day · ${fmtG(t.protein_g)}g` : 'Pick your meals'}
+    </button>
+    <div class="paste-hint" style="text-align:center">Logged as separate entries — trim any of them on Today if you don't finish it.</div>
   `;
 }
 
-function loadTemplate(i) {
-  const tpl = TEMPLATES[i];
-  const resolved = resolveTemplate(tpl);
-  if (!resolved.length) { toast('Food library not loaded'); return; }
-  if (entries.length && !confirm(`Add "${tpl.name}" on top of the ${entries.length} entries already logged today?`)) return;
-  resolved.forEach((r) => {
-    logEntry({
-      log_date: todayStr(),
-      meal_slot: r.slot,
-      food_id: r.food.id,
-      food_name: r.food.name,
-      quantity: r.qty,
-      protein_g: round(r.food.protein_g * r.qty, 1),
-      calories: round(r.food.calories * r.qty),
-      net_carbs_g: round(r.food.net_carbs_g * r.qty, 1),
-      entry_source: 'preset',
+function logComposedDay() {
+  const meals = pickedMeals();
+  if (!meals.length) return;
+  if (entries.length && !confirm(`Add these meals on top of the ${entries.length} already logged today?`)) return;
+  const t = composerTotals();
+  meals.forEach((meal) => {
+    resolveMeal(meal).forEach((r) => {
+      logEntry({
+        log_date: todayStr(),
+        meal_slot: meal.slot,
+        food_id: r.food.id,
+        food_name: r.food.name,
+        quantity: r.qty,
+        protein_g: round(r.food.protein_g * r.qty, 1),
+        calories: round(r.food.calories * r.qty),
+        net_carbs_g: round(r.food.net_carbs_g * r.qty, 1),
+        entry_source: 'preset',
+      });
     });
   });
-  toast(`${tpl.name} loaded`);
+  toast(`+${fmtG(t.protein_g)}g protein`);
   switchView('today');
 }
 
@@ -1097,6 +1295,7 @@ function renderHeader() {
 /* ---------- init ---------- */
 async function init() {
   queue = lsGet('macro-queue', []);
+  composer = { meal_1: null, shake: null, meal_2: null, snack: null, ...lsGet('macro-composer', {}) };
   renderSyncPill();
   renderHeader();
   renderToday();
