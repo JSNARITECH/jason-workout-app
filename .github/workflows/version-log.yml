@@ -23,7 +23,8 @@ jobs:
 
           # Extract APP_VERSION from index.html
           result = subprocess.run(
-            ["grep", "-oP", r"APP_VERSION\s*=\s*['\"]?\Kv\d+", "index.html"],
+            # \d+ alone stops at the major, logging v12.4 as "v12"
+            ["grep", "-oP", r"APP_VERSION\s*=\s*['\"]?\Kv\d+(?:\.\d+)*", "index.html"],
             capture_output=True, text=True
           )
           version = result.stdout.strip().split("\n")[0] or "unknown"
