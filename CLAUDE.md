@@ -2,7 +2,7 @@
 
 **Purpose:** Personal strength training tracker with adaptive workout protocols, PR management, recovery modes, and multi-location gym support — plus a keto macro tracker (see §6.5) sharing the same repo, Supabase project and deployment.
 
-**Current Version:** v12.2 (2026-09-14) · macro tracker v1.0 (2026-09-16)  
+**Current Version:** v12.4 (2026-09-16) · macro tracker v1.0 (2026-09-16)  
 **Development Branch:** per session (latest: `claude/sweet-hamilton-w4maed`) — never push to `main` directly; merge after a Vercel preview check  
 **Deployment:** Vercel (two static HTML files + Supabase backend)
 
