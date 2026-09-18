@@ -129,6 +129,22 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .swap-option.blocked{opacity:0.55;cursor:default;}
 .ga-elig-row{margin:-4px 13px 10px;padding:8px 11px;border-radius:9px;background:var(--card2);border:1px solid var(--border2);font-size:10px;color:var(--dim2);line-height:1.4;}
 
+/* FEAT-19 sprint planner */
+.sprint-plan{background:var(--card2);border:1px solid var(--border2);border-radius:11px;padding:10px 11px;margin-bottom:10px;}
+.sprint-plan.short{border-color:rgba(255,154,77,0.4);}
+.sprint-plan.hit{border-color:rgba(77,255,170,0.35);font-size:11px;color:var(--dim2);}
+.sprint-plan.hit strong{color:var(--green);}
+.sp-row{display:flex;gap:4px;margin-bottom:8px;}
+.sp-chip{flex:1;text-align:center;padding:5px 0;border-radius:7px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;background:var(--dark);border:1px solid var(--border);color:var(--dim);}
+.sp-chip.done{background:rgba(77,255,170,0.15);border-color:rgba(77,255,170,0.45);color:var(--green);}
+.sp-chip.pick{background:rgba(232,255,71,0.14);border-color:rgba(232,255,71,0.5);color:var(--accent);}
+.sp-chip.no{opacity:0.4;text-decoration:line-through;}
+.sp-chip.warn{border-color:rgba(255,154,77,0.4);color:var(--orange);}
+.sp-chip.past{opacity:0.35;}
+.sp-msg{font-size:11px;color:var(--dim2);line-height:1.45;}
+.sp-msg strong{color:var(--white);}
+.sp-key{font-size:9px;color:var(--dim);margin-top:6px;letter-spacing:0.2px;}
+
 /* SECTION LABEL */
 .sec-label{font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:3px;color:var(--dim);margin:16px 0 7px;display:flex;align-items:center;gap:8px;}
 .sec-label::after{content:'';flex:1;height:1px;background:var(--border);}
@@ -1728,6 +1744,8 @@ let swapOverrides = {}; // { exId: { HG: altName, LT: altName } } — user-selec
 let prStreaks = {};     // { exId: count } — consecutive sessions with new PRs
 let notesStore = {};   // { exId: { todayNote, lastWeekNote, weekCount } }
 let groupActivityOverride = {}; // FEAT-15: { dateStr: activityId } — swap any day's session for a group class / activity
+let sprintAddon = {};  // FEAT-18: { dateStr: true } — a sprint ADDED to a lifting day, not replacing it
+let viewingSprintAddon = false; // transient: showing the added sprint rather than the day's lift
 let backRecoveryMode = false;
 let vacationMode = false; // FEAT-8: Gym-free maintenance routine
 let dayTypeOverride = {}; // { dateStr: 'upper'|'push'|'pull'|'legs' }
@@ -1877,6 +1895,12 @@ async function loadAll() {
     const v = await getStored('group-activity-overrides');
     if (v) groupActivityOverride = JSON.parse(v);
   } catch(e) { groupActivityOverride = {}; }
+
+  // FEAT-18: Restore added sprints (a lift day that also carries a sprint)
+  try {
+    const v = await getStored('sprint-addons');
+    if (v) sprintAddon = JSON.parse(v);
+  } catch(e) { sprintAddon = {}; }
 
   // FEAT-9: Restore per-day session plans (keep two weeks so a saved session's list can still be reviewed)
   try {
@@ -2058,18 +2082,24 @@ function allSprintDates() {
   Object.entries(dailyHabits).forEach(([d, h]) => { if (h.sprint) s.add(d); });
   return s;
 }
+// FEAT-19: weekly sprint target. Raised 2 -> 3 on 2026-09-18 — visceral fat grade was
+// oscillating 12/13 on two a week, so the floor moved rather than the ceiling.
+const SPRINT_TARGET = 3;
+const SPRINT_CEILING = 4;  // above this it stops being recovery-compatible
+
 function sprintsInWeek(weekStart) {
   let n = 0;
   allSprintDates().forEach(d => { if (weekStartOf(d) === weekStart) n++; });
   return n;
 }
-// Consecutive weeks with 2+ sprints. The in-progress week counts once it hits 2 but never breaks the streak.
+// Consecutive weeks hitting SPRINT_TARGET. The in-progress week counts once it hits the
+// target but never breaks the streak.
 function sprintWeekStreak() {
   const thisWeek = weekStartOf(getDateStr());
   const thisCount = sprintsInWeek(thisWeek);
-  let week = thisCount >= 2 ? thisWeek : dateOffset(thisWeek, -7);
+  let week = thisCount >= SPRINT_TARGET ? thisWeek : dateOffset(thisWeek, -7);
   let streak = 0;
-  while (sprintsInWeek(week) >= 2 && streak < 104) { streak++; week = dateOffset(week, -7); }
+  while (sprintsInWeek(week) >= SPRINT_TARGET && streak < 104) { streak++; week = dateOffset(week, -7); }
   return { streak, thisCount };
 }
 // Consecutive days with the habit confirmed, ending today (or yesterday if today isn't logged yet).
@@ -2107,11 +2137,12 @@ function dashboardHTML() {
   return `<div class="dash-panel" id="dashPanel">
     <div class="dash-title"><span>📋 Accountability</span><span class="dash-date">${dateLbl}</span></div>
     ${resetProtocol.active ? resetBannerHTML() : ''}
+    ${sprintPlanHTML()}
     <div class="dash-grid">
       <div class="dash-tile">
         <div class="dash-tile-label">🔥 Sprint streak</div>
         <div class="dash-tile-val ${cls(sp.streak)}">${sp.streak} ${unit(sp.streak, 'wk')}</div>
-        <div class="dash-tile-sub">2+ sprints/week · this week <strong style="color:${sp.thisCount >= 2 ? 'var(--green)' : 'var(--orange)'}">${sp.thisCount}/2</strong></div>
+        <div class="dash-tile-sub">${SPRINT_TARGET}+ sprints/week · this week <strong style="color:${sp.thisCount >= SPRINT_TARGET ? 'var(--green)' : 'var(--orange)'}">${sp.thisCount}/${SPRINT_TARGET}</strong></div>
       </div>
       <div class="dash-tile">
         <div class="dash-tile-label">🚫 Alcohol-free</div>
@@ -2180,7 +2211,7 @@ function storedCheckin(ws) {
 
 function checkinScore(d) {
   let s = 0;
-  if ((d.sprints ?? 0) >= 2) s++;
+  if ((d.sprints ?? 0) >= SPRINT_TARGET) s++;
   if (d.alcohol === false) s++;
   if (d.sleep === 'yes' || d.sleep === 'most') s++;
   if (d.protein === true) s++;
@@ -2204,7 +2235,7 @@ function maybeShowCheckin() {
 function openCheckin(ws) {
   ws = ws || checkinWeekStart();
   const logged = sprintsInWeek(ws);
-  checkinDraft = { ws, sprints: Math.min(logged, 3) };
+  checkinDraft = { ws, sprints: Math.min(logged, SPRINT_TARGET + 1) };
   renderCheckinForm();
   document.getElementById('checkinOverlay').classList.add('open');
 }
@@ -2232,8 +2263,8 @@ function renderCheckinForm() {
 
     <div class="ci-q">
       <div class="ci-q-label"><span>⚡ Sprints this week</span><span class="ci-q-hint">${logged} logged in app</span></div>
-      <div class="ci-opts">${opt('sprints',0,'0',true)}${opt('sprints',1,'1',true)}${opt('sprints',2,'2')}${opt('sprints',3,'2+')}</div>
-      ${d.sprints !== undefined && d.sprints < 2 ? '<div class="ci-warn">⚠️ Under 2 sprints — the visceral fat protocol needs two a week</div>' : ''}
+      <div class="ci-opts">${opt('sprints',0,'0',true)}${opt('sprints',1,'1',true)}${opt('sprints',2,'2',true)}${opt('sprints',3,'3')}${opt('sprints',4,'3+')}</div>
+      ${d.sprints !== undefined && d.sprints < SPRINT_TARGET ? `<div class="ci-warn">⚠️ Under ${SPRINT_TARGET} sprints — the visceral fat protocol needs ${SPRINT_TARGET} a week</div>` : ''}
     </div>
     <div class="ci-q">
       <div class="ci-q-label"><span>🍺 Any alcohol this week?</span></div>
@@ -2721,6 +2752,10 @@ function renderWorkoutBody() {
 
   const todayDateStr = getDateStr();
 
+  // FEAT-18: the added sprint is a second session on the same date — viewing it leaves
+  // the lift's own session state untouched, and each saves its own workouts row.
+  if (sprintAddon[todayDateStr] && viewingSprintAddon) { renderSprintAddonDay(); return; }
+
   // FEAT-15: any day can be swapped for a group class / activity — or a make-up sprint
   if (groupActivityOverride[todayDateStr] === 'sprint') { renderMakeupSprintDay(); return; }
   if (groupActivityOverride[todayDateStr] && ALTERNATIVE_ACTIVITIES[groupActivityOverride[todayDateStr]]) {
@@ -2783,6 +2818,24 @@ function renderWorkoutBody() {
     <span class="type-selector-label">Missed a sprint, or want a class?</span>
     <button class="ga-btn" onclick="event.stopPropagation();showGroupActivitySheet()">🔄 Swap today's session</button>
   </div>`;
+
+  // FEAT-18: a sprint ON TOP of the lift — lifting and sprinting the same day is two
+  // sessions, not a substitution, so this never touches the workout being rendered.
+  if (sprintAddon[todayDateStr]) {
+    const done = allSprintDates().has(todayDateStr);
+    html += `<div class="ga-banner" style="margin-bottom:10px">
+      <span>⚡ <strong>SPRINT ADDED</strong> · ${done ? 'logged today' : `extra session alongside ${workout.title}`}</span>
+      <button class="ga-back-btn" onclick="event.stopPropagation();openSprintAddon()">${done ? 'Open' : 'Start sprint ⚡'}</button>
+    </div>`;
+  } else {
+    const ae = sprintEligibility();
+    if (ae.level !== 'done' && ae.level !== 'blocked') {
+      html += `<div class="ga-row">
+        <span class="type-selector-label">Training twice today?</span>
+        <button class="ga-btn" onclick="event.stopPropagation();addSprintToday()">⚡ Add a sprint on top</button>
+      </div>`;
+    }
+  }
 
   // Done banner
   const doneBannerTitle = `${workout.title} COMPLETE`;
@@ -3224,6 +3277,122 @@ function renderMakeupSprintDay() {
   document.getElementById('mainScroll').insertAdjacentHTML('afterbegin', banner);
 }
 
+// ── FEAT-19: SPRINT PLANNER ───────────────────────────────────
+// "You didn't sprint today — which days are left?" The no-back-to-back rule makes this
+// non-obvious: four open days in a row only fit two sprints, so the count of remaining
+// slots is a max non-adjacent selection, not a count of legal days.
+function sprintPlan() {
+  const today = getDateStr();
+  const ws = weekStartOf(today);
+  const sprints = allSprintDates();
+  const logged = sprintsInWeek(ws);
+
+  const days = [];
+  for (let i = 0; i < 7; i++) {
+    const date = dateOffset(ws, i);
+    const load = LEG_LOAD[dayLoadType(date, i)] || 'none';
+    const prevSprint = sprints.has(dateOffset(date, -1));
+    let status;
+    if (sprints.has(date)) status = 'done';
+    else if (date < today) status = 'past';
+    else if (prevSprint) status = 'blocked';
+    else if (load === 'heavy') status = 'heavy';
+    else status = 'open';
+    days.push({ date, i, label: WEEK[i].name, workout: WEEK[i].label, status, load });
+  }
+
+  // Greedy earliest-first over the days still ahead: taking a day forbids the next one.
+  const ahead = days.filter(d => d.date >= today && (d.status === 'open' || d.status === 'heavy'));
+  const picks = [];
+  let blockUntil = '';
+  for (const d of ahead) {
+    if (d.date <= blockUntil) continue;
+    picks.push(d);
+    blockUntil = dateOffset(d.date, 1);
+  }
+
+  const needed = Math.max(0, SPRINT_TARGET - logged);
+  return { days, logged, needed, picks, reachable: Math.min(needed, picks.length) };
+}
+
+function sprintPlanHTML() {
+  const p = sprintPlan();
+  if (p.needed === 0) {
+    return `<div class="sprint-plan hit">⚡ <strong>${p.logged}/${SPRINT_TARGET} sprints</strong> — week's target is in. Anything more is a bonus.</div>`;
+  }
+  const chips = p.days.map(d => {
+    const on = p.picks.some(x => x.date === d.date);
+    const cls = d.status === 'done' ? 'done'
+      : d.status === 'past' ? 'past'
+      : on ? 'pick'
+      : d.status === 'blocked' ? 'no'
+      : d.status === 'heavy' ? 'warn' : 'idle';
+    return `<span class="sp-chip ${cls}" title="${d.date}">${d.label}</span>`;
+  }).join('');
+
+  const short = p.reachable < p.needed;
+  const shown = p.picks.slice(0, p.needed);
+  const names = shown.map(d => d.label);
+  const heavy = shown.filter(d => d.load === 'heavy').map(d => d.label);
+  const heavyNote = heavy.length
+    ? ` ${heavy.join(' and ')} ${heavy.length === 1 ? 'is' : 'are'} leg day — sprint in the morning.`
+    : '';
+  const msg = (p.picks.length === 0
+    ? `No legal days left this week — you sprinted too recently for another.`
+    : short
+      ? `Only ${p.reachable} more fits before Sunday (${names.join(' and ')}) — you'd finish ${p.logged + p.reachable}/${SPRINT_TARGET}.`
+      : `${p.needed} to go — take ${names.join(' and ')}.`) + heavyNote;
+
+  return `<div class="sprint-plan ${short ? 'short' : ''}">
+    <div class="sp-row">${chips}</div>
+    <div class="sp-msg">⚡ <strong>${p.logged}/${SPRINT_TARGET} this week.</strong> ${msg}</div>
+    <div class="sp-key">Green = logged · Yellow = take it · Grey = blocked by the day before</div>
+  </div>`;
+}
+
+// ── FEAT-18: SPRINT ON TOP OF A LIFT ──────────────────────────
+// The swap replaces the day; this doesn't. Lifting and sprinting the same day is two
+// separate workouts rows on one date, so the push session is never lost to log a run.
+function persistSprintAddons() {
+  try { window.storage.set('sprint-addons', JSON.stringify(sprintAddon)).catch(()=>{}); } catch(e) {}
+  try { localStorage.setItem('sprint-addons', JSON.stringify(sprintAddon)); } catch(e) {}
+}
+
+function addSprintToday() {
+  sprintAddon[getDateStr()] = true;
+  persistSprintAddons();
+  viewingSprintAddon = true;
+  showToast('⚡ Sprint added — your session is still here');
+  renderWorkoutView();
+}
+
+function removeSprintAddon() {
+  delete sprintAddon[getDateStr()];
+  persistSprintAddons();
+  viewingSprintAddon = false;
+  showToast('↩ Sprint removed');
+  renderWorkoutView();
+}
+
+function openSprintAddon() { viewingSprintAddon = true; renderWorkoutView(); }
+function closeSprintAddon() { viewingSprintAddon = false; renderWorkoutView(); }
+
+function renderSprintAddonDay() {
+  const day = WEEK[currentDayIdx];
+  const scheduled = WORKOUTS[scheduledType(currentDayIdx)];
+  const backLabel = scheduled ? scheduled.title : day.label;
+  renderSprintDay(day.key, REST_CONTENT.wed);
+  const e = sprintEligibility();
+  const banner = `<div class="ga-banner" style="margin:6px 13px 8px">
+    <span>⚡ <strong>EXTRA SPRINT</strong> · ${backLabel} is still logged separately</span>
+    <button class="ga-back-btn" onclick="closeSprintAddon()">↩ Back to ${backLabel}</button>
+  </div>
+  <div class="ga-elig-row"><strong style="color:${e.color}">${e.badge}</strong> · ${e.reason}${e.timing ? ` <strong style="color:var(--white)">${e.timing}</strong>` : ''}
+    <span style="display:block;margin-top:6px"><a href="#" onclick="event.preventDefault();removeSprintAddon()" style="color:var(--dim2);font-size:11px">Remove this sprint</a></span>
+  </div>`;
+  document.getElementById('mainScroll').insertAdjacentHTML('afterbegin', banner);
+}
+
 // ── MAKE-UP SPRINT ELIGIBILITY ────────────────────────────────
 // Protects the posterior chain: a make-up sprint next to heavy leg work or another sprint
 // is where hamstrings get tweaked. A missed week is recoverable; a tweaked hamstring costs a month.
@@ -3253,8 +3422,8 @@ function sprintEligibility() {
     return { level:'done', badge:'DONE', color:'var(--gold)', reason:'A sprint is already logged for today.', timing:'' };
   if (sprints.has(yDate) || yType === 'sprint')
     return { level:'blocked', badge:'BLOCKED', color:'var(--red)', reason:'You sprinted yesterday — back-to-back max-effort days run the second one at ~70% and stack fatigue on the hamstrings. Take the day.', timing:'' };
-  if (week >= 3)
-    return { level:'caution', badge:'AT CEILING', color:'var(--orange)', reason:`${week} sprints already this week — a third is optional only; the target is 2.`, timing };
+  if (week >= SPRINT_CEILING)
+    return { level:'caution', badge:'AT CEILING', color:'var(--orange)', reason:`${week} sprints already this week — past ${SPRINT_TARGET} the recovery cost outruns the fat-loss return.`, timing };
   if (LEG_LOAD[yType] === 'heavy')
     return { level:'caution', badge:'CAUTION', color:'var(--orange)', reason:'Heavy legs yesterday — keep it to 4–6 rounds and stop at the first sign of hamstring tightness.', timing };
   if (LEG_LOAD[nType] === 'heavy')
