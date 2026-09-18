@@ -44,6 +44,14 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .nav-btn.active{color:var(--accent);}
 .nav-icon{font-size:17px;}
 
+/* DATE STEPPER */
+.date-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.date-arrow{width:38px;height:38px;flex-shrink:0;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--white);font-size:20px;line-height:1;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.date-arrow.off{opacity:0.25;}
+.date-label{flex:1;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--white);font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1px;cursor:pointer;}
+.date-label.past{border-color:var(--orange);color:var(--orange);}
+.date-back{font-family:'DM Sans',sans-serif;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--dim2);margin-left:6px;font-weight:700;}
+
 /* DAY TYPE TOGGLE */
 .daytype-row{display:flex;gap:6px;align-items:center;margin-bottom:12px;}
 .daytype-label{font-size:8px;color:var(--dim2);font-weight:700;text-transform:uppercase;letter-spacing:1px;}
@@ -118,6 +126,13 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .tile-flag{position:absolute;top:7px;right:8px;font-size:11px;}
 .filter-row{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-bottom:12px;padding-bottom:2px;}
 .filter-row::-webkit-scrollbar{display:none;}
+.add-row{display:flex;gap:8px;margin-bottom:14px;}
+.btn-half{flex:1;padding:13px 6px;font-size:10px;letter-spacing:1px;}
+.how{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 13px;margin-bottom:14px;font-size:12px;line-height:1.6;color:var(--dim2);}
+.how b{color:var(--white);font-weight:600;}
+.how-step{display:flex;gap:9px;margin-bottom:7px;}
+.how-step:last-child{margin-bottom:0;}
+.how-num{flex-shrink:0;width:17px;height:17px;border-radius:50%;background:var(--accent);color:#000;font-size:9px;font-weight:900;display:flex;align-items:center;justify-content:center;margin-top:1px;}
 .chip{flex-shrink:0;padding:7px 12px;border:1px solid var(--border);border-radius:20px;background:var(--card);color:var(--dim2);font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.15s;}
 .chip.active{background:var(--accent);color:#000;border-color:var(--accent);font-weight:900;}
 
@@ -163,6 +178,18 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .slot-pills{display:flex;gap:6px;margin-bottom:16px;}
 .slot-pill{flex:1;padding:10px 4px;border:1px solid var(--border);border-radius:10px;background:var(--card);color:var(--dim2);font-size:9px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;}
 .slot-pill.active{background:var(--accent);color:#000;border-color:var(--accent);font-weight:900;}
+
+/* CUSTOM ITEM */
+.c-lbl{display:block;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim2);font-weight:700;margin:12px 2px 5px;}
+.c-input{width:100%;background:var(--card);border:1px solid var(--border2);border-radius:10px;color:var(--white);padding:11px 12px;font-size:15px;font-family:'DM Sans',sans-serif;}
+.c-input:focus{outline:none;border-color:var(--accent);}
+.c-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.c-hint{font-size:10px;color:var(--dim);margin:9px 2px 12px;line-height:1.5;}
+.save-toggle{display:flex;align-items:flex-start;gap:10px;width:100%;text-align:left;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;color:var(--white);font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:14px;line-height:1.4;}
+.save-toggle.on{border-color:var(--accent);background:var(--accent-dim);}
+.save-box{width:20px;height:20px;flex-shrink:0;border-radius:5px;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:12px;color:#000;background:var(--card2);}
+.save-toggle.on .save-box{background:var(--accent);border-color:var(--accent);}
+.save-sub{display:block;font-size:10px;color:var(--dim2);font-weight:500;margin-top:3px;}
 
 /* PASTE */
 .paste-area{width:100%;min-height:130px;background:var(--card);border:1px solid var(--border2);border-radius:12px;color:var(--white);padding:12px;font-size:13px;font-family:'DM Sans',sans-serif;resize:vertical;line-height:1.5;}
@@ -321,6 +348,8 @@ let trendTable = true;
 let sheetState = null;
 let clockTimer = null;
 let composer = { meal_1: null, shake: null, meal_2: null, snack: null };
+// the day being logged to — not always today, since meals get logged the morning after
+let viewDate = null;
 
 /* ---------- utils ---------- */
 const $ = (id) => document.getElementById(id);
@@ -332,6 +361,35 @@ const fmtG = (n) => { const v = Number(n) || 0; return Number.isInteger(v) ? Str
 function todayStr() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+function shiftDate(dateStr, days) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const dt = new Date(y, m - 1, d + days);
+  return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
+}
+function isToday() { return viewDate === todayStr(); }
+
+function dateLabel() {
+  if (isToday()) return 'Today';
+  if (viewDate === shiftDate(todayStr(), -1)) return 'Yesterday';
+  const [y, m, d] = viewDate.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+}
+
+function stepDay(days) {
+  const next = shiftDate(viewDate, days);
+  if (next > todayStr()) return; // no logging into the future
+  viewDate = next;
+  entries = lsGet(dayKey(), []);
+  renderToday();
+  renderHeader();
+  loadToday();
+}
+function jumpToToday() {
+  if (isToday()) return;
+  viewDate = todayStr();
+  entries = lsGet(dayKey(), []);
+  renderToday(); renderHeader(); loadToday();
 }
 function lsGet(key, fallback) {
   try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
@@ -348,7 +406,7 @@ function toast(msg) {
 }
 
 /* ---------- day type ---------- */
-function dayTypeKey() { return `macro-daytype-${todayStr()}`; }
+function dayTypeKey() { return `macro-daytype-${viewDate}`; }
 function getDayType() { return lsGet(dayTypeKey(), 'training'); }
 function setDayType(t) { lsSet(dayTypeKey(), t); renderToday(); }
 
@@ -391,7 +449,7 @@ function totals(list = entries) {
 }
 
 /* ---------- persistence + sync ---------- */
-function dayKey() { return `macro-day-${todayStr()}`; }
+function dayKey() { return `macro-day-${viewDate}`; }
 function saveDay() { lsSet(dayKey(), entries); }
 function saveQueue() { lsSet('macro-queue', queue); renderSyncPill(); }
 
@@ -510,7 +568,7 @@ async function loadToday() {
   entries = lsGet(dayKey(), []);
   renderToday();
   try {
-    const data = await api(`/nutrition-today?date=${todayStr()}`);
+    const data = await api(`/nutrition-today?date=${viewDate}`);
     // server owns persisted rows; keep local entries that never made it up
     const unsynced = entries.filter((e) => e.tempId && queue.some((q) => q.tempId === e.tempId));
     entries = [...(data.entries || []), ...unsynced];
@@ -586,7 +644,7 @@ function logCloser(foodId, count) {
   const food = foods.find((f) => f.id === foodId);
   if (!food) return;
   logEntry({
-    log_date: todayStr(),
+    log_date: viewDate,
     meal_slot: guessSlot(),
     food_id: food.id,
     food_name: food.name,
@@ -644,6 +702,14 @@ function renderToday() {
   }).join('');
 
   $('viewToday').innerHTML = `
+    <div class="date-row">
+      <button class="date-arrow" onclick="stepDay(-1)" aria-label="Previous day">‹</button>
+      <button class="date-label ${isToday() ? '' : 'past'}" onclick="jumpToToday()">
+        ${dateLabel()}${isToday() ? '' : ' <span class="date-back">tap for today</span>'}
+      </button>
+      <button class="date-arrow ${isToday() ? 'off' : ''}" onclick="stepDay(1)" aria-label="Next day">›</button>
+    </div>
+
     <div class="daytype-row">
       <span class="daytype-label">Day</span>
       <button class="daytype-btn ${dayType === 'training' ? 'active' : ''}" onclick="setDayType('training')">Training</button>
@@ -749,7 +815,10 @@ function renderLog() {
       ${CATS.filter((c) => foods.some((f) => f.category === c.id))
         .map((c) => `<button class="chip ${catFilter === c.id ? 'active' : ''}" onclick="setCat('${c.id}')">${c.label}</button>`).join('')}
     </div>
-    <button class="btn btn-ghost" style="margin-bottom:14px" onclick="openPaste()">📷 Paste from Claude</button>
+    <div class="add-row">
+      <button class="btn btn-ghost btn-half" onclick="openCustom()">✏️ Add your own</button>
+      <button class="btn btn-ghost btn-half" onclick="openPaste()">📷 From a photo</button>
+    </div>
     ${foods.length ? groups.map((g) => `
       <div class="sec-title">${esc(g.label)}</div>
       <div class="cat-row">
@@ -883,7 +952,7 @@ function setSlot(id) { sheetState.slot = id; renderQtySheet(); }
 function confirmQty() {
   const { food, qty, slot, edit } = sheetState;
   const row = {
-    log_date: todayStr(),
+    log_date: viewDate,
     meal_slot: slot,
     food_id: food.id ?? null,
     food_name: food.name,
@@ -1030,7 +1099,7 @@ function logComposedDay() {
   meals.forEach((meal) => {
     resolveMeal(meal).forEach((r) => {
       logEntry({
-        log_date: todayStr(),
+        log_date: viewDate,
         meal_slot: meal.slot,
         food_id: r.food.id,
         food_name: r.food.name,
@@ -1043,6 +1112,148 @@ function logComposedDay() {
     });
   });
   toast(`+${fmtG(t.protein_g)}g protein`);
+  switchView('today');
+}
+
+/* ---------- CUSTOM ITEM ---------- */
+// For food the library doesn't know — the bag of cooked shrimp, a restaurant plate,
+// anything with a label. Logs one-off, or optionally becomes a permanent tile.
+function openCustom() {
+  sheetState = {
+    custom: true, slot: guessSlot(), save: false,
+    name: '', protein: '', calories: '', carbs: '', unit: 'serving', qty: 1,
+  };
+  renderCustomSheet();
+  openSheet();
+  setTimeout(() => $('cName')?.focus(), 300);
+}
+
+function customField(key, val) {
+  sheetState[key] = val;
+  const p = Number(sheetState.protein) || 0;
+  const c = Number(sheetState.calories) || 0;
+  const nc = Number(sheetState.carbs) || 0;
+  const q = Number(sheetState.qty) || 1;
+  const ok = sheetState.name.trim() && sheetState.protein !== '' && sheetState.calories !== '';
+  const btn = $('cLog');
+  if (btn) {
+    btn.disabled = !ok;
+    btn.className = `btn ${ok ? 'btn-primary' : 'btn-ghost'}`;
+    btn.textContent = ok ? `Log it · ${fmtG(p * q)}g protein` : 'Name, protein and calories needed';
+  }
+  const prev = $('cPreview');
+  if (prev) prev.textContent = `${fmtG(p * q)}g protein · ${round(c * q)} cal · ${fmtG(nc * q)}g net carbs`;
+}
+
+function toggleCustomSave() {
+  sheetState.save = !sheetState.save;
+  renderCustomSheet();
+}
+
+function renderCustomSheet() {
+  const s = sheetState;
+  $('sheetBody').innerHTML = `
+    <div class="sheet-title">Add your own item</div>
+    <div class="sheet-sub">For anything not in the library — read the numbers off the package or the menu.</div>
+
+    <label class="c-lbl">What is it?</label>
+    <input class="c-input" id="cName" placeholder="e.g. Frozen cooked shrimp" value="${esc(s.name)}"
+      oninput="customField('name', this.value)">
+
+    <div class="c-grid">
+      <div>
+        <label class="c-lbl">Protein (g)</label>
+        <input class="c-input" id="cProtein" type="number" inputmode="decimal" placeholder="20" value="${esc(s.protein)}"
+          oninput="customField('protein', this.value)">
+      </div>
+      <div>
+        <label class="c-lbl">Calories</label>
+        <input class="c-input" id="cCal" type="number" inputmode="decimal" placeholder="110" value="${esc(s.calories)}"
+          oninput="customField('calories', this.value)">
+      </div>
+      <div>
+        <label class="c-lbl">Net carbs (g)</label>
+        <input class="c-input" type="number" inputmode="decimal" placeholder="0" value="${esc(s.carbs)}"
+          oninput="customField('carbs', this.value)">
+      </div>
+      <div>
+        <label class="c-lbl">How many?</label>
+        <input class="c-input" type="number" inputmode="decimal" placeholder="1" value="${esc(s.qty)}"
+          oninput="customField('qty', this.value)">
+      </div>
+    </div>
+    <div class="c-hint">Enter the numbers for <b>one</b> of them, then say how many you had.</div>
+    <div class="macro-preview" style="display:block;text-align:center">
+      <div class="mp-lbl" style="margin-bottom:4px">Total going in</div>
+      <div id="cPreview" style="font-size:13px;font-weight:600;color:var(--accent)">0g protein · 0 cal · 0g net carbs</div>
+    </div>
+
+    <div class="slot-pills">
+      ${SLOTS.map((x) => `<button class="slot-pill ${s.slot === x.id ? 'active' : ''}" onclick="setCustomSlot('${x.id}')">${x.label}</button>`).join('')}
+    </div>
+
+    <button class="save-toggle ${s.save ? 'on' : ''}" onclick="toggleCustomSave()">
+      <span class="save-box">${s.save ? '✓' : ''}</span>
+      <span>
+        Save to my food library
+        <span class="save-sub">${s.save ? `Becomes a tile you can tap — unit: "${esc(s.unit)}"` : 'Otherwise this logs once and is gone'}</span>
+      </span>
+    </button>
+    ${s.save ? `
+      <label class="c-lbl">What's one unit called?</label>
+      <input class="c-input" placeholder="shrimp, serving, oz, piece" value="${esc(s.unit)}"
+        oninput="customField('unit', this.value)">` : ''}
+
+    <button class="btn btn-ghost" id="cLog" disabled onclick="confirmCustom()">Name, protein and calories needed</button>
+  `;
+  customField('name', s.name);
+}
+
+function setCustomSlot(id) { sheetState.slot = id; renderCustomSheet(); }
+
+async function confirmCustom() {
+  const s = sheetState;
+  const name = s.name.trim();
+  const perProtein = Number(s.protein) || 0;
+  const perCal = Number(s.calories) || 0;
+  const perCarb = Number(s.carbs) || 0;
+  const qty = Number(s.qty) || 1;
+  if (!name || s.protein === '' || s.calories === '') return;
+
+  let foodId = null;
+  if (s.save) {
+    try {
+      const { food } = await api('/nutrition-foods', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name, category: 'protein', unit_label: s.unit.trim() || 'serving',
+          protein_g: perProtein, calories: perCal, net_carbs_g: perCarb, is_favorite: true,
+        }),
+      });
+      if (food) {
+        foodId = food.id;
+        foods.push(food);
+        lsSet('macro-foods-cache', { foods, ts: Date.now() });
+      }
+    } catch {
+      toast('Saved locally — library sync failed');
+    }
+  }
+
+  logEntry({
+    log_date: viewDate,
+    meal_slot: s.slot,
+    food_id: foodId,
+    food_name: name,
+    quantity: qty,
+    protein_g: round(perProtein * qty, 1),
+    calories: round(perCal * qty),
+    net_carbs_g: round(perCarb * qty, 1),
+    entry_source: 'manual',
+  });
+  closeSheet();
+  toast(`+${fmtG(perProtein * qty)}g protein`);
   switchView('today');
 }
 
@@ -1085,11 +1296,16 @@ function renderPasteSheet() {
   const parsed = sheetState.parsed;
   const good = parsed.filter((p) => p.ok);
   $('sheetBody').innerHTML = `
-    <div class="sheet-title">Paste from Claude</div>
-    <div class="sheet-sub">One item per line. Order and spacing don't matter.</div>
+    <div class="sheet-title">Log a meal from a photo</div>
+    <div class="sheet-sub">For restaurant plates and anything you didn't measure.</div>
+    <div class="how">
+      <div class="how-step"><span class="how-num">1</span><span>Photograph the plate before you eat.</span></div>
+      <div class="how-step"><span class="how-num">2</span><span>Send it to <b>Claude</b> and ask: <b>"estimate the macros, one line per item"</b>.</span></div>
+      <div class="how-step"><span class="how-num">3</span><span>Paste the whole reply below — it gets split into entries automatically.</span></div>
+    </div>
     <textarea class="paste-area" id="pasteArea" placeholder="Ribeye, 14 oz cooked | 98g protein | 1260 cal | 0g net carbs"
       oninput="onPasteInput(this.value)">${esc(sheetState.text || '')}</textarea>
-    <div class="paste-hint">Ribeye, 14 oz cooked | 98g protein | 1260 cal | 0g net carbs</div>
+    <div class="paste-hint">Each line needs a protein number. Everything else is optional,<br>and spacing, bullets and order don't matter.</div>
     ${parsed.length ? `<div class="sec-title" style="margin-top:4px">Parsed <span class="sec-note">${good.length} of ${parsed.length} ok</span></div>` : ''}
     ${parsed.map((p) => p.ok
       ? `<div class="parsed">
@@ -1134,7 +1350,7 @@ function confirmPaste() {
   const good = sheetState.parsed.filter((p) => p.ok);
   good.forEach((p) => {
     logEntry({
-      log_date: todayStr(),
+      log_date: viewDate,
       meal_slot: sheetState.slot,
       food_id: null,
       food_name: p.name,
@@ -1287,7 +1503,8 @@ function wireChart(series, pTarget) {
 
 /* ---------- header clock ---------- */
 function renderHeader() {
-  const d = new Date();
+  const [y, m, dd] = viewDate.split('-').map(Number);
+  const d = new Date(y, m - 1, dd);
   $('hdrDay').textContent = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }).toUpperCase();
   $('hdrWeight').textContent = targets?.weight_lbs ? `${targets.weight_lbs} LBS` : '—';
   $('versionBadge').textContent = `Macro Tracker ${APP_VERSION}`;
@@ -1295,6 +1512,7 @@ function renderHeader() {
 
 /* ---------- init ---------- */
 async function init() {
+  viewDate = todayStr();
   queue = lsGet('macro-queue', []);
   composer = { meal_1: null, shake: null, meal_2: null, snack: null, ...lsGet('macro-composer', {}) };
   renderSyncPill();
