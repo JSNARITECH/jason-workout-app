@@ -749,7 +749,7 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 // ============================================================
 // APP VERSION — update this on every release
 // ============================================================
-const APP_VERSION = 'v12.4';
+const APP_VERSION = 'v12.5';
 
 // ============================================================
 // WEEKLY SCHEDULE
@@ -3887,6 +3887,30 @@ function getSessionDuration() {
   return `${m}:${s.toString().padStart(2,'0')}`;
 }
 
+// BUG-DURATION-WATCH-FIRST: the app timer starts on render, well before the first set,
+// so it isn't trustworthy for export/save — prefer the Galaxy Watch duration when present.
+function getTimerMinutes() {
+  const start = sessionStart || sessionState['__sessionStart__'];
+  if (!start) return null;
+  return Math.floor((Date.now() - start) / 60000);
+}
+
+function getBestDurationMinutes() {
+  const watch = sessionState['__watch__'] || {};
+  if (watch.duration) return watch.duration;
+  const timerMin = getTimerMinutes();
+  // App timer only trusted up to 3 hours — beyond that it's almost certainly
+  // counting idle time from the app being left open, not the actual session.
+  return (timerMin !== null && timerMin <= 180) ? timerMin : null;
+}
+
+function getDurationLabel() {
+  const watch = sessionState['__watch__'] || {};
+  if (watch.duration) return `${watch.duration}m (watch)`;
+  const timerMin = getTimerMinutes();
+  return (timerMin !== null && timerMin <= 180) ? getSessionDuration() : '';
+}
+
 // ============================================================
 // PROGRESS
 // ============================================================
@@ -3974,7 +3998,7 @@ async function saveWorkout(type, dayKey) {
     exercises, newPRs,
     notes: (sessionState['__notes__']||{}).notes || '',
     watch: { avgHr: watch.avgHr||null, maxHr: watch.maxHr||null, calories: watch.calories||null, duration: watch.duration||null, zones: watch.zones||null, peakTiming: watch.peakTiming||null, pattern: watch.pattern||null },
-    duration: getSessionDuration(),
+    duration: getDurationLabel(),
     savedAt: new Date().toISOString()
   };
 
@@ -4009,7 +4033,7 @@ async function saveWorkout(type, dayKey) {
       workout_type: type === 'rest' ? 'flex' : type,
       location: sessionLocation === 'HG' ? 'Home Gym' : 'Lifetime Fitness',
       exercises: exercises,
-      duration_minutes: sessionStart ? Math.floor((Date.now() - sessionStart) / 60000) : null,
+      duration_minutes: getBestDurationMinutes(),
       avg_heart_rate: watch.avgHr || null,
       max_heart_rate: watch.maxHr || null,
       calories_burned: watch.calories || null,
@@ -4072,7 +4096,7 @@ async function saveSprintWorkout(dayKey) {
       peakTiming: null,
       pattern: null
     },
-    duration: getSessionDuration(),
+    duration: getDurationLabel(),
     savedAt: new Date().toISOString()
   };
 
@@ -4097,7 +4121,7 @@ async function saveSprintWorkout(dayKey) {
       workout_type: 'sprint',
       location: sessionLocation === 'HG' ? 'Home Gym' : 'Lifetime Fitness',
       exercises: [],  // Sprint doesn't track individual exercises like regular workouts
-      duration_minutes: sessionStart ? Math.floor((Date.now() - sessionStart) / 60000) : null,
+      duration_minutes: getBestDurationMinutes(),
       avg_heart_rate: avgHrVal,
       max_heart_rate: maxHrVal,
       session_notes: `Sprint session · ${sprintState.totalRounds} rounds with Galaxy Watch data`
@@ -4140,7 +4164,7 @@ function generateSessionSummary(type) {
   if (!workout) return '';
   const watch = sessionState['__watch__'] || {};
   const date  = new Date().toLocaleDateString('en-US', { weekday:'long', month:'short', day:'numeric', year:'numeric' });
-  const dur   = getSessionDuration ? getSessionDuration() : '';
+  const dur   = getDurationLabel();
 
   let lines = [];
   lines.push(`${type === 'recovery' ? '🦴 RECOVERY SESSION' : '🏋🏾 WORKOUT COMPLETE'} — ${APP_VERSION}`);
@@ -4198,7 +4222,7 @@ function shareSprintToClaude() {
   const hrMax = document.getElementById('spHrMax')?.value || '';
   const notes = document.getElementById('sprintNotes')?.value || '';
   const date = new Date().toLocaleDateString('en-US', { weekday:'long', month:'short', day:'numeric', year:'numeric' });
-  const dur = getSessionDuration ? getSessionDuration() : '';
+  const dur = getDurationLabel();
 
   let lines = [];
   lines.push(`⚡ SPRINT SESSION — ${APP_VERSION}`);
@@ -4226,7 +4250,7 @@ function shareActivityToClaude(activityId) {
   const watch = sessionState['__watch__'] || {};
   const notes = (document.getElementById('sessionNotes')?.value) || (sessionState['__notes__'] || {}).notes || '';
   const date = new Date().toLocaleDateString('en-US', { weekday:'long', month:'short', day:'numeric', year:'numeric' });
-  const dur = getSessionDuration ? getSessionDuration() : '';
+  const dur = getDurationLabel();
 
   let lines = [];
   lines.push(`${activity.emoji} ${activity.title.toUpperCase()} — ${APP_VERSION}`);

@@ -1,5 +1,9 @@
 # Workout App Changelog
 
+## v12.5 — 2026-09-23
+### Fixed
+- **BUG-DURATION-WATCH-FIRST** — saved/exported session duration used the in-app render-to-save timer, which starts as soon as the workout view renders (well before the first set) and could balloon to hours if the app was left open. `generateSessionSummary`, `shareSprintToClaude`, `shareActivityToClaude`, and both `workouts` save payloads (`saveWorkout`, `saveSprintWorkout`) now prefer the Galaxy Watch's reported duration when present, falling back to the app timer only when it's under 3 hours, else omitting it. The live "ELAPSED" countdown pill during an active session is unchanged.
+
 ## v12.4 — 2026-09-16
 ### Added
 - **🍖 FUEL button** in the bottom nav — opens the new keto macro tracker at `/macros.html`. The tracker carries a 🏋️ LIFT button back, so the two apps read as one system without merging their code.
