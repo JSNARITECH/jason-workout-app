@@ -2,7 +2,7 @@
 
 **Purpose:** Personal strength training tracker with adaptive workout protocols, PR management, recovery modes, and multi-location gym support — plus a keto macro tracker (see §6.5) sharing the same repo, Supabase project and deployment.
 
-**Current Version:** v12.4 (2026-09-16) · macro tracker v1.0 (2026-09-16)  
+**Current Version:** v12.5 (2026-09-30) · macro tracker v1.0 (2026-09-16)  
 **Development Branch:** per session (latest: `claude/sweet-hamilton-w4maed`) — never push to `main` directly; merge after a Vercel preview check  
 **Deployment:** Vercel (two static HTML files + Supabase backend)
 
@@ -299,7 +299,9 @@ Triggers 150s rest between sets (heavy ATP recovery).
 - **Gold star (🏆)** — Visual indicator on PRs in session input
 
 ### 4.5 Galaxy Watch Integration
-- **BPM Screenshot Scan** — Edge function analyzes Samsung Health screenshots, extracts BPM/zones
+- **BPM Screenshot Scan** — Edge function analyzes Samsung Health screenshots, extracts duration/calories/BPM/zones
+- **Watch time is the saved duration (FEAT-19)** — scan → one-tap confirm sheet → `applyWatchData` merges into `sessionState.__watch__` (a later screenshot without a duration never clears one). Saves send `getBestDurationMinutes()`: watch time, else the app timer only while ≤180 min, never outside the 1–240 CHECK (a violating value rejects the whole row). Exports use `getDurationLabel()`. The app timer (`sessionStart`) starts on render and is display-only — never save or export it directly
+- **Scanned after saving still syncs** — the insert is `ignore-duplicates` on (workout_date, workout_type) and anon has no UPDATE, so `workout-watch-sync` patches the watch columns onto the existing row; `sessionState.__savedAs__` remembers which row today's save hit
 - **Per-exercise HR tracking** — Avg/max HR for cardio/conditioning sessions
 - **REST mode widget** — Minimizable pill shows current rest countdown + next exercise
 - **Sprint day data** — HR zones auto-captured during Hassan ladder attempts
@@ -488,25 +490,23 @@ parse — otherwise stray prose ("1260 calories of nothing useful") logs itself 
 ## 7. SUPABASE EDGE FUNCTIONS
 
 ### `analyze-bpm` Function
-**Purpose:** Extract BPM and HR zones from Samsung Health screenshots via Claude Vision.
+**Purpose:** Read a Samsung Health workout screenshot (Workout details / heart-rate screens) via Claude Vision.
 
-**Trigger:** User selects screenshot from Photos
-**Input:** Base64-encoded image
-**Output:** 
+**Input:** `POST { image: <base64>, mediaType, today?: 'YYYY-MM-DD' }` — `today` is the phone's local date, used to resolve a year-less date on the screenshot.
+**Output:**
 ```json
 {
-  "bpm": 165,
-  "zones": {
-    "zone1": 45,  // Z1: Recovery
-    "zone2": 120, // Z2: Base
-    "zone3": 180, // Z3: Tempo
-    "zone4": 240, // Z4: Threshold
-    "zone5": 300  // Z5: VO2 Max
-  }
+  "date": "2026-09-29", "startTime": "5:21 PM", "endTime": "6:39 PM",
+  "durationText": "1:16:02", "durationSec": 4562, "durationSource": "label", "duration": 76,
+  "calories": 716, "avgBPM": 128, "maxBPM": 159,
+  "zones": { "z1": 10, "z2": 30, "z3": 35, "z4": 20, "z5": 5 },
+  "peakTiming": "late", "pattern": "spiky"
 }
 ```
+The model only **copies** the duration text as printed; `normalize()` converts it in code (`H:MM:SS`, or `MM:SS` for sub-hour sessions), falling back to the start→end span (`durationSource: 'start-end'`). `duration` stays integer minutes for older clients. Any field not on the screenshot is `null`.
 
-**Implementation:** Calls Anthropic Claude API with vision capability, parses response.
+### `workout-watch-sync` Function (FEAT-19)
+`POST { workout_date, workout_type, duration_minutes?, avg_heart_rate?, max_heart_rate?, calories_burned? }` → service-role PATCH of **only those four columns** on the row matching (date, type); returns `{ updated, fields, skipped }`. Out-of-range values are skipped, not stored. `verify_jwt = true` — index.html sends the anon key as the Bearer token.
 
 ### `nutrition-*` Functions (Macro Tracker)
 
