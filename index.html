@@ -749,7 +749,7 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 // ============================================================
 // APP VERSION — update this on every release
 // ============================================================
-const APP_VERSION = 'v12.4';
+const APP_VERSION = 'v12.5';
 
 // ============================================================
 // WEEKLY SCHEDULE
@@ -2847,6 +2847,9 @@ function renderWorkoutBody() {
     <button class="bpm-import-btn" onclick="toggleBpmImport()">📥 Import BPM from Screenshot</button>
     <div class="bpm-import-area" id="bpmImportArea">
       <input type="file" id="bpmImageInput" accept="image/*" style="display:none" onchange="scanBpmScreenshot(this)">
+      <input type="file" id="watchOcrInput" accept="image/*" style="display:none" onchange="ocrWatchScreenshot(this)">
+      <button class="bpm-scan-btn" id="watchOcrBtn" onclick="document.getElementById('watchOcrInput').click()">⌚ Import Watch screenshot (on-device)</button>
+      <div class="bpm-scan-status" id="watchOcrStatus"></div>
       <button class="bpm-scan-btn" id="bpmScanBtn" onclick="document.getElementById('bpmImageInput').click()">📸 Scan Samsung Health Screenshot</button>
       <div class="bpm-scan-status" id="bpmScanStatus"></div>
       <div class="bpm-divider">or paste JSON manually</div>
@@ -3465,6 +3468,169 @@ function updateWeight(exId, setIdx, val) {
   saveSession();
 }
 
+
+// ============================================================
+// FEAT-19: on-device OCR of the Samsung Health "Workout details" screenshot
+// Tesseract.js runs in the browser (lazy-loaded) — the image never leaves the phone.
+// Watch duration/HR/calories override the app timer, which is often left running.
+// ============================================================
+let _tesseractPromise = null;
+function loadTesseract() {
+  if (window.Tesseract) return Promise.resolve(window.Tesseract);
+  if (!_tesseractPromise) {
+    _tesseractPromise = new Promise((resolve, reject) => {
+      const el = document.createElement('script');
+      el.src = 'https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.1.1/tesseract.min.js';
+      el.onload = () => resolve(window.Tesseract);
+      el.onerror = () => { _tesseractPromise = null; reject(new Error('OCR engine failed to load (offline?)')); };
+      document.head.appendChild(el);
+    });
+  }
+  return _tesseractPromise;
+}
+
+// Pure parser: OCR text -> { durationSec, calories, avgHr, maxHr } (missing fields omitted)
+function parseWatchOcrText(text) {
+  const out = {};
+  const t = (text || '').replace(/[|]/g, ':').replace(/\r/g, '');
+  const lines = t.split('\n').map(l => l.trim()).filter(Boolean);
+  const valueNear = (labelRe, valueRe) => {
+    for (let i = 0; i < lines.length; i++) {
+      if (!labelRe.test(lines[i])) continue;
+      const lm = lines[i].match(labelRe);
+      const rest = lines[i].slice(lm.index + lm[0].length);
+      const rm = rest.match(valueRe);
+      if (rm && /^[^\d]{0,20}/.test(rest) && rm.index <= 20) return rm;
+      for (const cand of [lines[i], lines[i + 1], lines[i - 1]]) {
+        if (!cand) continue;
+        const m = cand.replace(labelRe, ' ').match(valueRe);
+        if (m) return m;
+      }
+    }
+    return null;
+  };
+  // Total duration H:MM:SS (or MM:SS)
+  const d = valueNear(/total\s*duration|duration/i, /(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+  if (d) {
+    out.durationSec = d[3] !== undefined
+      ? (+d[1]) * 3600 + (+d[2]) * 60 + (+d[3])
+      : (+d[1]) * 60 + (+d[2]);
+  }
+  const c = valueNear(/workout\s*calories|calories/i, /(\d{2,4})\s*(?:kcal|cal)?/i);
+  if (c) out.calories = +c[1];
+  const a = valueNear(/avg\.?\s*(?:heart\s*rate|hr)|average\s*heart\s*rate|\bavg\b/i, /(\d{2,3})\s*(?:bpm)?/i);
+  if (a) out.avgHr = +a[1];
+  const m = valueNear(/max\.?\s*(?:heart\s*rate|hr)|maximum\s*heart\s*rate|\bmax\b/i, /(\d{2,3})\s*(?:bpm)?/i);
+  if (m) out.maxHr = +m[1];
+  // sanity
+  if (out.avgHr && (out.avgHr < 40 || out.avgHr > 220)) delete out.avgHr;
+  if (out.maxHr && (out.maxHr < 40 || out.maxHr > 230)) delete out.maxHr;
+  if (out.calories && out.calories > 3000) delete out.calories;
+  return out;
+}
+
+function fmtHMS(sec) {
+  const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
+  return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+}
+function parseHMS(str) {
+  const m = String(str || '').trim().match(/^(?:(\d+):)?(\d{1,2}):(\d{2})$|^(\d+)$/);
+  if (!m) return null;
+  if (m[4] !== undefined) return (+m[4]) * 60;           // bare number = minutes
+  return (+(m[1] || 0)) * 3600 + (+m[2]) * 60 + (+m[3]);
+}
+
+async function ocrWatchScreenshot(input) {
+  const file = input.files?.[0];
+  if (!file) return;
+  const btn = document.getElementById('watchOcrBtn');
+  const status = document.getElementById('watchOcrStatus');
+  btn.disabled = true;
+  btn.textContent = '⏳ Reading on device…';
+  try {
+    status.textContent = 'Loading OCR engine…';
+    const T = await loadTesseract();
+    const worker = await T.createWorker('eng', 1, {
+      logger: m => { if (m.status === 'recognizing text') status.textContent = `Reading… ${Math.round(m.progress * 100)}%`; }
+    });
+    let text;
+    try { text = (await worker.recognize(file)).data.text; }
+    finally { await worker.terminate(); }
+    const parsed = parseWatchOcrText(text);
+    status.textContent = '';
+    showWatchConfirm(parsed);
+  } catch (e) {
+    status.textContent = `❌ ${e.message} — enter values manually`;
+    showWatchConfirm({}, true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '⌚ Import Watch screenshot (on-device)';
+    input.value = '';
+  }
+}
+
+function showWatchConfirm(p, failed) {
+  closeWatchConfirm();
+  const hasAny = p.durationSec || p.calories || p.avgHr || p.maxHr;
+  const field = (id, label, val, mode) => `<div class="watch-field">
+      <div class="wf-label">${label}</div>
+      <input class="wf-input" id="${id}" type="text" inputmode="${mode}" placeholder="—" value="${val ?? ''}">
+    </div>`;
+  const el = document.createElement('div');
+  el.id = 'watchConfirm';
+  el.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.7);display:flex;align-items:flex-end;justify-content:center;';
+  el.innerHTML = `<div style="background:var(--card,#161616);width:100%;max-width:480px;border-radius:16px 16px 0 0;padding:16px;">
+    <div class="watch-title">⌚ CONFIRM WATCH DATA</div>
+    <div style="font-size:11px;color:var(--dim2);margin:6px 0 10px;">${hasAny ? 'Check the values read from your screenshot. Watch duration replaces the app timer.' : (failed ? 'Could not read the screenshot.' : 'Nothing recognised in that screenshot.') + ' Enter values manually.'}</div>
+    <div class="watch-fields">
+      ${field('wcDur', 'Duration (H:MM:SS)', p.durationSec ? fmtHMS(p.durationSec) : '', 'numeric')}
+      ${field('wcCal', 'Calories', p.calories, 'numeric')}
+      ${field('wcAvg', 'Avg HR', p.avgHr, 'numeric')}
+      ${field('wcMax', 'Max HR', p.maxHr, 'numeric')}
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px;">
+      <button class="bpm-parse-btn" style="flex:1" onclick="closeWatchConfirm()">Cancel</button>
+      <button class="bpm-scan-btn" style="flex:2" onclick="applyWatchConfirm()">✓ Confirm &amp; Apply</button>
+    </div>
+  </div>`;
+  document.body.appendChild(el);
+}
+function closeWatchConfirm() { document.getElementById('watchConfirm')?.remove(); }
+
+function applyWatchConfirm() {
+  const g = id => document.getElementById(id)?.value.trim();
+  const durSec = parseHMS(g('wcDur'));
+  if (g('wcDur') && durSec === null) { showToast('❌ Duration must be H:MM:SS'); return; }
+  if (!sessionState['__watch__']) sessionState['__watch__'] = {};
+  const w = sessionState['__watch__'];
+  if (durSec) { w.durationSec = durSec; w.duration = Math.max(1, Math.round(durSec / 60)); }
+  const cal = parseInt(g('wcCal')), avg = parseInt(g('wcAvg')), max = parseInt(g('wcMax'));
+  if (cal) w.calories = cal;
+  if (avg) w.avgHr = avg;
+  if (max) w.maxHr = max;
+  saveSession();
+  closeWatchConfirm();
+  showToast('✓ WATCH DATA APPLIED');
+  renderWorkoutView();
+}
+
+// Watch duration (when present) beats the app timer everywhere a session is saved
+function watchDurationSec() {
+  const w = sessionState['__watch__'] || {};
+  if (w.durationSec) return w.durationSec;
+  if (w.duration) return w.duration * 60;
+  return null;
+}
+function effectiveDurationLabel() {
+  const s = watchDurationSec();
+  return s ? fmtHMS(s) : getSessionDuration();
+}
+function effectiveDurationMinutes() {
+  const s = watchDurationSec();
+  if (s) return Math.round(s / 60);
+  return sessionStart ? Math.floor((Date.now() - sessionStart) / 60000) : null;
+}
+
 const ANALYZE_BPM_URL = 'https://fnjjfnsdxibjbzldfgit.supabase.co/functions/v1/analyze-bpm';
 
 function toggleBpmImport() {
@@ -3974,7 +4140,7 @@ async function saveWorkout(type, dayKey) {
     exercises, newPRs,
     notes: (sessionState['__notes__']||{}).notes || '',
     watch: { avgHr: watch.avgHr||null, maxHr: watch.maxHr||null, calories: watch.calories||null, duration: watch.duration||null, zones: watch.zones||null, peakTiming: watch.peakTiming||null, pattern: watch.pattern||null },
-    duration: getSessionDuration(),
+    duration: effectiveDurationLabel(),
     savedAt: new Date().toISOString()
   };
 
@@ -4009,7 +4175,7 @@ async function saveWorkout(type, dayKey) {
       workout_type: type === 'rest' ? 'flex' : type,
       location: sessionLocation === 'HG' ? 'Home Gym' : 'Lifetime Fitness',
       exercises: exercises,
-      duration_minutes: sessionStart ? Math.floor((Date.now() - sessionStart) / 60000) : null,
+      duration_minutes: effectiveDurationMinutes(),
       avg_heart_rate: watch.avgHr || null,
       max_heart_rate: watch.maxHr || null,
       calories_burned: watch.calories || null,
@@ -4072,7 +4238,7 @@ async function saveSprintWorkout(dayKey) {
       peakTiming: null,
       pattern: null
     },
-    duration: getSessionDuration(),
+    duration: effectiveDurationLabel(),
     savedAt: new Date().toISOString()
   };
 
@@ -4097,7 +4263,7 @@ async function saveSprintWorkout(dayKey) {
       workout_type: 'sprint',
       location: sessionLocation === 'HG' ? 'Home Gym' : 'Lifetime Fitness',
       exercises: [],  // Sprint doesn't track individual exercises like regular workouts
-      duration_minutes: sessionStart ? Math.floor((Date.now() - sessionStart) / 60000) : null,
+      duration_minutes: effectiveDurationMinutes(),
       avg_heart_rate: avgHrVal,
       max_heart_rate: maxHrVal,
       session_notes: `Sprint session · ${sprintState.totalRounds} rounds with Galaxy Watch data`
@@ -4330,6 +4496,7 @@ function updateWatch(field, val) {
   if (!sessionState['__watch__']) sessionState['__watch__'] = {};
   const numVal = val ? parseInt(val) : null;
   sessionState['__watch__'][field] = numVal;
+  if (field === 'duration') delete sessionState['__watch__'].durationSec; // manual edit supersedes OCR seconds
   saveSession();
 }
 
@@ -5121,6 +5288,9 @@ function renderRecoveryDay(dayKey) {
     <button class="bpm-import-btn" onclick="toggleBpmImport()">📥 Import BPM from Screenshot</button>
     <div class="bpm-import-area" id="bpmImportArea">
       <input type="file" id="bpmImageInput" accept="image/*" style="display:none" onchange="scanBpmScreenshot(this)">
+      <input type="file" id="watchOcrInput" accept="image/*" style="display:none" onchange="ocrWatchScreenshot(this)">
+      <button class="bpm-scan-btn" id="watchOcrBtn" onclick="document.getElementById('watchOcrInput').click()">⌚ Import Watch screenshot (on-device)</button>
+      <div class="bpm-scan-status" id="watchOcrStatus"></div>
       <button class="bpm-scan-btn" id="bpmScanBtn" onclick="document.getElementById('bpmImageInput').click()">📸 Scan Samsung Health Screenshot</button>
       <div class="bpm-scan-status" id="bpmScanStatus"></div>
       <div class="bpm-divider">or paste JSON manually</div>
@@ -5353,6 +5523,9 @@ function renderSprintDay(dayKey, content) {
     <button class="bpm-import-btn" onclick="toggleBpmImport()" style="margin-top:10px;width:100%;">📥 Import BPM from Screenshot</button>
     <div class="bpm-import-area" id="bpmImportArea">
       <input type="file" id="bpmImageInput" accept="image/*" style="display:none" onchange="scanBpmScreenshot(this)">
+      <input type="file" id="watchOcrInput" accept="image/*" style="display:none" onchange="ocrWatchScreenshot(this)">
+      <button class="bpm-scan-btn" id="watchOcrBtn" onclick="document.getElementById('watchOcrInput').click()">⌚ Import Watch screenshot (on-device)</button>
+      <div class="bpm-scan-status" id="watchOcrStatus"></div>
       <button class="bpm-scan-btn" id="bpmScanBtn" onclick="document.getElementById('bpmImageInput').click()">📸 Scan Samsung Health Screenshot</button>
       <div class="bpm-scan-status" id="bpmScanStatus"></div>
       <div class="bpm-divider">or paste JSON manually</div>

@@ -1,5 +1,9 @@
 # Workout App Changelog
 
+## v12.5 — 2026-09-30
+### Added
+- **FEAT-19: Watch screenshot import (on-device OCR)** — "⌚ Import Watch screenshot" button in the watch widget. Tesseract.js (lazy-loaded, runs in the browser, no cloud upload) reads the Samsung Health Workout details screenshot, parses Total duration (H:MM:SS), Workout calories, Avg HR and Max HR, and shows them in a confirm sheet (editable, manual fallback if OCR fails). Watch duration now overrides the app timer in the saved history entry and in `workouts.duration_minutes`, fixing the recurring corrupted durations (BUG-18) from a timer left running. HR zone parsing is not included.
+
 ## v12.4 — 2026-09-16
 ### Added
 - **🍖 FUEL button** in the bottom nav — opens the new keto macro tracker at `/macros.html`. The tracker carries a 🏋️ LIFT button back, so the two apps read as one system without merging their code.
