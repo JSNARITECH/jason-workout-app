@@ -528,6 +528,27 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .z1-fill{background:var(--dim2);}.z2-fill{background:var(--green);}.z3-fill{background:var(--accent);}.z4-fill{background:var(--orange);}.z5-fill{background:var(--red);}
 .bpm-insight{margin-top:10px;font-size:11px;color:var(--dim2);background:var(--card2);border-radius:9px;padding:9px 11px;line-height:1.5;border-left:3px solid var(--purple);}
 .bpm-insight strong{color:var(--white);}
+/* FEAT-19: watch duration — scanned time wins over the app timer */
+.watch-clear-btn{margin-left:auto;background:none;border:1px solid var(--border2);border-radius:7px;color:var(--dim2);font-size:9px;padding:3px 7px;letter-spacing:0.5px;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.watch-clear-btn:active{background:var(--border2);}
+.wf-src{font-size:9px;color:var(--dim2);margin-top:2px;letter-spacing:0.5px;line-height:1.3;}
+.wf-src.from-watch{color:var(--green);font-weight:700;}
+.watch-timer-row{display:flex;align-items:baseline;gap:6px;margin-top:9px;font-size:9px;color:var(--dim2);letter-spacing:1px;text-transform:uppercase;}
+.watch-timer-row .session-timer{font-size:16px;}
+.watch-scan-btn{width:100%;margin-top:9px;padding:11px;border-radius:11px;border:1px solid rgba(192,132,252,0.45);background:var(--purple-dim);color:var(--purple);font-weight:700;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:1px;display:flex;align-items:center;justify-content:center;gap:7px;}
+.watch-scan-btn:active{opacity:0.7;}
+.watch-scan-btn:disabled,.bpm-scan-btn:disabled{opacity:0.5;cursor:default;}
+.wc-rows{display:flex;flex-direction:column;gap:7px;margin-bottom:14px;}
+.wc-row{display:flex;justify-content:space-between;align-items:baseline;padding:9px 12px;border-radius:9px;background:var(--card2);font-size:12px;color:var(--dim2);}
+.wc-row strong{color:var(--white);font-size:14px;}
+.wc-row.wc-key{border-left:3px solid var(--green);}
+.wc-row.wc-missing strong{color:var(--orange);font-size:12px;}
+.wc-note{font-size:11px;color:var(--dim2);line-height:1.45;margin-bottom:12px;}
+.wc-warn{font-size:11px;line-height:1.45;margin-bottom:12px;padding:9px 11px;border-radius:9px;background:var(--orange-dim);border-left:3px solid var(--orange);color:var(--white);}
+.wc-btns{display:flex;gap:8px;}
+.wc-btns button{flex:1;padding:12px;border-radius:10px;border:none;font-weight:700;font-size:12px;letter-spacing:1px;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.wc-apply{background:var(--green);color:var(--black);}
+.wc-discard{background:var(--border2);color:var(--dim2);}
 
 /* EXERCISE SWAP BUTTON */
 .swap-btn{margin-left:6px;padding:2px 8px;border-radius:6px;border:1px solid rgba(192,132,252,0.35);background:transparent;color:var(--purple);font-size:9px;font-weight:700;letter-spacing:1px;cursor:pointer;font-family:'DM Sans',sans-serif;text-transform:uppercase;transition:all 0.15s;flex-shrink:0;line-height:1.6;}
@@ -749,7 +770,7 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 // ============================================================
 // APP VERSION — update this on every release
 // ============================================================
-const APP_VERSION = 'v12.4';
+const APP_VERSION = 'v12.5';
 
 // ============================================================
 // WEEKLY SCHEDULE
@@ -2790,6 +2811,7 @@ function renderWorkoutBody() {
     <div class="done-emoji">${workout.emoji}</div>
     <div class="done-title">${doneBannerTitle}</div>
     <div class="done-sub">Steam room time. You earned it. 🔥</div>
+    ${buildWatchScanSaveBtn()}
   </div>`;
 
   // Crash recovery banner (shown if session was restored from localStorage)
@@ -2812,48 +2834,9 @@ function renderWorkoutBody() {
     });
   }
 
-  // Galaxy Watch
+  // Galaxy Watch — FEAT-19: scanned watch time is the saved duration
   const ws = sessionState['__watch__'] || {};
-  const sessionDuration = getSessionDuration();
-  html += `<div class="watch-widget">
-    <div class="watch-title">GALAXY WATCH — SESSION DATA</div>
-    <div class="watch-fields">
-      <div class="watch-field">
-        <span class="wf-label">Avg HR (bpm)</span>
-        <input class="wf-input" type="number" id="w-avhr" placeholder="128" value="${ws.avgHr||''}" oninput="saveWatch('avgHr',this.value)" min="50" max="220">
-        <span class="wf-zone" id="zone-avg">${getHRZone(ws.avgHr||0)}</span>
-      </div>
-      <div class="watch-field">
-        <span class="wf-label">Max HR (bpm)</span>
-        <input class="wf-input" type="number" id="w-maxhr" placeholder="155" value="${ws.maxHr||''}" oninput="saveWatch('maxHr',this.value)" min="50" max="220">
-        <span class="wf-zone" id="zone-max">${getHRZone(ws.maxHr||0)}</span>
-      </div>
-      <div class="watch-field">
-        <span class="wf-label">Calories Burned</span>
-        <input class="wf-input" type="number" id="w-cals" placeholder="420" value="${ws.calories||''}" oninput="saveWatch('calories',this.value)" min="0">
-      </div>
-      <div class="watch-field">
-        <span class="wf-label">Session Time</span>
-        <div class="session-timer" id="sessionTimer">${sessionDuration}</div>
-        <div class="session-timer-label">ELAPSED</div>
-      </div>
-    </div>
-    ${ws.zones ? `<div class="zone-bars">
-      <div class="zone-bars-title">Heart Rate Zones</div>
-      ${[['Zone 5 Max','z5','z5-fill'],['Zone 4 Hard','z4','z4-fill'],['Zone 3 Aerobic','z3','z3-fill'],['Zone 2 Fat Burn','z2','z2-fill'],['Zone 1 Easy','z1','z1-fill']].map(([n,k,cls]) =>
-        `<div class="zone-bar-row"><span class="zone-bar-name">${n}</span><div class="zone-bar-track"><div class="zone-bar-fill ${cls}" style="width:${ws.zones[k]||0}%"></div></div><span class="zone-bar-pct">${ws.zones[k]||0}%</span></div>`
-      ).join('')}
-    </div>` : ''}
-    <button class="bpm-import-btn" onclick="toggleBpmImport()">📥 Import BPM from Screenshot</button>
-    <div class="bpm-import-area" id="bpmImportArea">
-      <input type="file" id="bpmImageInput" accept="image/*" style="display:none" onchange="scanBpmScreenshot(this)">
-      <button class="bpm-scan-btn" id="bpmScanBtn" onclick="document.getElementById('bpmImageInput').click()">📸 Scan Samsung Health Screenshot</button>
-      <div class="bpm-scan-status" id="bpmScanStatus"></div>
-      <div class="bpm-divider">or paste JSON manually</div>
-      <textarea class="bpm-paste" id="bpmPasteField" placeholder='Paste JSON from Claude chat here...'></textarea>
-      <button class="bpm-parse-btn" onclick="importWatchData()">Parse &amp; Apply</button>
-    </div>
-  </div>`;
+  html += buildWatchWidget();
 
   sessionSections.forEach(section => {
     html += `<div class="sec-label">${section.label}</div>`;
@@ -2877,6 +2860,7 @@ function renderWorkoutBody() {
   html += `<div class="notes-section">
     <div class="notes-label">Session Notes</div>
     <textarea class="notes-input" id="sessionNotes" placeholder="How did it feel? Any PRs? Energy? Pain?" oninput="saveNotes(this.value)">${savedNotes}</textarea>
+    ${buildWatchScanSaveBtn()}
     <button class="save-btn" id="saveBtn" onclick="saveWorkout('${effectiveType}','${day.key}')">💾 SAVE WORKOUT TO HISTORY</button>
     <button class="share-claude-btn" onclick="shareToClaudeChat('${effectiveType}')">📤 Send to Claude Chat</button>
   </div>
@@ -3466,23 +3450,198 @@ function updateWeight(exId, setIdx, val) {
 }
 
 const ANALYZE_BPM_URL = 'https://fnjjfnsdxibjbzldfgit.supabase.co/functions/v1/analyze-bpm';
+const WATCH_SYNC_URL  = 'https://fnjjfnsdxibjbzldfgit.supabase.co/functions/v1/workout-watch-sync';
+
+// ============================================================
+// GALAXY WATCH DATA — scan → confirm → apply → sync (FEAT-19)
+// ============================================================
+// The screenshot's duration is the real session length. It used to be read into
+// __watch__.duration and then ignored: every save and export used the app timer, which
+// starts on render and keeps counting (221:50, 321:36, 638:49 exported). Now the watch time
+// is shown in the widget, saved as workouts.duration_minutes, exported, and pushed onto a
+// row that was already saved before the screenshot was scanned.
+
+function escHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+}
+
+// Local calendar date — the screenshot's date is local, getDateStr() is UTC
+function localDateStr(d = new Date()) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
 
 function toggleBpmImport() {
   const area = document.getElementById('bpmImportArea');
-  area.classList.toggle('visible');
+  if (area) area.classList.toggle('visible');
+}
+
+// Import button + scan/paste area, shared by every watch widget
+function buildWatchImportHtml(style = '') {
+  return `<button class="bpm-import-btn" onclick="toggleBpmImport()" style="${style}">📥 Import BPM from Screenshot</button>
+    <div class="bpm-import-area" id="bpmImportArea">
+      <button class="bpm-scan-btn" data-watch-scan onclick="openWatchScan()">📸 Scan Samsung Health Screenshot</button>
+      <div class="bpm-scan-status" id="bpmScanStatus"></div>
+      <div class="bpm-divider">or paste JSON manually</div>
+      <textarea class="bpm-paste" id="bpmPasteField" placeholder='Paste JSON from Claude chat here...'></textarea>
+      <button class="bpm-parse-btn" onclick="importWatchData()">Parse &amp; Apply</button>
+    </div>`;
+}
+
+// Sits next to the save button — the end of the session is when the watch workout is stopped
+function buildWatchScanSaveBtn() {
+  return `<button class="watch-scan-btn" data-watch-scan onclick="openWatchScan()">⌚ Import Watch screenshot</button>`;
+}
+
+function buildZoneBarsHtml(zones) {
+  if (!zones) return '';
+  return `<div class="zone-bars">
+      <div class="zone-bars-title">Heart Rate Zones</div>
+      ${[['Zone 5 Max','z5','z5-fill'],['Zone 4 Hard','z4','z4-fill'],['Zone 3 Aerobic','z3','z3-fill'],['Zone 2 Fat Burn','z2','z2-fill'],['Zone 1 Easy','z1','z1-fill']].map(([n,k,cls]) => {
+        const pct = Math.max(0, Math.min(100, Number(zones[k]) || 0));
+        return `<div class="zone-bar-row"><span class="zone-bar-name">${n}</span><div class="zone-bar-track"><div class="zone-bar-fill ${cls}" style="width:${pct}%"></div></div><span class="zone-bar-pct">${pct}%</span></div>`;
+      }).join('')}
+    </div>`;
+}
+
+function watchDurationSrcText() {
+  const w = sessionState['__watch__'] || {};
+  const sec = getWatchDurationSec();
+  if (!sec) return 'scan or type the watch time';
+  if (w.durationSource === 'manual') return '✎ entered by hand';
+  const span = w.startTime && w.endTime ? ` · ${w.startTime}–${w.endTime}` : '';
+  return `⌚ ${formatDurationSec(sec)} from watch${span}`;
+}
+
+function watchDurationSrcHtml() {
+  const w = sessionState['__watch__'] || {};
+  const fromWatch = !!getWatchDurationSec() && w.durationSource !== 'manual';
+  return `<span class="wf-src${fromWatch ? ' from-watch' : ''}" data-watch-src>${escHtml(watchDurationSrcText())}</span>`;
+}
+
+// One widget for workout, recovery, vacation and activity days (the sprint card keeps its own layout)
+function buildWatchWidget({ title = 'GALAXY WATCH — SESSION DATA', showTimer = true } = {}) {
+  const ws = sessionState['__watch__'] || {};
+  return `<div class="watch-widget">
+    <div class="watch-title">${title}<button class="watch-clear-btn" onclick="event.stopPropagation();clearWatchData()">✕ Clear</button></div>
+    <div class="watch-fields">
+      <div class="watch-field">
+        <span class="wf-label">Avg HR (bpm)</span>
+        <input class="wf-input" type="number" id="w-avhr" data-watch="avgHr" placeholder="128" value="${ws.avgHr||''}" inputmode="numeric" oninput="saveWatch('avgHr',this.value)" min="40" max="230">
+        <span class="wf-zone" id="zone-avg">${getHRZone(ws.avgHr||0)}</span>
+      </div>
+      <div class="watch-field">
+        <span class="wf-label">Max HR (bpm)</span>
+        <input class="wf-input" type="number" id="w-maxhr" data-watch="maxHr" placeholder="155" value="${ws.maxHr||''}" inputmode="numeric" oninput="saveWatch('maxHr',this.value)" min="40" max="240">
+        <span class="wf-zone" id="zone-max">${getHRZone(ws.maxHr||0)}</span>
+      </div>
+      <div class="watch-field">
+        <span class="wf-label">Calories Burned</span>
+        <input class="wf-input" type="number" id="w-cals" data-watch="calories" placeholder="420" value="${ws.calories||''}" inputmode="numeric" oninput="saveWatch('calories',this.value)" min="0">
+      </div>
+      <div class="watch-field">
+        <span class="wf-label">Duration (min)</span>
+        <input class="wf-input" type="number" id="w-dur" data-watch="duration" placeholder="—" value="${ws.duration||''}" inputmode="numeric" oninput="saveWatchDuration(this.value)" min="1" max="240">
+        ${watchDurationSrcHtml()}
+      </div>
+    </div>
+    ${showTimer ? `<div class="watch-timer-row">⏱ App timer <span class="session-timer" id="sessionTimer">${getSessionDuration()}</span><span>· used only without a watch time</span></div>` : ''}
+    <div id="watchZones">${buildZoneBarsHtml(ws.zones)}</div>
+    ${buildWatchImportHtml()}
+  </div>`;
+}
+
+// Refresh every watch input/label in place — a full re-render would reset a running sprint
+// timer (renderSprintDay rebuilds sprintState) and jump the scroll back to the top.
+function refreshWatchUI() {
+  const w = sessionState['__watch__'] || {};
+  document.querySelectorAll('[data-watch]').forEach(el => {
+    if (el === document.activeElement) return;
+    el.value = w[el.dataset.watch] || '';
+  });
+  updateZoneLabel('zone-avg', w.avgHr || 0);
+  updateZoneLabel('zone-max', w.maxHr || 0);
+  const zones = document.getElementById('watchZones');
+  if (zones) zones.innerHTML = buildZoneBarsHtml(w.zones);
+  updateWatchSrcLabels();
+}
+
+function updateWatchSrcLabels() {
+  const w = sessionState['__watch__'] || {};
+  const fromWatch = !!getWatchDurationSec() && w.durationSource !== 'manual';
+  document.querySelectorAll('[data-watch-src]').forEach(el => {
+    el.textContent = watchDurationSrcText();
+    el.classList.toggle('from-watch', fromWatch);
+  });
+}
+
+// Merge a scan/paste result into today's watch data. Only fields the screenshot actually
+// showed are written, so a second screenshot (e.g. the HR-zone screen) can't wipe the
+// duration read from the first one.
+function applyWatchData(data) {
+  if (!sessionState['__watch__']) sessionState['__watch__'] = {};
+  const w = sessionState['__watch__'];
+  const num = v => { const n = Math.round(Number(v)); return v !== null && v !== '' && Number.isFinite(n) && n > 0 ? n : null; };
+  if (num(data.avgBPM)) w.avgHr = num(data.avgBPM);
+  if (num(data.maxBPM)) w.maxHr = num(data.maxBPM);
+  if (num(data.calories)) w.calories = num(data.calories);
+  const sec = scanDurationSec(data);
+  if (sec) {
+    w.durationSec = sec;
+    w.duration = Math.max(1, Math.round(sec / 60));
+    w.durationSource = 'watch';
+    w.startTime = typeof data.startTime === 'string' ? data.startTime : null;
+    w.endTime = typeof data.endTime === 'string' ? data.endTime : null;
+  }
+  if (data.zones && typeof data.zones === 'object') w.zones = data.zones;
+  if (data.peakTiming) w.peakTiming = data.peakTiming;
+  if (data.pattern) w.pattern = data.pattern;
+  saveSession();
+}
+
+// analyze-bpm returns durationSec; older responses and pasted JSON only carry `duration`
+// (integer minutes, or text like "59:20" / "1:05:23")
+function scanDurationSec(data) {
+  const s = Math.round(Number(data.durationSec));
+  if (Number.isFinite(s) && s > 0 && s <= 6 * 3600) return s;
+  const parsed = parseDurationToSec(data.durationText ?? data.duration);
+  return parsed && parsed <= 6 * 3600 ? parsed : null;
+}
+
+let watchScanBusy = false;
+let pendingWatchScan = null;
+
+function openWatchScan() {
+  if (watchScanBusy) return;
+  let input = document.getElementById('watchShotInput');
+  if (!input) {
+    // Lives on <body>, not inside a view, so a re-render mid-scan can't orphan it
+    input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.id = 'watchShotInput';
+    input.style.display = 'none';
+    input.addEventListener('change', () => scanBpmScreenshot(input));
+    document.body.appendChild(input);
+  }
+  input.click();
+}
+
+function setWatchScanBusy(busy, msg = '') {
+  watchScanBusy = busy;
+  document.querySelectorAll('[data-watch-scan]').forEach(b => {
+    if (!b.dataset.label) b.dataset.label = b.textContent;
+    b.disabled = busy;
+    b.textContent = busy ? '⏳ Analyzing…' : b.dataset.label;
+  });
+  const status = document.getElementById('bpmScanStatus');
+  if (status) status.textContent = msg;
 }
 
 async function scanBpmScreenshot(input) {
   const file = input.files?.[0];
   if (!file) return;
 
-  const btn = document.getElementById('bpmScanBtn');
-  const status = document.getElementById('bpmScanStatus');
-
-  btn.disabled = true;
-  btn.textContent = '⏳ Analyzing…';
-  status.textContent = 'Reading screenshot…';
-
+  setWatchScanBusy(true, 'Reading screenshot…');
   try {
     // Convert image to base64
     const base64 = await new Promise((resolve, reject) => {
@@ -3492,47 +3651,109 @@ async function scanBpmScreenshot(input) {
       reader.readAsDataURL(file);
     });
 
-    status.textContent = 'Sending to Claude…';
+    setWatchScanBusy(true, 'Sending to Claude…');
 
     const res = await fetch(ANALYZE_BPM_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ image: base64, mediaType: file.type || 'image/jpeg' }),
+      body: JSON.stringify({ image: base64, mediaType: file.type || 'image/jpeg', today: localDateStr() }),
     });
 
     const data = await res.json();
-
     if (!res.ok || data.error) {
       throw new Error(data.error || `HTTP ${res.status}`);
     }
 
-    // Apply the extracted data directly (reuse importWatchData logic)
-    if (!sessionState['__watch__']) sessionState['__watch__'] = {};
-    const w = sessionState['__watch__'];
-    if (data.avgBPM)   w.avgHr      = data.avgBPM;
-    if (data.maxBPM)   w.maxHr      = data.maxBPM;
-    if (data.calories) w.calories   = data.calories;
-    if (data.duration) w.duration   = data.duration;
-    if (data.zones)    w.zones      = data.zones;
-    if (data.peakTiming) w.peakTiming = data.peakTiming;
-    if (data.pattern)  w.pattern    = data.pattern;
-    saveSession();
-    showToast('✓ BPM SCANNED');
-    status.textContent = '';
-    renderWorkoutView();
-
+    setWatchScanBusy(false);
+    showWatchConfirm(data);
   } catch (e) {
-    status.textContent = `❌ ${e.message}`;
+    setWatchScanBusy(false, `❌ ${e.message}`);
     showToast('❌ Scan failed');
   } finally {
-    btn.disabled = false;
-    btn.textContent = '📸 Scan Samsung Health Screenshot';
     input.value = ''; // reset so same file can be re-selected
   }
 }
 
+// One-tap confirm: show exactly what was read before any of it is applied
+function showWatchConfirm(data) {
+  const overlay = document.getElementById('watchConfirmOverlay');
+  const body = document.getElementById('watchConfirmBody');
+  if (!overlay || !body) { pendingWatchScan = data; applyWatchScan(); return; }
+
+  const sec = scanDurationSec(data);
+  const row = (label, val, cls = '') => `<div class="wc-row ${cls}"><span>${label}</span><strong>${escHtml(val)}</strong></div>`;
+  const rows = [];
+  rows.push(sec
+    ? `<div class="wc-row wc-key"><span>Duration</span><strong>${formatDurationSec(sec)} <span style="font-size:10px;color:var(--dim2)">(${Math.max(1, Math.round(sec / 60))} min)</span></strong></div>`
+    : row('Duration', 'not on this screenshot', 'wc-missing'));
+  if (data.startTime && data.endTime) rows.push(row('Start – end', `${data.startTime} – ${data.endTime}`));
+  if (Number(data.calories) > 0) rows.push(row('Calories', `${Math.round(data.calories)} kcal`));
+  if (Number(data.avgBPM) > 0) rows.push(row('Avg HR', `${Math.round(data.avgBPM)} bpm`));
+  if (Number(data.maxBPM) > 0) rows.push(row('Max HR', `${Math.round(data.maxBPM)} bpm`));
+  const hasZones = data.zones && typeof data.zones === 'object';
+
+  if (!sec && rows.length === 1 && !hasZones) {
+    pendingWatchScan = null;
+    body.innerHTML = `<div class="wc-warn">Couldn't read any watch data from that screenshot. Try the Samsung Health <strong>Workout details</strong> screen.</div>
+      <div class="wc-btns"><button class="wc-discard" onclick="closeWatchConfirm()">OK</button></div>`;
+    overlay.classList.add('open');
+    return;
+  }
+  pendingWatchScan = data;
+
+  const notes = [];
+  const prevSec = getWatchDurationSec();
+  const timerMin = getTimerMinutes();
+  if (sec && timerMin !== null && Math.abs(timerMin - sec / 60) >= 5) {
+    notes.push(`Saved instead of the app timer (${getSessionDuration()}).`);
+  } else if (sec) {
+    notes.push('Saved as the session duration.');
+  } else if (prevSec) {
+    notes.push(`Keeps the ${formatDurationSec(prevSec)} duration from your earlier screenshot.`);
+  } else {
+    notes.push('No duration on this one — scan the Workout details screen too, or type the minutes into the Duration field.');
+  }
+  const saved = sessionState['__savedAs__'];
+  if (saved) notes.push(`Also updates today's saved ${saved.workout_type.toUpperCase()} workout.`);
+
+  const today = localDateStr();
+  const fmt = d => new Date(d + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  const warn = data.date && /^\d{4}-\d{2}-\d{2}$/.test(data.date) && data.date !== today
+    ? `<div class="wc-warn">⚠️ This screenshot is dated <strong>${fmt(data.date)}</strong> — today is ${fmt(today)}. Only apply it if it's today's session.</div>`
+    : '';
+
+  body.innerHTML = `${warn}
+    <div class="wc-rows">${rows.join('')}</div>
+    ${hasZones ? buildZoneBarsHtml(data.zones) : ''}
+    <div class="wc-note" style="margin-top:${hasZones ? 12 : 0}px">${notes.join(' ')}</div>
+    <div class="wc-btns">
+      <button class="wc-discard" onclick="closeWatchConfirm()">✕ Discard</button>
+      <button class="wc-apply" onclick="applyWatchScan()">✓ Use these</button>
+    </div>`;
+  overlay.classList.add('open');
+}
+
+function closeWatchConfirm(e) {
+  const overlay = document.getElementById('watchConfirmOverlay');
+  if (e && e.target !== overlay) return;
+  if (overlay) overlay.classList.remove('open');
+  pendingWatchScan = null;
+}
+
+function applyWatchScan() {
+  const data = pendingWatchScan;
+  closeWatchConfirm();
+  if (!data) return;
+  applyWatchData(data);
+  refreshWatchUI();
+  const sec = getWatchDurationSec();
+  showToast(sec ? `⌚ Watch data applied · ${formatDurationSec(sec)}` : '⌚ Watch data applied');
+  syncSavedWorkoutWatch();
+}
+
 function importWatchData() {
-  const raw = (document.getElementById('bpmPasteField').value || '').trim();
+  const field = document.getElementById('bpmPasteField');
+  const raw = (field?.value || '').trim();
   if (!raw) return;
   let data;
   try {
@@ -3543,28 +3764,121 @@ function importWatchData() {
     showToast('❌ Invalid JSON');
     return;
   }
-  if (!sessionState['__watch__']) sessionState['__watch__'] = {};
-  const w = sessionState['__watch__'];
-  if (data.avgBPM) w.avgHr = data.avgBPM;
-  if (data.maxBPM) w.maxHr = data.maxBPM;
-  if (data.calories) w.calories = data.calories;
-  if (data.duration) w.duration = data.duration;
-  if (data.zones) w.zones = data.zones;
-  if (data.peakTiming) w.peakTiming = data.peakTiming;
-  if (data.pattern) w.pattern = data.pattern;
-  saveSession();
-  showToast('✓ BPM IMPORTED');
-  // Re-render the workout view to show updated widget
-  const type = WEEK[currentDayIdx].type;
-  renderWorkoutView();
+  applyWatchData(data);
+  refreshWatchUI();
+  if (field) field.value = '';
+  const sec = getWatchDurationSec();
+  showToast(sec ? `✓ BPM IMPORTED · ${formatDurationSec(sec)}` : '✓ BPM IMPORTED');
+  syncSavedWorkoutWatch();
 }
 
 function saveWatch(field, val) {
   if (!sessionState['__watch__']) sessionState['__watch__'] = {};
-  sessionState['__watch__'][field] = parseFloat(val) || 0;
+  const n = parseFloat(val);
+  // null, not 0, when a field is cleared — 0 would be saved as a real reading
+  sessionState['__watch__'][field] = Number.isFinite(n) && n > 0 ? n : null;
   if (field === 'avgHr') updateZoneLabel('zone-avg', val);
   if (field === 'maxHr') updateZoneLabel('zone-max', val);
   saveSession();
+  scheduleWatchSync();
+}
+
+// Manual fallback for the watch time (FEAT-19) — whole minutes
+function saveWatchDuration(val) {
+  if (!sessionState['__watch__']) sessionState['__watch__'] = {};
+  const w = sessionState['__watch__'];
+  const min = Math.round(parseFloat(val));
+  if (Number.isFinite(min) && min > 0) {
+    // Leaving the scanned minutes as they are keeps the scanned seconds
+    if (!(w.durationSec && Math.max(1, Math.round(w.durationSec / 60)) === min)) {
+      w.durationSec = min * 60;
+      w.durationSource = 'manual';
+      w.startTime = null;
+      w.endTime = null;
+    }
+    w.duration = min;
+  } else {
+    w.duration = null;
+    w.durationSec = null;
+    w.durationSource = null;
+    w.startTime = null;
+    w.endTime = null;
+  }
+  updateWatchSrcLabels();
+  saveSession();
+  scheduleWatchSync();
+}
+
+function clearWatchData() {
+  if (!confirm("Clear today's watch data (HR, calories, duration, zones)?")) return;
+  delete sessionState['__watch__'];
+  saveSession();
+  refreshWatchUI();
+  showToast('⌚ Watch data cleared');
+}
+
+function buildWatchSnapshot() {
+  const w = sessionState['__watch__'] || {};
+  return {
+    avgHr: w.avgHr || null, maxHr: w.maxHr || null, calories: w.calories || null,
+    duration: w.duration || null, durationSec: w.durationSec || null, durationSource: w.durationSource || null,
+    startTime: w.startTime || null, endTime: w.endTime || null,
+    zones: w.zones || null, peakTiming: w.peakTiming || null, pattern: w.pattern || null,
+  };
+}
+
+// Push the watch numbers onto the workouts row for (date, type) — see workout-watch-sync
+async function syncWatchToSupabase(workoutDate, workoutType) {
+  const w = sessionState['__watch__'] || {};
+  const sec = getWatchDurationSec();
+  const payload = {
+    workout_date: workoutDate,
+    workout_type: workoutType,
+    duration_minutes: sec ? Math.max(1, Math.round(sec / 60)) : null,
+    avg_heart_rate: w.avgHr || null,
+    max_heart_rate: w.maxHr || null,
+    calories_burned: w.calories || null,
+  };
+  if (!payload.duration_minutes && !payload.avg_heart_rate && !payload.max_heart_rate && !payload.calories_burned) return null;
+  try {
+    const res = await fetch(WATCH_SYNC_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` },
+      body: JSON.stringify(payload),
+    });
+    const out = await res.json().catch(() => ({}));
+    if (!res.ok) { console.warn('Watch sync rejected:', out); return null; }
+    return out; // { updated, fields, skipped }
+  } catch (e) {
+    console.warn('Watch sync failed (non-fatal):', e);
+    return null;
+  }
+}
+
+// A screenshot scanned (or a field edited) after the session was saved still reaches
+// both the local history entry and the Supabase row
+async function syncSavedWorkoutWatch(quiet = false) {
+  const saved = sessionState['__savedAs__'];
+  if (!saved) return;
+  const entry = historyStore.find(e => e.id === saved.entryId);
+  if (entry) {
+    entry.watch = buildWatchSnapshot();
+    entry.duration = getDurationLabel();
+    try { localStorage.setItem('workout-history', JSON.stringify(historyStore)); } catch(e) {}
+    try { await window.storage.set('workout-history', JSON.stringify(historyStore)); } catch(e) {}
+  }
+  const out = await syncWatchToSupabase(saved.date, saved.workout_type);
+  if (out && out.updated > 0) {
+    invalidateHistoryCache();
+    if (!quiet) showToast(`☁️ Saved ${saved.workout_type.toUpperCase()} workout updated with watch data`);
+  }
+}
+
+let watchSyncTimer = null;
+function scheduleWatchSync() {
+  if (!sessionState['__savedAs__']) return;
+  clearTimeout(watchSyncTimer);
+  watchSyncTimer = setTimeout(() => syncSavedWorkoutWatch(true), 1500);
 }
 
 function updateZoneLabel(id, bpm) {
@@ -3887,6 +4201,80 @@ function getSessionDuration() {
   return `${m}:${s.toString().padStart(2,'0')}`;
 }
 
+// ── SAVED DURATION: watch first (FEAT-19 / BUG-DURATION-WATCH-FIRST) ──────────
+// The app timer above starts on render, not at the first set, and keeps counting while the
+// app sits open — so it's display-only. What gets saved and exported is the Galaxy Watch
+// time (scanned or typed); the timer is only a fallback, and only while it's plausible.
+const TIMER_TRUST_MAX_MIN = 180; // past 3h the timer is counting idle time, not a session
+const DURATION_DB_MAX_MIN = 240; // workouts.duration_minutes_sane CHECK (1–240) — out of range rejects the whole row
+
+// "1:05:23" / "01:05:23" → H:MM:SS; "59:20" → MM:SS (Samsung Health prints sub-hour
+// durations without an hour field); also "1h 5m", "65 min". A bare number is minutes.
+// Mirrors parseDurationToSec in supabase/functions/analyze-bpm.
+function parseDurationToSec(v) {
+  if (v === null || v === undefined || v === '') return null;
+  if (typeof v === 'number') return Number.isFinite(v) && v > 0 ? Math.round(v * 60) : null;
+  const s = String(v).trim().toLowerCase();
+  const colon = s.match(/(\d{1,3}):(\d{2})(?::(\d{2}))?/);
+  if (colon) {
+    const a = Number(colon[1]), b = Number(colon[2]);
+    const c = colon[3] !== undefined ? Number(colon[3]) : null;
+    if (b > 59 || (c !== null && c > 59)) return null;
+    const sec = c !== null ? a * 3600 + b * 60 + c : a * 60 + b;
+    return sec > 0 ? sec : null;
+  }
+  const h = s.match(/(\d+(?:\.\d+)?)\s*(?:h|hr|hrs|hour|hours)\b/);
+  const m = s.match(/(\d+(?:\.\d+)?)\s*(?:m|min|mins|minute|minutes)\b/);
+  const sec = s.match(/(\d+(?:\.\d+)?)\s*(?:s|sec|secs|second|seconds)\b/);
+  if (h || m || sec) {
+    const total = Math.round((h ? Number(h[1]) * 3600 : 0) + (m ? Number(m[1]) * 60 : 0) + (sec ? Number(sec[1]) : 0));
+    return total > 0 ? total : null;
+  }
+  const n = Number(s);
+  return Number.isFinite(n) && n > 0 ? Math.round(n * 60) : null;
+}
+
+function formatDurationSec(sec) {
+  const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
+  return h ? `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}` : `${m}:${String(s).padStart(2,'0')}`;
+}
+
+function getTimerMinutes() {
+  const start = sessionStart || sessionState['__sessionStart__'];
+  if (!start) return null;
+  return Math.floor((Date.now() - start) / 60000);
+}
+
+// Watch duration in seconds (scanned, pasted or typed), or null
+function getWatchDurationSec() {
+  const w = sessionState['__watch__'] || {};
+  if (w.durationSec > 0) return Math.round(w.durationSec);
+  if (w.duration > 0) return Math.round(w.duration * 60);
+  return null;
+}
+
+// workouts.duration_minutes: watch time, else a plausible app timer, else null
+function getBestDurationMinutes() {
+  const sec = getWatchDurationSec();
+  let min = sec ? Math.max(1, Math.round(sec / 60)) : null;
+  if (min === null) {
+    const t = getTimerMinutes();
+    if (t !== null && t >= 1 && t <= TIMER_TRUST_MAX_MIN) min = t;
+  }
+  return (min !== null && min <= DURATION_DB_MAX_MIN) ? min : null;
+}
+
+// Duration for exports and local history — labelled so the source is never ambiguous
+function getDurationLabel() {
+  const sec = getWatchDurationSec();
+  if (sec) {
+    const w = sessionState['__watch__'] || {};
+    return `${formatDurationSec(sec)} (${w.durationSource === 'manual' ? 'entered' : 'watch'})`;
+  }
+  const t = getTimerMinutes();
+  return (t !== null && t <= TIMER_TRUST_MAX_MIN) ? getSessionDuration() : '';
+}
+
 // ============================================================
 // PROGRESS
 // ============================================================
@@ -3973,8 +4361,8 @@ async function saveWorkout(type, dayKey) {
     emoji: workout.emoji,
     exercises, newPRs,
     notes: (sessionState['__notes__']||{}).notes || '',
-    watch: { avgHr: watch.avgHr||null, maxHr: watch.maxHr||null, calories: watch.calories||null, duration: watch.duration||null, zones: watch.zones||null, peakTiming: watch.peakTiming||null, pattern: watch.pattern||null },
-    duration: getSessionDuration(),
+    watch: buildWatchSnapshot(),
+    duration: getDurationLabel(), // FEAT-19: watch time, not the render-to-save app timer
     savedAt: new Date().toISOString()
   };
 
@@ -4001,15 +4389,18 @@ async function saveWorkout(type, dayKey) {
   } catch(e) { /* silent — not in Claude context */ }
 
   // Also save to Supabase for cloud persistence and PR sync
+  // workouts.workout_type CHECK allows upper/push/pull/legs/arms/flex/sprint/recovery — the
+  // app's internal 'rest' type (activities, vacation) maps to 'flex' so the row isn't rejected
+  const dbType = type === 'rest' ? 'flex' : type;
   try {
-    // workouts.workout_type CHECK allows upper/push/pull/legs/arms/flex/sprint/recovery — the
-    // app's internal 'rest' type (activities, vacation) maps to 'flex' so the row isn't rejected
     const supabasePayload = {
-      workout_date: getDateStr(),
-      workout_type: type === 'rest' ? 'flex' : type,
+      workout_date: entry.date,
+      workout_type: dbType,
       location: sessionLocation === 'HG' ? 'Home Gym' : 'Lifetime Fitness',
       exercises: exercises,
-      duration_minutes: sessionStart ? Math.floor((Date.now() - sessionStart) / 60000) : null,
+      // FEAT-19: watch time first; an app-timer value outside 1–240 used to make the CHECK
+      // reject the whole row, so a long-open app lost the workout from Supabase entirely
+      duration_minutes: getBestDurationMinutes(),
       avg_heart_rate: watch.avgHr || null,
       max_heart_rate: watch.maxHr || null,
       calories_burned: watch.calories || null,
@@ -4024,13 +4415,18 @@ async function saveWorkout(type, dayKey) {
           'Content-Type': 'application/json',
           apikey: SUPABASE_ANON,
           Authorization: `Bearer ${SUPABASE_ANON}`,
-          Prefer: 'resolution=ignore-duplicates'
+          Prefer: 'resolution=ignore-duplicates,return=representation'
         },
         body: JSON.stringify(supabasePayload)
       }
     );
     if (!supRes.ok) console.warn('Supabase save rejected:', await supRes.text());
+    // An empty body means (date, type) already had a row — from an earlier save or the
+    // export/import flow — and the insert was skipped; push the watch numbers onto it
+    else if (!(await supRes.json().catch(() => [])).length) await syncWatchToSupabase(entry.date, dbType);
   } catch(e) { console.warn('Supabase save attempted (non-fatal):', e); }
+  sessionState['__savedAs__'] = { date: entry.date, workout_type: dbType, entryId: entry.id };
+  saveSession();
 
   if (saved) {
     if (newPRs.length > 0) {
@@ -4052,8 +4448,10 @@ async function saveWorkout(type, dayKey) {
 
 // BUG-6, BUG-8: Save sprint session with Galaxy Watch data
 async function saveSprintWorkout(dayKey) {
-  const avgHrVal = parseInt(document.getElementById('spHrAvg')?.value || 0) || null;
-  const maxHrVal = parseInt(document.getElementById('spHrMax')?.value || 0) || null;
+  const watch = sessionState['__watch__'] || {};
+  const avgHrVal = parseInt(document.getElementById('spHrAvg')?.value || 0) || watch.avgHr || null;
+  const maxHrVal = parseInt(document.getElementById('spHrMax')?.value || 0) || watch.maxHr || null;
+  const caloriesVal = parseInt(document.getElementById('spCalories')?.value || 0) || watch.calories || null;
 
   const entry = {
     id: Date.now(),
@@ -4064,15 +4462,8 @@ async function saveSprintWorkout(dayKey) {
     emoji: '⚡',
     rounds: sprintState.totalRounds,
     exercises: [],
-    watch: {
-      avgHr: avgHrVal,
-      maxHr: maxHrVal,
-      calories: null,
-      zones: null,
-      peakTiming: null,
-      pattern: null
-    },
-    duration: getSessionDuration(),
+    watch: { ...buildWatchSnapshot(), avgHr: avgHrVal, maxHr: maxHrVal, calories: caloriesVal },
+    duration: getDurationLabel(),
     savedAt: new Date().toISOString()
   };
 
@@ -4093,13 +4484,14 @@ async function saveSprintWorkout(dayKey) {
   // Save to Supabase workouts table with watch data
   try {
     const supabasePayload = {
-      workout_date: getDateStr(),
+      workout_date: entry.date,
       workout_type: 'sprint',
       location: sessionLocation === 'HG' ? 'Home Gym' : 'Lifetime Fitness',
       exercises: [],  // Sprint doesn't track individual exercises like regular workouts
-      duration_minutes: sessionStart ? Math.floor((Date.now() - sessionStart) / 60000) : null,
+      duration_minutes: getBestDurationMinutes(), // FEAT-19: watch time first
       avg_heart_rate: avgHrVal,
       max_heart_rate: maxHrVal,
+      calories_burned: caloriesVal,
       session_notes: `Sprint session · ${sprintState.totalRounds} rounds with Galaxy Watch data`
     };
 
@@ -4111,13 +4503,19 @@ async function saveSprintWorkout(dayKey) {
           'Content-Type': 'application/json',
           apikey: SUPABASE_ANON,
           Authorization: `Bearer ${SUPABASE_ANON}`,
-          Prefer: 'resolution=ignore-duplicates'
+          Prefer: 'resolution=ignore-duplicates,return=representation'
         },
         body: JSON.stringify(supabasePayload)
       }
     );
-    if (supRes.ok) saved = true;
+    if (supRes.ok) {
+      saved = true;
+      // Already a sprint row for today — the insert was skipped, so sync the watch numbers onto it
+      if (!(await supRes.json().catch(() => [])).length) await syncWatchToSupabase(entry.date, 'sprint');
+    }
   } catch(e) { console.warn('Supabase save failed:', e); }
+  sessionState['__savedAs__'] = { date: entry.date, workout_type: 'sprint', entryId: entry.id };
+  saveSession();
 
   if (saved) {
     showToast(`⚡ Sprint session saved · ${getDateStr()} · Watch data persisted`);
@@ -4132,6 +4530,18 @@ async function saveSprintWorkout(dayKey) {
 }
 
 // ── SESSION SUMMARY SHARE (Build 4) ─────────────────────────
+// "⌚ GALAXY WATCH" block for the Claude-chat exports; Duration leads because it's the number
+// the import flow used to have to second-guess ("221:50 in export")
+function watchExportLines(watch) {
+  const w = [];
+  const sec = getWatchDurationSec();
+  if (sec) w.push(`Duration: ${getDurationLabel()}${watch.startTime && watch.endTime ? ` (${watch.startTime}–${watch.endTime})` : ''}`);
+  if (watch.avgHr)    w.push(`Avg HR: ${watch.avgHr} bpm`);
+  if (watch.maxHr)    w.push(`Max: ${watch.maxHr} bpm`);
+  if (watch.calories) w.push(`Calories: ${watch.calories}`);
+  return w.length ? ['', '⌚ GALAXY WATCH', w.join(' · ')] : [];
+}
+
 function generateSessionSummary(type) {
   const day = WEEK[currentDayIdx];
   const workout = (type === 'recovery' && day && RECOVERY_WORKOUTS[day.key])
@@ -4140,7 +4550,7 @@ function generateSessionSummary(type) {
   if (!workout) return '';
   const watch = sessionState['__watch__'] || {};
   const date  = new Date().toLocaleDateString('en-US', { weekday:'long', month:'short', day:'numeric', year:'numeric' });
-  const dur   = getSessionDuration ? getSessionDuration() : '';
+  const dur   = getDurationLabel(); // FEAT-19: watch time — the app timer ran to 221:50+
 
   let lines = [];
   lines.push(`${type === 'recovery' ? '🦴 RECOVERY SESSION' : '🏋🏾 WORKOUT COMPLETE'} — ${APP_VERSION}`);
@@ -4161,15 +4571,7 @@ function generateSessionSummary(type) {
     });
   });
 
-  if (watch.avgHr || watch.calories) {
-    lines.push('');
-    lines.push('⌚ GALAXY WATCH');
-    const w = [];
-    if (watch.avgHr)   w.push(`Avg HR: ${watch.avgHr} bpm`);
-    if (watch.maxHr)   w.push(`Max: ${watch.maxHr} bpm`);
-    if (watch.calories) w.push(`Calories: ${watch.calories}`);
-    lines.push(w.join(' · '));
-  }
+  lines.push(...watchExportLines(watch));
 
   const sessionNotes = (sessionState['__notes__'] || {}).notes;
   if (sessionNotes) {
@@ -4198,7 +4600,7 @@ function shareSprintToClaude() {
   const hrMax = document.getElementById('spHrMax')?.value || '';
   const notes = document.getElementById('sprintNotes')?.value || '';
   const date = new Date().toLocaleDateString('en-US', { weekday:'long', month:'short', day:'numeric', year:'numeric' });
-  const dur = getSessionDuration ? getSessionDuration() : '';
+  const dur = getDurationLabel();
 
   let lines = [];
   lines.push(`⚡ SPRINT SESSION — ${APP_VERSION}`);
@@ -4207,6 +4609,9 @@ function shareSprintToClaude() {
   lines.push(`Rounds: ${rounds} × 30-sec max effort sprints`);
   if (hrAvg) lines.push(`Avg HR: ${hrAvg} bpm`);
   if (hrMax) lines.push(`Max HR: ${hrMax} bpm`);
+  const spWatch = sessionState['__watch__'] || {};
+  if (spWatch.calories) lines.push(`Calories: ${spWatch.calories}`);
+  if (getWatchDurationSec()) lines.push(`Duration: ${getDurationLabel()}${spWatch.startTime && spWatch.endTime ? ` · ${spWatch.startTime}–${spWatch.endTime}` : ''}`);
   if (notes) { lines.push(''); lines.push(`📝 Notes: ${notes}`); }
   lines.push('');
   lines.push('---');
@@ -4226,7 +4631,7 @@ function shareActivityToClaude(activityId) {
   const watch = sessionState['__watch__'] || {};
   const notes = (document.getElementById('sessionNotes')?.value) || (sessionState['__notes__'] || {}).notes || '';
   const date = new Date().toLocaleDateString('en-US', { weekday:'long', month:'short', day:'numeric', year:'numeric' });
-  const dur = getSessionDuration ? getSessionDuration() : '';
+  const dur = getDurationLabel();
 
   let lines = [];
   lines.push(`${activity.emoji} ${activity.title.toUpperCase()} — ${APP_VERSION}`);
@@ -4243,15 +4648,7 @@ function shareActivityToClaude(activityId) {
     });
   }
 
-  if (watch.avgHr || watch.calories) {
-    lines.push('');
-    lines.push('⌚ GALAXY WATCH');
-    const w = [];
-    if (watch.avgHr) w.push(`Avg HR: ${watch.avgHr} bpm`);
-    if (watch.maxHr) w.push(`Max: ${watch.maxHr} bpm`);
-    if (watch.calories) w.push(`Calories: ${watch.calories}`);
-    lines.push(w.join(' · '));
-  }
+  lines.push(...watchExportLines(watch));
 
   if (notes) { lines.push(''); lines.push(`📝 Notes: ${notes}`); }
 
@@ -4325,12 +4722,10 @@ function saveNotes(val) {
   saveSession();
 }
 
-// FEAT-5: Update Galaxy Watch data
+// FEAT-5: Update Galaxy Watch data (kept for old inline handlers; widgets now call these directly)
 function updateWatch(field, val) {
-  if (!sessionState['__watch__']) sessionState['__watch__'] = {};
-  const numVal = val ? parseInt(val) : null;
-  sessionState['__watch__'][field] = numVal;
-  saveSession();
+  if (field === 'duration') saveWatchDuration(val);
+  else saveWatch(field, val);
 }
 
 // ============================================================
@@ -5078,6 +5473,7 @@ function renderRecoveryDay(dayKey) {
     <div class="done-emoji">${rw.emoji}</div>
     <div class="done-title">${rw.title} COMPLETE</div>
     <div class="done-sub">Recovery is training. Your spine thanks you.</div>
+    ${buildWatchScanSaveBtn()}
   </div>`;
 
   // Crash recovery banner
@@ -5088,46 +5484,7 @@ function renderRecoveryDay(dayKey) {
 
   // Galaxy Watch widget (identical to normal workout days)
   const ws = sessionState['__watch__'] || {};
-  const sessionDuration = getSessionDuration();
-  html += `<div class="watch-widget">
-    <div class="watch-title">GALAXY WATCH — SESSION DATA</div>
-    <div class="watch-fields">
-      <div class="watch-field">
-        <span class="wf-label">Avg HR (bpm)</span>
-        <input class="wf-input" type="number" id="w-avhr" placeholder="128" value="${ws.avgHr||''}" oninput="saveWatch('avgHr',this.value)" min="50" max="220">
-        <span class="wf-zone" id="zone-avg">${getHRZone(ws.avgHr||0)}</span>
-      </div>
-      <div class="watch-field">
-        <span class="wf-label">Max HR (bpm)</span>
-        <input class="wf-input" type="number" id="w-maxhr" placeholder="155" value="${ws.maxHr||''}" oninput="saveWatch('maxHr',this.value)" min="50" max="220">
-        <span class="wf-zone" id="zone-max">${getHRZone(ws.maxHr||0)}</span>
-      </div>
-      <div class="watch-field">
-        <span class="wf-label">Calories Burned</span>
-        <input class="wf-input" type="number" id="w-cals" placeholder="420" value="${ws.calories||''}" oninput="saveWatch('calories',this.value)" min="0">
-      </div>
-      <div class="watch-field">
-        <span class="wf-label">Session Time</span>
-        <div class="session-timer" id="sessionTimer">${sessionDuration}</div>
-        <div class="session-timer-label">ELAPSED</div>
-      </div>
-    </div>
-    ${ws.zones ? `<div class="zone-bars">
-      <div class="zone-bars-title">Heart Rate Zones</div>
-      ${[['Zone 5 Max','z5','z5-fill'],['Zone 4 Hard','z4','z4-fill'],['Zone 3 Aerobic','z3','z3-fill'],['Zone 2 Fat Burn','z2','z2-fill'],['Zone 1 Easy','z1','z1-fill']].map(([n,k,cls]) =>
-        `<div class="zone-bar-row"><span class="zone-bar-name">${n}</span><div class="zone-bar-track"><div class="zone-bar-fill ${cls}" style="width:${ws.zones[k]||0}%"></div></div><span class="zone-bar-pct">${ws.zones[k]||0}%</span></div>`
-      ).join('')}
-    </div>` : ''}
-    <button class="bpm-import-btn" onclick="toggleBpmImport()">📥 Import BPM from Screenshot</button>
-    <div class="bpm-import-area" id="bpmImportArea">
-      <input type="file" id="bpmImageInput" accept="image/*" style="display:none" onchange="scanBpmScreenshot(this)">
-      <button class="bpm-scan-btn" id="bpmScanBtn" onclick="document.getElementById('bpmImageInput').click()">📸 Scan Samsung Health Screenshot</button>
-      <div class="bpm-scan-status" id="bpmScanStatus"></div>
-      <div class="bpm-divider">or paste JSON manually</div>
-      <textarea class="bpm-paste" id="bpmPasteField" placeholder='Paste JSON from Claude chat here...'></textarea>
-      <button class="bpm-parse-btn" onclick="importWatchData()">Parse &amp; Apply</button>
-    </div>
-  </div>`;
+  html += buildWatchWidget();
 
   // Sections and exercises
   rw.sections.forEach(section => {
@@ -5146,6 +5503,7 @@ function renderRecoveryDay(dayKey) {
   html += `<div class="notes-section">
     <div class="notes-label">Session Notes</div>
     <textarea class="notes-input" id="sessionNotes" placeholder="How did it feel? Pain changes? Shift corrected?" oninput="saveNotes(this.value)">${savedNotes}</textarea>
+    ${buildWatchScanSaveBtn()}
     <button class="save-btn" id="saveBtn" onclick="saveWorkout('recovery','${dayKey}')">💾 SAVE RECOVERY SESSION</button>
     <button class="share-claude-btn" onclick="shareToClaudeChat('recovery')">📤 Send to Claude Chat</button>
   </div>
@@ -5177,28 +5535,7 @@ function renderVacationDay() {
   </div>`;
 
   // Watch data for vacation days
-  const watch = sessionState['__watch__'] || {};
-  html += `<div class="watch-widget">
-    <div class="watch-title">⌚ GALAXY WATCH DATA (Optional)</div>
-    <div class="watch-fields">
-      <div class="watch-field">
-        <div class="wf-label">Avg HR (bpm)</div>
-        <input class="wf-input" type="number" placeholder="—" value="${watch.avgHr||''}" inputmode="numeric" onchange="updateWatch('avgHr',this.value)">
-      </div>
-      <div class="watch-field">
-        <div class="wf-label">Max HR (bpm)</div>
-        <input class="wf-input" type="number" placeholder="—" value="${watch.maxHr||''}" inputmode="numeric" onchange="updateWatch('maxHr',this.value)">
-      </div>
-      <div class="watch-field">
-        <div class="wf-label">Calories</div>
-        <input class="wf-input" type="number" placeholder="—" value="${watch.calories||''}" inputmode="numeric" onchange="updateWatch('calories',this.value)">
-      </div>
-      <div class="watch-field">
-        <div class="wf-label">Duration (min)</div>
-        <input class="wf-input" type="number" placeholder="—" value="${watch.duration||''}" inputmode="numeric" onchange="updateWatch('duration',this.value)">
-      </div>
-    </div>
-  </div>`;
+  html += buildWatchWidget({ title: 'GALAXY WATCH DATA (Optional)', showTimer: false });
 
   // Render vacation exercises
   vacation.sections.forEach(section => {
@@ -5216,6 +5553,7 @@ function renderVacationDay() {
   <div class="notes-section" style="padding:0 13px">
     <div class="notes-label">Session Notes</div>
     <textarea class="notes-input" id="sessionNotes" placeholder="How did it feel? Any observations?" oninput="saveNotes(this.value)">${savedNotes}</textarea>
+    ${buildWatchScanSaveBtn()}
     <button class="save-btn" id="saveBtn" onclick="saveWorkout('rest','vacation')">💾 SAVE VACATION SESSION</button>
   </div>
   <button class="reset-btn" onclick="resetDay()">↺ Reset Vacation Day</button>`;
@@ -5338,27 +5676,30 @@ function renderSprintDay(dayKey, content) {
   </div>
 
   <div class="sprint-card" id="spHrCard">
-    <div class="sprint-section-divider">📊 Log Galaxy Watch Data (Optional)</div>
-    <div class="sprint-hr-row">
-      <div class="sprint-hr-field">
+    <div class="sprint-section-divider" style="display:flex;align-items:center;gap:6px">📊 Log Galaxy Watch Data (Optional)<button class="watch-clear-btn" onclick="event.stopPropagation();clearWatchData()">✕ Clear</button></div>
+    <div class="sprint-hr-row" style="flex-wrap:wrap">
+      <div class="sprint-hr-field" style="min-width:calc(50% - 4px)">
         <div class="sprint-hr-label">Avg HR (bpm)</div>
-        <input class="sprint-hr-input" id="spHrAvg" type="number" placeholder="—" value="${watch.avgHr||''}" inputmode="numeric" oninput="saveWatch('avgHr',this.value)">
+        <input class="sprint-hr-input" id="spHrAvg" data-watch="avgHr" type="number" placeholder="—" value="${watch.avgHr||''}" inputmode="numeric" oninput="saveWatch('avgHr',this.value)">
       </div>
-      <div class="sprint-hr-field">
+      <div class="sprint-hr-field" style="min-width:calc(50% - 4px)">
         <div class="sprint-hr-label">Max HR (bpm)</div>
-        <input class="sprint-hr-input" id="spHrMax" type="number" placeholder="—" value="${watch.maxHr||''}" inputmode="numeric" oninput="saveWatch('maxHr',this.value)">
+        <input class="sprint-hr-input" id="spHrMax" data-watch="maxHr" type="number" placeholder="—" value="${watch.maxHr||''}" inputmode="numeric" oninput="saveWatch('maxHr',this.value)">
+      </div>
+      <div class="sprint-hr-field" style="min-width:calc(50% - 4px)">
+        <div class="sprint-hr-label">Calories</div>
+        <input class="sprint-hr-input" id="spCalories" data-watch="calories" type="number" placeholder="—" value="${watch.calories||''}" inputmode="numeric" oninput="saveWatch('calories',this.value)">
+      </div>
+      <div class="sprint-hr-field" style="min-width:calc(50% - 4px)">
+        <div class="sprint-hr-label">Duration (min)</div>
+        <input class="sprint-hr-input" id="spDuration" data-watch="duration" type="number" placeholder="—" value="${watch.duration||''}" inputmode="numeric" oninput="saveWatchDuration(this.value)">
+        ${watchDurationSrcHtml()}
       </div>
     </div>
     <div style="font-size:10px;color:var(--dim2);text-align:center">Zone 4–5 target: 140–165+ bpm max. Log before, during, or after sprint.</div>
-    <button class="bpm-import-btn" onclick="toggleBpmImport()" style="margin-top:10px;width:100%;">📥 Import BPM from Screenshot</button>
-    <div class="bpm-import-area" id="bpmImportArea">
-      <input type="file" id="bpmImageInput" accept="image/*" style="display:none" onchange="scanBpmScreenshot(this)">
-      <button class="bpm-scan-btn" id="bpmScanBtn" onclick="document.getElementById('bpmImageInput').click()">📸 Scan Samsung Health Screenshot</button>
-      <div class="bpm-scan-status" id="bpmScanStatus"></div>
-      <div class="bpm-divider">or paste JSON manually</div>
-      <textarea class="bpm-paste" id="bpmPasteField" placeholder='Paste JSON from Claude chat here...'></textarea>
-      <button class="bpm-parse-btn" onclick="importWatchData()">Parse &amp; Apply</button>
-    </div>
+    <div id="watchZones">${buildZoneBarsHtml(watch.zones)}</div>
+    ${buildWatchImportHtml('margin-top:10px;width:100%;')}
+    ${buildWatchScanSaveBtn()}
   </div>
 
   <div class="rest-card" style="padding:14px 14px 18px">
@@ -5431,28 +5772,7 @@ function renderAlternativeActivity(activityId, fromGroupSwap = false) {
   html += `</div>`;
 
   // Watch data
-  const watch = sessionState['__watch__'] || {};
-  html += `<div class="watch-widget">
-    <div class="watch-title">⌚ GALAXY WATCH DATA (Optional)</div>
-    <div class="watch-fields">
-      <div class="watch-field">
-        <div class="wf-label">Avg HR (bpm)</div>
-        <input class="wf-input" type="number" placeholder="—" value="${watch.avgHr||''}" inputmode="numeric" onchange="updateWatch('avgHr',this.value)">
-      </div>
-      <div class="watch-field">
-        <div class="wf-label">Max HR (bpm)</div>
-        <input class="wf-input" type="number" placeholder="—" value="${watch.maxHr||''}" inputmode="numeric" onchange="updateWatch('maxHr',this.value)">
-      </div>
-      <div class="watch-field">
-        <div class="wf-label">Calories</div>
-        <input class="wf-input" type="number" placeholder="—" value="${watch.calories||''}" inputmode="numeric" onchange="updateWatch('calories',this.value)">
-      </div>
-      <div class="watch-field">
-        <div class="wf-label">Duration (min)</div>
-        <input class="wf-input" type="number" placeholder="—" value="${watch.duration||''}" inputmode="numeric" onchange="updateWatch('duration',this.value)">
-      </div>
-    </div>
-  </div>`;
+  html += buildWatchWidget({ title: 'GALAXY WATCH DATA (Optional)', showTimer: false });
 
   // Render activity exercises as checklist
   if (activity.exercises) {
@@ -5469,6 +5789,7 @@ function renderAlternativeActivity(activityId, fromGroupSwap = false) {
   <div class="notes-section" style="padding:0 13px">
     <div class="notes-label">Session Notes</div>
     <textarea class="notes-input" id="sessionNotes" placeholder="How did it feel?" oninput="saveNotes(this.value)">${savedNotes}</textarea>
+    ${buildWatchScanSaveBtn()}
     <button class="save-btn" id="saveBtn" onclick="saveWorkout('rest','${activityId}')">💾 SAVE ${activity.title.toUpperCase()}</button>
     <button class="share-claude-btn" onclick="shareActivityToClaude('${activityId}')">📤 Send to Claude Chat</button>
   </div>
@@ -5837,6 +6158,17 @@ init();
     </div>
     <div class="swap-section-label">Make up a missed sprint, or swap for a class · replaces today's planned session</div>
     <div class="swap-options" id="gaOptionsList"></div>
+  </div>
+</div>
+
+<!-- WATCH SCREENSHOT CONFIRM (FEAT-19) -->
+<div class="swap-overlay" id="watchConfirmOverlay" onclick="closeWatchConfirm(event)">
+  <div class="swap-sheet">
+    <div class="swap-sheet-hdr">
+      <span class="swap-sheet-title">⌚ WATCH SCREENSHOT — CONFIRM</span>
+      <button class="swap-close-btn" onclick="closeWatchConfirm()">✕</button>
+    </div>
+    <div id="watchConfirmBody"></div>
   </div>
 </div>
 
