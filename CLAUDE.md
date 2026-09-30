@@ -2,7 +2,7 @@
 
 **Purpose:** Personal strength training tracker with adaptive workout protocols, PR management, recovery modes, and multi-location gym support — plus a keto macro tracker (see §6.5) sharing the same repo, Supabase project and deployment.
 
-**Current Version:** v12.4 (2026-09-16) · macro tracker v1.0 (2026-09-16)  
+**Current Version:** v12.4 (2026-09-16) · macro tracker v1.1 (2026-09-30)  
 **Development Branch:** per session (latest: `claude/sweet-hamilton-w4maed`) — never push to `main` directly; merge after a Vercel preview check  
 **Deployment:** Vercel (two static HTML files + Supabase backend)
 
@@ -105,9 +105,10 @@ category      (text)       — 'protein' | 'veg' | 'supplement' | 'restaurant' |
 unit_label    (text)       — what ONE unit is: 'thigh' | 'quarter' | 'oz cooked' | 'scoop' | 'cup'
 default_qty   (numeric)    — stepper's starting quantity
 protein_g / calories / net_carbs_g / fat_g  — ALL per single unit, never per portion
-is_favorite   (bool)       — surfaces in the Favorites group; toggled by long-press
-carb_flag     (text)       — warning shown in the log sheet (mussels, oysters)
-sort_order    (int)        — ordering within a category
+is_favorite   (bool)       — surfaces in the Favorites group; toggled by the tile's ☆ (or long-press)
+carb_flag     (text)       — warning shown in the log sheet (mussels, oysters); auto-set on
+                             saved foods over 8g net carbs per serving
+sort_order    (int)        — ordering within a category; foods saved from the app get 100
 RLS on, NO anon policies — reachable only through the nutrition-* edge functions.
 ```
 
@@ -119,7 +120,7 @@ food_id       (bigint FK)  — null for pasted/manual entries
 food_name     (text)       — DENORMALIZED so history survives food edits
 quantity      (numeric)    — in the food's unit_label
 protein_g / calories / net_carbs_g — computed AT LOG TIME, not derived on read
-entry_source  (text)       — 'preset' | 'photo_estimate' | 'manual'
+entry_source  (text)       — 'preset' | 'photo_estimate' | 'manual' | 'saved_custom' (linked by Save to my foods)
 RLS on, NO anon policies. Same edge-function-only access as foods.
 ```
 
@@ -483,6 +484,24 @@ forgiving about spacing/order/bullets, several at once, logged as
 `entry_source = 'photo_estimate'`. **A protein figure is required** for a line to
 parse — otherwise stray prose ("1260 calories of nothing useful") logs itself as food.
 
+### Save to my foods
+Anything logged without a `food_id` (paste/photo estimate, or an unlinked entry reopened
+from TODAY) shows **☆ Save to my foods** plus a category dropdown (default Protein) on its
+confirm step. The client only adds `save_as_food: { category }` to the queued row; the
+save runs server-side in `nutrition-log`'s `saveToMyFoods()` on the same POST, so it rides
+the offline retry queue and never needs a second request to link a row still in flight.
+- A trailing serving becomes the unit: `Cod fillet, 6 oz` → food "Cod fillet", unit `oz`,
+  default_qty 6, per-oz macros. No trailing amount → one `serving`.
+- Matched by trimmed, case-insensitive name → the row links to it, no duplicate. The row's
+  quantity is re-expressed in that food's units (by protein), so quantity × per-unit still
+  equals what was logged and Ate half / the stepper scale correctly.
+- Over 8g net carbs per serving → `carb_flag` "High carb, check serving — …".
+- Linked rows get `entry_source = 'saved_custom'`. If the save fails the row still logs
+  unlinked with its original source, and the toast says so.
+- The response's `saved_food` is dropped straight into `foods` + the cache, so the tile
+  appears without a reload. `findFood` prefers exact names so a saved "Shrimp scampi"
+  (sort 100) can't hijack meals that match seeded "Shrimp" (sort 120).
+
 ---
 
 ## 7. SUPABASE EDGE FUNCTIONS
@@ -519,7 +538,7 @@ anon key at all — unlike index.html, which still calls `/rest/v1/` directly.
 |---|---|---|
 | `nutrition-foods` | GET | `{ foods: [...] }` ordered by `sort_order, name` |
 | `nutrition-foods` | PATCH `?id=` | `{ is_favorite: bool }` — long-press toggle |
-| `nutrition-log` | POST | Inserts one entry; validates meal_slot + entry_source enums; 201 |
+| `nutrition-log` | POST | Inserts one entry; validates meal_slot + entry_source enums; 201. Optional `save_as_food: { category }` → `{ entry, saved_food: { food, existed }, save_error }` |
 | `nutrition-log` | DELETE `?id=` | Removes one entry |
 | `nutrition-today` | GET `?date=` | `{ entries, totals }` for that date |
 | `nutrition-history` | GET `?days=` | `{ daily[], summary }` — hit rate, avg cal, days over ceiling (days clamped 1–365) |

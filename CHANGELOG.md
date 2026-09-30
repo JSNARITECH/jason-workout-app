@@ -1,5 +1,13 @@
 # Workout App Changelog
 
+## Macro tracker v1.1 — 2026-09-30
+### Added
+- **Save to my foods** — pasted / photo-estimate entries (and any unlinked entry reopened from TODAY) get a ☆ Save to my foods toggle with a category dropdown on the confirm step. A same-name food (trimmed, case-insensitive) is linked instead of duplicated; otherwise a new `foods` row is created from the entry's macros, with a trailing serving (`Cod fillet, 6 oz`) becoming its unit and default quantity. Over 8g net carbs per serving sets a "High carb, check serving" flag. Linked rows log as `entry_source = 'saved_custom'`, and the new food shows up in the picker without a reload. A failed save never blocks the entry.
+- **☆ star on every food tile** — tap to favorite / unfavorite (long-press still works). A failed update reverts and says so.
+### Changed
+- The ⚠️ carb flag moved from the tile corner to the carbs line to make room for the star.
+- Meal composer and gap closers match food names exactly before falling back to a prefix, so a saved food can't shadow a seeded one.
+
 ## v12.4 — 2026-09-16
 ### Added
 - **🍖 FUEL button** in the bottom nav — opens the new keto macro tracker at `/macros.html`. The tracker carries a 🏋️ LIFT button back, so the two apps read as one system without merging their code.

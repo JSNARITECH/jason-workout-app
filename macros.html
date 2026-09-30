@@ -110,12 +110,13 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .cat-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
 .tile{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 11px 10px;cursor:pointer;text-align:left;font-family:'DM Sans',sans-serif;color:var(--white);transition:border-color 0.15s,transform 0.1s;position:relative;overflow:hidden;}
 .tile:active{transform:scale(0.975);border-color:var(--accent);}
-.tile-name{font-size:12px;font-weight:600;line-height:1.3;margin-bottom:5px;min-height:31px;padding-right:16px;}
+.tile-name{font-size:12px;font-weight:600;line-height:1.3;margin-bottom:5px;min-height:31px;padding-right:18px;}
 .tile-macros{font-size:10px;color:var(--dim2);font-weight:600;}
 .tile-macros b{color:var(--accent);font-weight:700;}
 .tile-unit{font-size:9px;color:var(--dim);margin-top:2px;letter-spacing:0.3px;}
 .tile-star{position:absolute;top:7px;right:8px;font-size:10px;}
-.tile-flag{position:absolute;top:7px;right:8px;font-size:11px;}
+.tile-fav{position:absolute;top:0;right:0;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--dim);}
+.tile-fav.on{color:var(--accent);}
 .filter-row{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-bottom:12px;padding-bottom:2px;}
 .filter-row::-webkit-scrollbar{display:none;}
 .chip{flex-shrink:0;padding:7px 12px;border:1px solid var(--border);border-radius:20px;background:var(--card);color:var(--dim2);font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.15s;}
@@ -173,6 +174,10 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .parsed-main{flex:1;min-width:0;}
 .parsed-name{font-size:12px;font-weight:600;}
 .parsed-macros{font-size:10px;color:var(--dim2);margin-top:2px;}
+.save-row{display:flex;gap:6px;align-items:center;margin-top:8px;}
+.save-toggle{padding:6px 10px;border:1px solid var(--border2);border-radius:14px;background:none;color:var(--dim2);font-size:10px;font-weight:700;letter-spacing:0.3px;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.save-toggle.on{border-color:var(--accent);color:var(--accent);background:var(--accent-dim);}
+.save-cat{padding:6px 8px;border:1px solid var(--border2);border-radius:14px;background:var(--card2);color:var(--white);font-size:10px;font-weight:600;font-family:'DM Sans',sans-serif;}
 
 /* HISTORY */
 .stat-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;}
@@ -201,7 +206,7 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .over{color:var(--red);font-weight:700;}
 
 /* TOAST + SYNC */
-.toast{position:fixed;bottom:86px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--accent);color:#000;padding:11px 20px;border-radius:24px;font-size:11px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;z-index:300;opacity:0;pointer-events:none;transition:all 0.25s;}
+.toast{position:fixed;bottom:86px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--accent);color:#000;padding:11px 20px;border-radius:24px;font-size:11px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;z-index:300;opacity:0;pointer-events:none;transition:all 0.25s;width:max-content;max-width:calc(100vw - 32px);text-align:center;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 .sync-pill{position:fixed;top:10px;left:50%;transform:translateX(-50%) translateY(-60px);background:var(--red-dim);border:1px solid rgba(255,77,77,0.4);color:var(--red);padding:7px 14px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:1px;z-index:300;transition:transform 0.3s;display:flex;align-items:center;gap:8px;cursor:pointer;}
 .sync-pill.show{transform:translateX(-50%) translateY(0);}
@@ -248,7 +253,7 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 <div class="sheet" id="sheet"><div class="sheet-grip"></div><div id="sheetBody"></div></div>
 
 <script>
-const APP_VERSION = 'v1.0';
+const APP_VERSION = 'v1.1';
 const API = 'https://fnjjfnsdxibjbzldfgit.supabase.co/functions/v1';
 
 const PROTEIN_TARGET = 225;
@@ -340,11 +345,15 @@ function lsGet(key, fallback) {
 function lsSet(key, val) {
   try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
 }
-function toast(msg) {
+// a sync result can land a moment after the "+32g" toast — reset the timer so the
+// first one's hide doesn't cut the second short
+let toastTimer = null;
+function toast(msg, ms = 1700) {
   const t = $('toast');
   t.textContent = msg;
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 1700);
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), ms);
 }
 
 /* ---------- day type ---------- */
@@ -441,7 +450,7 @@ async function flushQueue(manual = false) {
       for (const job of [...queue]) {
         if (!queue.some((q) => q.tempId === job.tempId)) continue;
         try {
-          const { entry } = await api('/nutrition-log', {
+          const { entry, saved_food } = await api('/nutrition-log', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(job.row),
@@ -450,6 +459,7 @@ async function flushQueue(manual = false) {
           const idx = entries.findIndex((e) => e.tempId === job.tempId);
           if (idx >= 0) entries[idx] = { ...entry };
           saveDay(); saveQueue();
+          if (job.row.save_as_food) foodSaved(job.row.food_name, saved_food);
         } catch {
           const idx = entries.findIndex((e) => e.tempId === job.tempId);
           if (idx >= 0) { entries[idx]._pending = false; entries[idx]._failed = true; }
@@ -463,6 +473,19 @@ async function flushQueue(manual = false) {
 
   renderToday();
   if (manual) toast(queue.length ? 'Still offline' : 'Synced');
+}
+
+// nutrition-log saved (or matched) the food alongside the entry — drop it into the
+// picker now instead of waiting for the 12h foods cache to expire
+function foodSaved(entryName, saved) {
+  if (!saved?.food) { toast(`Logged — couldn't save ${entryName} to your foods`, 2500); return; }
+  const { food, existed } = saved;
+  const i = foods.findIndex((f) => f.id === food.id);
+  if (i >= 0) foods[i] = food; else foods.push(food);
+  foods.sort((a, b) => (a.sort_order - b.sort_order) || a.name.localeCompare(b.name));
+  lsSet('macro-foods-cache', { foods, ts: lsGet('macro-foods-cache', {})?.ts || 0 });
+  renderLog();
+  toast(existed ? `${food.name} is already in your foods` : `Saved ${food.name} to your foods`, 2500);
 }
 
 async function deleteEntry(idOrTemp) {
@@ -755,15 +778,15 @@ function renderLog() {
       <div class="cat-row">
         ${g.items.map((f) => `
           <button class="tile" data-id="${f.id}">
-            ${f.carb_flag ? '<span class="tile-flag">⚠️</span>' : (f.is_favorite ? '<span class="tile-star">★</span>' : '')}
+            <span class="tile-fav ${f.is_favorite ? 'on' : ''}" aria-label="${f.is_favorite ? 'Unfavorite' : 'Favorite'}">${f.is_favorite ? '★' : '☆'}</span>
             <div class="tile-name">${esc(f.name)}</div>
             <div class="tile-macros"><b>${fmtG(f.protein_g)}g</b> · ${round(f.calories)} cal</div>
-            <div class="tile-unit">per ${esc(f.unit_label)} · ${fmtG(f.net_carbs_g)}c</div>
+            <div class="tile-unit">per ${esc(f.unit_label)} · ${fmtG(f.net_carbs_g)}c${f.carb_flag ? ' ⚠️' : ''}</div>
           </button>`).join('')}
       </div>`).join('')
       : '<div class="empty">Loading your food library…</div>'}
     <div style="height:10px"></div>
-    <div class="paste-hint">Long-press a tile to favorite it.</div>
+    <div class="paste-hint">Tap ☆ to favorite a food — long-press works too.</div>
   `;
   wireTiles();
 }
@@ -774,8 +797,10 @@ function wireTiles() {
   $('viewLog').querySelectorAll('.tile').forEach((el) => {
     const id = Number(el.dataset.id);
     let timer = null, longFired = false;
-    const start = () => {
+    const onStar = (ev) => !!ev.target.closest('.tile-fav');
+    const start = (ev) => {
       longFired = false;
+      if (onStar(ev)) return;
       timer = setTimeout(() => { longFired = true; toggleFavorite(id); }, 500);
     };
     const cancel = () => { if (timer) clearTimeout(timer); timer = null; };
@@ -783,7 +808,10 @@ function wireTiles() {
     el.addEventListener('pointerup', cancel);
     el.addEventListener('pointerleave', cancel);
     el.addEventListener('pointercancel', cancel);
-    el.addEventListener('click', () => { if (!longFired) openQty(id); });
+    el.addEventListener('click', (ev) => {
+      if (onStar(ev)) toggleFavorite(id);
+      else if (!longFired) openQty(id);
+    });
   });
 }
 
@@ -800,7 +828,12 @@ async function toggleFavorite(id) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ is_favorite: food.is_favorite }),
     });
-  } catch {}
+  } catch {
+    food.is_favorite = !food.is_favorite;
+    lsSet('macro-foods-cache', { foods, ts: Date.now() });
+    renderLog();
+    toast("Couldn't update favorite");
+  }
 }
 
 /* ---------- QUANTITY SHEET ---------- */
@@ -819,7 +852,7 @@ function editEntry(idOrTemp) {
   const libFood = entry.food_id ? foods.find((f) => f.id === entry.food_id) : null;
   const q = Number(entry.quantity) || 1;
   const food = libFood || {
-    id: null,
+    id: entry.food_id ?? null,   // linked but not in this device's cache yet — keep the link
     name: entry.food_name,
     unit_label: 'portion',
     protein_g: Number(entry.protein_g) / q,
@@ -827,9 +860,21 @@ function editEntry(idOrTemp) {
     net_carbs_g: Number(entry.net_carbs_g) / q,
     carb_flag: null,
   };
-  sheetState = { food, qty: q, slot: entry.meal_slot, step: stepFor(food), edit: entry };
+  sheetState = { food, qty: q, slot: entry.meal_slot, step: stepFor(food), edit: entry,
+    save: !!entry.save_as_food, category: entry.save_as_food?.category || 'protein' };
   renderQtySheet();
   openSheet();
+}
+
+// shown on the confirm step for anything not yet in the library (pasted, photo
+// estimate, manual); the save itself rides along with the log POST
+function saveToggleHtml(on, category, onToggle, onCat) {
+  return `<div class="save-row">
+    <button class="save-toggle ${on ? 'on' : ''}" onclick="${onToggle}">${on ? '★' : '☆'} Save to my foods</button>
+    ${on ? `<select class="save-cat" onchange="${onCat}" aria-label="Category">
+      ${CATS.map((c) => `<option value="${c.id}" ${c.id === category ? 'selected' : ''}>${c.label}</option>`).join('')}
+    </select>` : ''}
+  </div>`;
 }
 
 function renderQtySheet() {
@@ -864,6 +909,7 @@ function renderQtySheet() {
     <div class="slot-pills">
       ${SLOTS.map((s) => `<button class="slot-pill ${slot === s.id ? 'active' : ''}" onclick="setSlot('${s.id}')">${s.label}</button>`).join('')}
     </div>
+    ${food.id == null ? `<div style="margin:-6px 0 14px">${saveToggleHtml(sheetState.save, sheetState.category, 'toggleQtySave()', 'sheetState.category=this.value')}</div>` : ''}
     <button class="btn btn-primary" onclick="confirmQty()">${edit ? 'Update' : 'Log it'}</button>
   `;
 }
@@ -879,6 +925,7 @@ function halveQty() {
   renderQtySheet();
 }
 function setSlot(id) { sheetState.slot = id; renderQtySheet(); }
+function toggleQtySave() { sheetState.save = !sheetState.save; renderQtySheet(); }
 
 function confirmQty() {
   const { food, qty, slot, edit } = sheetState;
@@ -893,6 +940,7 @@ function confirmQty() {
     net_carbs_g: round(food.net_carbs_g * qty, 1),
     entry_source: edit ? edit.entry_source : 'preset',
   };
+  if (food.id == null && sheetState.save) row.save_as_food = { category: sheetState.category };
 
   if (edit) {
     const before = Number(edit.protein_g) || 0;
@@ -914,7 +962,10 @@ function closeSheet() { $('sheetBack').classList.remove('open'); $('sheet').clas
 /* ---------- DAY BUILDER ---------- */
 function findFood(match) {
   const m = match.toLowerCase();
-  return foods.find((f) => f.name.toLowerCase().startsWith(m))
+  // exact first — a saved "Shrimp scampi" (sort 100) sorts ahead of seeded "Shrimp"
+  // (sort 120) and would otherwise win the prefix match for every shrimp meal
+  return foods.find((f) => f.name.toLowerCase() === m)
+    || foods.find((f) => f.name.toLowerCase().startsWith(m))
     || foods.find((f) => f.name.toLowerCase().includes(m));
 }
 
@@ -1091,11 +1142,12 @@ function renderPasteSheet() {
       oninput="onPasteInput(this.value)">${esc(sheetState.text || '')}</textarea>
     <div class="paste-hint">Ribeye, 14 oz cooked | 98g protein | 1260 cal | 0g net carbs</div>
     ${parsed.length ? `<div class="sec-title" style="margin-top:4px">Parsed <span class="sec-note">${good.length} of ${parsed.length} ok</span></div>` : ''}
-    ${parsed.map((p) => p.ok
+    ${parsed.map((p, i) => p.ok
       ? `<div class="parsed">
           <div class="parsed-main">
             <div class="parsed-name">${esc(p.name)}</div>
             <div class="parsed-macros"><b style="color:var(--accent)">${p.protein_g}g</b> protein · ${p.calories} cal · ${p.net_carbs_g}g net carbs</div>
+            ${saveToggleHtml(p.save, p.category, `togglePasteSave(${i})`, `sheetState.parsed[${i}].category=this.value`)}
           </div>
         </div>`
       : `<div class="parsed bad">
@@ -1115,7 +1167,10 @@ function renderPasteSheet() {
 
 function onPasteInput(text) {
   sheetState.text = text;
-  const parsed = text.split('\n').map(parseLine).filter(Boolean);
+  // re-parsing on every keystroke must not drop a line's save toggle or category
+  const prev = new Map(sheetState.parsed.map((p) => [p.raw, p]));
+  const parsed = text.split('\n').map(parseLine).filter(Boolean)
+    .map((p) => ({ ...p, save: prev.get(p.raw)?.save || false, category: prev.get(p.raw)?.category || 'protein' }));
   const changed = parsed.length !== sheetState.parsed.length
     || parsed.some((p, i) => p.raw !== sheetState.parsed[i]?.raw);
   sheetState.parsed = parsed;
@@ -1129,6 +1184,7 @@ function onPasteInput(text) {
 }
 
 function setPasteSlot(id) { sheetState.slot = id; renderPasteSheet(); }
+function togglePasteSave(i) { sheetState.parsed[i].save = !sheetState.parsed[i].save; renderPasteSheet(); }
 
 function confirmPaste() {
   const good = sheetState.parsed.filter((p) => p.ok);
@@ -1143,6 +1199,7 @@ function confirmPaste() {
       calories: p.calories,
       net_carbs_g: p.net_carbs_g,
       entry_source: 'photo_estimate',
+      ...(p.save ? { save_as_food: { category: p.category } } : {}),
     });
   });
   closeSheet();
