@@ -2,7 +2,7 @@
   "mcpServers": {
     "runway": {
       "type": "http",
-      "url": "https://runway.com/mcp"
+      "url": "https://mcp.runwayml.com/mcp"
     }
   }
 }
