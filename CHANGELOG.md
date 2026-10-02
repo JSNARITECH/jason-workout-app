@@ -1,5 +1,10 @@
 # Workout App Changelog
 
+## v12.5 — 2026-10-02
+### Changed
+- **Sprint volume 6 → 8 rounds** (Wed + Sat, make-up sprints too). Same 30s max effort / 75s walk recovery. VF grade has held at 12 for three straight Thursday scans, so HIIT volume goes up rather than adding a third sprint day next to leg days. Default lives in `SPRINT_DEFAULT_ROUNDS`; the ± stepper still allows 4–10.
+- Sprint-day tips updated to the 8-round protocol (~23 min per session, ~46 min/week).
+
 ## v12.4 — 2026-09-16
 ### Added
 - **🍖 FUEL button** in the bottom nav — opens the new keto macro tracker at `/macros.html`. The tracker carries a 🏋️ LIFT button back, so the two apps read as one system without merging their code.
