@@ -4,10 +4,10 @@
 // Supabase session alone isn't enough: anyone can request a magic link for their own
 // address and get one. The caller's email must also be in public.app_allowed_users.
 //
-// ENFORCE_AUTH = false is the rollout stage: a request carrying a token is still fully
-// checked (bad token → 401, unknown email → 403), but a request with no token is let
-// through so the deployed client keeps working until sign-in is confirmed. Flip to true.
-export const ENFORCE_AUTH = false;
+// ENFORCE_AUTH = true: no token → 401. (false was the rollout stage — token-less requests
+// let through while a presented token was still fully checked — used until the first real
+// sign-in was confirmed on 2026-10-05.)
+export const ENFORCE_AUTH = true;
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
 const SERVICE_ROLE = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';

@@ -532,8 +532,9 @@ right after the CORS preflight:
 - Bearer token → `GET /auth/v1/user` → email must be in `app_allowed_users`
   (a valid session alone is not enough: anyone can request a magic link). Verdicts are
   cached per token for 5 min. Bad/expired token → 401, unlisted email → 403.
-- `ENFORCE_AUTH` in `_shared/auth.ts`: `false` = rollout stage (no token still allowed,
-  a presented token is fully checked); `true` = no token → 401.
+- `ENFORCE_AUTH` in `_shared/auth.ts` is **`true`** (since 2026-10-05): no token → 401.
+  `false` was the rollout stage (no token still allowed, a presented token fully checked)
+  — only flip it back if sign-in itself breaks and the tracker must keep working.
 - **Deploying:** each function ships with the shared module. Via the Supabase MCP, pass
   files `nutrition-X/index.ts` + `_shared/auth.ts` with `entrypoint_path:
   nutrition-X/index.ts` (the `../_shared` import resolves). A change to `auth.ts` means
