@@ -518,8 +518,10 @@ anon key at all — unlike index.html, which still calls `/rest/v1/` directly.
 | Function | Method | Contract |
 |---|---|---|
 | `nutrition-foods` | GET | `{ foods: [...] }` ordered by `sort_order, name` |
+| `nutrition-foods` | POST | **Save to my foods** — find-or-create by case-insensitive trimmed name (returns `{ food, created }`); sets `carb_flag` when net carbs/unit > 8 |
 | `nutrition-foods` | PATCH `?id=` | `{ is_favorite: bool }` — long-press toggle |
 | `nutrition-log` | POST | Inserts one entry; validates meal_slot + entry_source enums; 201 |
+| `nutrition-log` | PATCH `?id=` | `{ food_id }` — links a log row to a saved food (entry_source `saved_custom` is also accepted on POST) |
 | `nutrition-log` | DELETE `?id=` | Removes one entry |
 | `nutrition-today` | GET `?date=` | `{ entries, totals }` for that date |
 | `nutrition-history` | GET `?days=` | `{ daily[], summary }` — hit rate, avg cal, days over ceiling (days clamped 1–365) |

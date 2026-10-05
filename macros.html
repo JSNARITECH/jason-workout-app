@@ -110,12 +110,17 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .cat-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
 .tile{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 11px 10px;cursor:pointer;text-align:left;font-family:'DM Sans',sans-serif;color:var(--white);transition:border-color 0.15s,transform 0.1s;position:relative;overflow:hidden;}
 .tile:active{transform:scale(0.975);border-color:var(--accent);}
-.tile-name{font-size:12px;font-weight:600;line-height:1.3;margin-bottom:5px;min-height:31px;padding-right:16px;}
+.tile-name{font-size:12px;font-weight:600;line-height:1.3;margin-bottom:5px;min-height:31px;padding-right:22px;}
 .tile-macros{font-size:10px;color:var(--dim2);font-weight:600;}
 .tile-macros b{color:var(--accent);font-weight:700;}
 .tile-unit{font-size:9px;color:var(--dim);margin-top:2px;letter-spacing:0.3px;}
-.tile-star{position:absolute;top:7px;right:8px;font-size:10px;}
-.tile-flag{position:absolute;top:7px;right:8px;font-size:11px;}
+.tile-fav{position:absolute;top:0;right:0;padding:6px 9px 8px 8px;font-size:15px;line-height:1;color:var(--dim);background:none;border:none;cursor:pointer;}
+.tile-fav.on{color:var(--accent);}
+.save-row{display:flex;align-items:center;gap:8px;margin-top:7px;font-size:11px;color:var(--dim2);}
+.save-row input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px;}
+.save-row select{margin-left:auto;background:var(--bg);color:var(--white);border:1px solid var(--border);border-radius:8px;padding:4px 6px;font-size:11px;font-family:inherit;}
+.save-sheet{margin:2px 0 12px;}
+.tile-flag{position:absolute;top:7px;right:30px;font-size:11px;}
 .filter-row{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-bottom:12px;padding-bottom:2px;}
 .filter-row::-webkit-scrollbar{display:none;}
 .chip{flex-shrink:0;padding:7px 12px;border:1px solid var(--border);border-radius:20px;background:var(--card);color:var(--dim2);font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.15s;}
@@ -321,6 +326,7 @@ let trendTable = true;
 let sheetState = null;
 let clockTimer = null;
 let composer = { meal_1: null, shake: null, meal_2: null, snack: null };
+let foodLinks = {}; // tempId -> food_id for rows whose "save to my foods" finished
 
 /* ---------- utils ---------- */
 const $ = (id) => document.getElementById(id);
@@ -344,7 +350,8 @@ function toast(msg) {
   const t = $('toast');
   t.textContent = msg;
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 1700);
+  clearTimeout(toast.timer);
+  toast.timer = setTimeout(() => t.classList.remove('show'), 1700);
 }
 
 /* ---------- day type ---------- */
@@ -448,8 +455,11 @@ async function flushQueue(manual = false) {
           });
           queue = queue.filter((q) => q.tempId !== job.tempId);
           const idx = entries.findIndex((e) => e.tempId === job.tempId);
-          if (idx >= 0) entries[idx] = { ...entry };
+          if (idx >= 0) entries[idx] = { ...entry, tempId: job.tempId }; // keep tempId so a later food link can find the row
           saveDay(); saveQueue();
+          // a "save to my foods" result can land while this POST was already in flight
+          const linked = foodLinks[job.tempId];
+          if (linked && entry && entry.food_id !== linked) linkLogRow(job.tempId, linked);
         } catch {
           const idx = entries.findIndex((e) => e.tempId === job.tempId);
           if (idx >= 0) { entries[idx]._pending = false; entries[idx]._failed = true; }
@@ -755,7 +765,8 @@ function renderLog() {
       <div class="cat-row">
         ${g.items.map((f) => `
           <button class="tile" data-id="${f.id}">
-            ${f.carb_flag ? '<span class="tile-flag">⚠️</span>' : (f.is_favorite ? '<span class="tile-star">★</span>' : '')}
+            ${f.carb_flag ? '<span class="tile-flag">⚠️</span>' : ''}
+            <span class="tile-fav ${f.is_favorite ? 'on' : ''}" data-fav="${f.id}" role="button" aria-label="Favorite">${f.is_favorite ? '★' : '☆'}</span>
             <div class="tile-name">${esc(f.name)}</div>
             <div class="tile-macros"><b>${fmtG(f.protein_g)}g</b> · ${round(f.calories)} cal</div>
             <div class="tile-unit">per ${esc(f.unit_label)} · ${fmtG(f.net_carbs_g)}c</div>
@@ -763,7 +774,7 @@ function renderLog() {
       </div>`).join('')
       : '<div class="empty">Loading your food library…</div>'}
     <div style="height:10px"></div>
-    <div class="paste-hint">Long-press a tile to favorite it.</div>
+    <div class="paste-hint">Tap the ☆ on a tile (or long-press it) to favorite it.</div>
   `;
   wireTiles();
 }
@@ -773,6 +784,11 @@ function setCat(c) { catFilter = c; renderLog(); }
 function wireTiles() {
   $('viewLog').querySelectorAll('.tile').forEach((el) => {
     const id = Number(el.dataset.id);
+    const star = el.querySelector('.tile-fav');
+    if (star) {
+      ['pointerdown', 'pointerup'].forEach((ev) => star.addEventListener(ev, (e) => e.stopPropagation()));
+      star.addEventListener('click', (e) => { e.stopPropagation(); toggleFavorite(id); });
+    }
     let timer = null, longFired = false;
     const start = () => {
       longFired = false;
@@ -864,6 +880,7 @@ function renderQtySheet() {
     <div class="slot-pills">
       ${SLOTS.map((s) => `<button class="slot-pill ${slot === s.id ? 'active' : ''}" onclick="setSlot('${s.id}')">${s.label}</button>`).join('')}
     </div>
+    ${food.id == null ? `<div class="save-sheet">${saveRowHTML(sheetState.save !== false, sheetState.category || 'protein', 'setQtySave', 'setQtyCat')}</div>` : ''}
     <button class="btn btn-primary" onclick="confirmQty()">${edit ? 'Update' : 'Log it'}</button>
   `;
 }
@@ -879,6 +896,8 @@ function halveQty() {
   renderQtySheet();
 }
 function setSlot(id) { sheetState.slot = id; renderQtySheet(); }
+function setQtySave(v) { sheetState.save = v; renderQtySheet(); }
+function setQtyCat(v) { sheetState.category = v; }
 
 function confirmQty() {
   const { food, qty, slot, edit } = sheetState;
@@ -893,11 +912,18 @@ function confirmQty() {
     net_carbs_g: round(food.net_carbs_g * qty, 1),
     entry_source: edit ? edit.entry_source : 'preset',
   };
+  const wantSave = food.id == null && sheetState.save !== false;
+  if (wantSave) row.entry_source = 'saved_custom';
 
   if (edit) {
     const before = Number(edit.protein_g) || 0;
     deleteEntry(edit.id || edit.tempId);
-    logEntry(row);
+    const logged = logEntry(row);
+    if (wantSave) saveToMyFoods([{
+      tempId: logged.tempId, name: food.name, category: sheetState.category || 'protein',
+      unit_label: 'serving', default_qty: qty,
+      protein_g: food.protein_g, calories: food.calories, net_carbs_g: food.net_carbs_g,
+    }]);
     const delta = row.protein_g - before;
     toast(delta === 0 ? 'Updated' : `${delta > 0 ? '+' : ''}${fmtG(delta)}g protein`);
   } else {
@@ -910,6 +936,70 @@ function confirmQty() {
 
 function openSheet() { $('sheetBack').classList.add('open'); $('sheet').classList.add('open'); }
 function closeSheet() { $('sheetBack').classList.remove('open'); $('sheet').classList.remove('open'); }
+
+/* ---------- SAVE TO MY FOODS ---------- */
+// Points an already-logged row at a food. Local entry first, then the queued POST body
+// if it hasn't gone out yet, then the server row if it has. Never throws.
+async function linkLogRow(tempId, foodId) {
+  foodLinks[tempId] = foodId;
+  const entry = entries.find((e) => e.tempId === tempId);
+  if (entry) { entry.food_id = foodId; saveDay(); }
+  const job = queue.find((q) => q.tempId === tempId);
+  if (job) { job.row.food_id = foodId; saveQueue(); }
+  const serverId = entry && entry.id;
+  if (!serverId) return;
+  try {
+    await api(`/nutrition-log?id=${serverId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ food_id: foodId }),
+    });
+  } catch {}
+}
+
+// items: [{ tempId, name, category, unit_label, default_qty, protein_g, calories, net_carbs_g }]
+// (macros per ONE unit). Finds-or-creates each food server-side (case-insensitive trimmed
+// name match), adds it to the picker, links the log row. A failure never touches the log.
+async function saveToMyFoods(items) {
+  const created = [];
+  let failed = 0;
+  for (const it of items) {
+    try {
+      const { food, created: isNew } = await api('/nutrition-foods', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: it.name, category: it.category,
+          unit_label: it.unit_label, default_qty: it.default_qty,
+          protein_g: it.protein_g, calories: it.calories, net_carbs_g: it.net_carbs_g,
+        }),
+      });
+      if (!food) throw new Error('no food returned');
+      if (!foods.some((f) => f.id === food.id)) {
+        foods.push(food);
+        foods.sort((a, b) => (a.sort_order - b.sort_order) || a.name.localeCompare(b.name));
+      }
+      if (isNew) created.push(food.name);
+      linkLogRow(it.tempId, food.id);
+    } catch { failed++; }
+  }
+  if (created.length || items.length > failed) {
+    lsSet('macro-foods-cache', { foods, ts: Date.now() });
+    renderLog(); renderPlans();
+  }
+  if (created.length) toast(created.length === 1 ? `Saved ${created[0]} to your foods` : `Saved ${created.length} foods to your foods`);
+  if (failed) toast(`Logged — couldn't save ${failed === 1 ? 'it' : failed + ' items'} to your foods`);
+}
+
+function saveRowHTML(checked, category, onCheck, onCat) {
+  return `<label class="save-row">
+      <input type="checkbox" ${checked ? 'checked' : ''} onchange="${onCheck}(this.checked)">
+      Save to my foods
+      ${checked ? `<select onchange="${onCat}(this.value)" aria-label="Category">
+        ${CATS.map((c) => `<option value="${c.id}" ${category === c.id ? 'selected' : ''}>${esc(c.label)}</option>`).join('')}
+      </select>` : ''}
+    </label>`;
+}
 
 /* ---------- DAY BUILDER ---------- */
 function findFood(match) {
@@ -1091,11 +1181,12 @@ function renderPasteSheet() {
       oninput="onPasteInput(this.value)">${esc(sheetState.text || '')}</textarea>
     <div class="paste-hint">Ribeye, 14 oz cooked | 98g protein | 1260 cal | 0g net carbs</div>
     ${parsed.length ? `<div class="sec-title" style="margin-top:4px">Parsed <span class="sec-note">${good.length} of ${parsed.length} ok</span></div>` : ''}
-    ${parsed.map((p) => p.ok
+    ${parsed.map((p, i) => p.ok
       ? `<div class="parsed">
           <div class="parsed-main">
             <div class="parsed-name">${esc(p.name)}</div>
             <div class="parsed-macros"><b style="color:var(--accent)">${p.protein_g}g</b> protein · ${p.calories} cal · ${p.net_carbs_g}g net carbs</div>
+            ${saveRowHTML(p.save, p.category, `setPasteSave.bind(null,${i})`, `setPasteCat.bind(null,${i})`)}
           </div>
         </div>`
       : `<div class="parsed bad">
@@ -1118,6 +1209,8 @@ function onPasteInput(text) {
   const parsed = text.split('\n').map(parseLine).filter(Boolean);
   const changed = parsed.length !== sheetState.parsed.length
     || parsed.some((p, i) => p.raw !== sheetState.parsed[i]?.raw);
+  const prev = sheetState.opts || (sheetState.opts = {});
+  parsed.forEach((p) => { const o = prev[p.raw]; p.save = o ? o.save : true; p.category = o ? o.category : 'protein'; });
   sheetState.parsed = parsed;
   if (changed) {
     const el = $('pasteArea');
@@ -1129,11 +1222,18 @@ function onPasteInput(text) {
 }
 
 function setPasteSlot(id) { sheetState.slot = id; renderPasteSheet(); }
+function rememberPasteOpt(i) {
+  const p = sheetState.parsed[i];
+  (sheetState.opts || (sheetState.opts = {}))[p.raw] = { save: p.save, category: p.category };
+}
+function setPasteSave(i, v) { sheetState.parsed[i].save = v; rememberPasteOpt(i); renderPasteSheet(); }
+function setPasteCat(i, v) { sheetState.parsed[i].category = v; rememberPasteOpt(i); }
 
 function confirmPaste() {
   const good = sheetState.parsed.filter((p) => p.ok);
+  const toSave = [];
   good.forEach((p) => {
-    logEntry({
+    const logged = logEntry({
       log_date: todayStr(),
       meal_slot: sheetState.slot,
       food_id: null,
@@ -1142,9 +1242,15 @@ function confirmPaste() {
       protein_g: p.protein_g,
       calories: p.calories,
       net_carbs_g: p.net_carbs_g,
-      entry_source: 'photo_estimate',
+      entry_source: p.save ? 'saved_custom' : 'photo_estimate',
+    });
+    if (p.save) toSave.push({
+      tempId: logged.tempId, name: p.name, category: p.category,
+      unit_label: 'serving', default_qty: 1,
+      protein_g: p.protein_g, calories: p.calories, net_carbs_g: p.net_carbs_g,
     });
   });
+  if (toSave.length) saveToMyFoods(toSave);
   closeSheet();
   toast(`+${round(good.reduce((a, p) => a + p.protein_g, 0))}g protein`);
   switchView('today');
