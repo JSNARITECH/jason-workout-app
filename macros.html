@@ -116,10 +116,6 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .tile-unit{font-size:9px;color:var(--dim);margin-top:2px;letter-spacing:0.3px;}
 .tile-fav{position:absolute;top:0;right:0;padding:6px 9px 8px 8px;font-size:15px;line-height:1;color:var(--dim);background:none;border:none;cursor:pointer;}
 .tile-fav.on{color:var(--accent);}
-.save-row{display:flex;align-items:center;gap:8px;margin-top:7px;font-size:11px;color:var(--dim2);}
-.save-row input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px;}
-.save-row select{margin-left:auto;background:var(--bg);color:var(--white);border:1px solid var(--border);border-radius:8px;padding:4px 6px;font-size:11px;font-family:inherit;}
-.save-sheet{margin:2px 0 12px;}
 .tile-flag{position:absolute;top:7px;right:30px;font-size:11px;}
 .filter-row{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-bottom:12px;padding-bottom:2px;}
 .filter-row::-webkit-scrollbar{display:none;}
@@ -259,7 +255,6 @@ const API = 'https://fnjjfnsdxibjbzldfgit.supabase.co/functions/v1';
 const PROTEIN_TARGET = 225;
 const CARB_CEILING = 30;
 const CARB_WARN = 20;
-const FOODS_TTL = 12 * 60 * 60 * 1000;
 
 const SLOTS = [
   { id: 'meal_1', label: 'Meal 1', hint: '2PM' },
@@ -494,7 +489,6 @@ async function loadFoods() {
   if (cached && cached.foods) {
     foods = cached.foods;
     renderLog();
-    if (Date.now() - (cached.ts || 0) < FOODS_TTL) return;
   }
   try {
     const data = await api('/nutrition-foods');
@@ -880,7 +874,6 @@ function renderQtySheet() {
     <div class="slot-pills">
       ${SLOTS.map((s) => `<button class="slot-pill ${slot === s.id ? 'active' : ''}" onclick="setSlot('${s.id}')">${s.label}</button>`).join('')}
     </div>
-    ${food.id == null ? `<div class="save-sheet">${saveRowHTML(sheetState.save !== false, sheetState.category || 'protein', 'setQtySave', 'setQtyCat')}</div>` : ''}
     <button class="btn btn-primary" onclick="confirmQty()">${edit ? 'Update' : 'Log it'}</button>
   `;
 }
@@ -896,8 +889,6 @@ function halveQty() {
   renderQtySheet();
 }
 function setSlot(id) { sheetState.slot = id; renderQtySheet(); }
-function setQtySave(v) { sheetState.save = v; renderQtySheet(); }
-function setQtyCat(v) { sheetState.category = v; }
 
 function confirmQty() {
   const { food, qty, slot, edit } = sheetState;
@@ -912,7 +903,7 @@ function confirmQty() {
     net_carbs_g: round(food.net_carbs_g * qty, 1),
     entry_source: edit ? edit.entry_source : 'preset',
   };
-  const wantSave = food.id == null && sheetState.save !== false;
+  const wantSave = food.id == null && isSaveable(food.name);
   if (wantSave) row.entry_source = 'saved_custom';
 
   if (edit) {
@@ -920,7 +911,7 @@ function confirmQty() {
     deleteEntry(edit.id || edit.tempId);
     const logged = logEntry(row);
     if (wantSave) saveToMyFoods([{
-      tempId: logged.tempId, name: food.name, category: sheetState.category || 'protein',
+      tempId: logged.tempId, name: food.name, category: guessCategory(food.name),
       unit_label: 'serving', default_qty: qty,
       protein_g: food.protein_g, calories: food.calories, net_carbs_g: food.net_carbs_g,
     }]);
@@ -957,6 +948,19 @@ async function linkLogRow(tempId, foodId) {
   } catch {}
 }
 
+// Saving is automatic for anything logged without a food_id. The parser's fallback name is
+// the one thing that isn't a real food.
+function isSaveable(name) { return !!name && name.trim().toLowerCase() !== 'estimated item'; }
+
+// no category picker any more — keyword guess, default protein
+function guessCategory(name) {
+  const n = name.toLowerCase();
+  if (/\b(celery|tomato|onion|coleslaw|collard|spinach|broccoli|asparagus|cauliflower|salad|lettuce|cucumber|pepper|zucchini|greens|cabbage|mushroom)/.test(n)) return 'veg';
+  if (/\b(mayo|mayonnaise|olive oil|avocado oil|butter|ghee|dijon|mustard|dressing|oil)\b/.test(n)) return 'fat';
+  if (/\b(yogurt|whey|protein powder|collagen|cottage cheese|kefir|shake)\b/.test(n)) return 'supplement';
+  return 'protein';
+}
+
 // items: [{ tempId, name, category, unit_label, default_qty, protein_g, calories, net_carbs_g }]
 // (macros per ONE unit). Finds-or-creates each food server-side (case-insensitive trimmed
 // name match), adds it to the picker, links the log row. A failure never touches the log.
@@ -989,16 +993,6 @@ async function saveToMyFoods(items) {
   }
   if (created.length) toast(created.length === 1 ? `Saved ${created[0]} to your foods` : `Saved ${created.length} foods to your foods`);
   if (failed) toast(`Logged — couldn't save ${failed === 1 ? 'it' : failed + ' items'} to your foods`);
-}
-
-function saveRowHTML(checked, category, onCheck, onCat) {
-  return `<label class="save-row">
-      <input type="checkbox" ${checked ? 'checked' : ''} onchange="${onCheck}(this.checked)">
-      Save to my foods
-      ${checked ? `<select onchange="${onCat}(this.value)" aria-label="Category">
-        ${CATS.map((c) => `<option value="${c.id}" ${category === c.id ? 'selected' : ''}>${esc(c.label)}</option>`).join('')}
-      </select>` : ''}
-    </label>`;
 }
 
 /* ---------- DAY BUILDER ---------- */
@@ -1181,12 +1175,11 @@ function renderPasteSheet() {
       oninput="onPasteInput(this.value)">${esc(sheetState.text || '')}</textarea>
     <div class="paste-hint">Ribeye, 14 oz cooked | 98g protein | 1260 cal | 0g net carbs</div>
     ${parsed.length ? `<div class="sec-title" style="margin-top:4px">Parsed <span class="sec-note">${good.length} of ${parsed.length} ok</span></div>` : ''}
-    ${parsed.map((p, i) => p.ok
+    ${parsed.map((p) => p.ok
       ? `<div class="parsed">
           <div class="parsed-main">
             <div class="parsed-name">${esc(p.name)}</div>
             <div class="parsed-macros"><b style="color:var(--accent)">${p.protein_g}g</b> protein · ${p.calories} cal · ${p.net_carbs_g}g net carbs</div>
-            ${saveRowHTML(p.save, p.category, `setPasteSave.bind(null,${i})`, `setPasteCat.bind(null,${i})`)}
           </div>
         </div>`
       : `<div class="parsed bad">
@@ -1209,8 +1202,6 @@ function onPasteInput(text) {
   const parsed = text.split('\n').map(parseLine).filter(Boolean);
   const changed = parsed.length !== sheetState.parsed.length
     || parsed.some((p, i) => p.raw !== sheetState.parsed[i]?.raw);
-  const prev = sheetState.opts || (sheetState.opts = {});
-  parsed.forEach((p) => { const o = prev[p.raw]; p.save = o ? o.save : true; p.category = o ? o.category : 'protein'; });
   sheetState.parsed = parsed;
   if (changed) {
     const el = $('pasteArea');
@@ -1222,12 +1213,6 @@ function onPasteInput(text) {
 }
 
 function setPasteSlot(id) { sheetState.slot = id; renderPasteSheet(); }
-function rememberPasteOpt(i) {
-  const p = sheetState.parsed[i];
-  (sheetState.opts || (sheetState.opts = {}))[p.raw] = { save: p.save, category: p.category };
-}
-function setPasteSave(i, v) { sheetState.parsed[i].save = v; rememberPasteOpt(i); renderPasteSheet(); }
-function setPasteCat(i, v) { sheetState.parsed[i].category = v; rememberPasteOpt(i); }
 
 function confirmPaste() {
   const good = sheetState.parsed.filter((p) => p.ok);
@@ -1242,10 +1227,10 @@ function confirmPaste() {
       protein_g: p.protein_g,
       calories: p.calories,
       net_carbs_g: p.net_carbs_g,
-      entry_source: p.save ? 'saved_custom' : 'photo_estimate',
+      entry_source: isSaveable(p.name) ? 'saved_custom' : 'photo_estimate',
     });
-    if (p.save) toSave.push({
-      tempId: logged.tempId, name: p.name, category: p.category,
+    if (isSaveable(p.name)) toSave.push({
+      tempId: logged.tempId, name: p.name, category: guessCategory(p.name),
       unit_label: 'serving', default_qty: 1,
       protein_g: p.protein_g, calories: p.calories, net_carbs_g: p.net_carbs_g,
     });
