@@ -26,7 +26,8 @@
 4. **Dual-layer rest timer** — Smart REST_DEFAULTS calculated from exercise type + manual overrides
 5. **Location-scoped data** — Notes, PRs, workouts filtered by Home Gym (HG) / Lifetime Fitness (LT)
 6. **Two apps, not one** — the macro tracker is a separate file linked by nav rather than a fifth tab, so its ~1100 lines never collide with the workout app's globals (§6.5)
-7. **Edge functions for new surfaces** — `macros.html` carries no anon key and reaches Supabase only through `nutrition-*` functions using the service role; index.html's direct `/rest/v1/` calls are the older pattern
+7. **Edge functions for new surfaces** — `macros.html` reaches data only through `nutrition-*` functions using the service role (it holds just the publishable key, for sign-in); index.html's direct `/rest/v1/` calls with the anon key are the older pattern
+8. **Signed-in access for the macro tracker** — magic-link / emailed-code sign-in; every `nutrition-*` function checks the session *and* that its email is in `app_allowed_users` (§7)
 
 ---
 
@@ -109,6 +110,13 @@ is_favorite   (bool)       — surfaces in the Favorites group; toggled by long-
 carb_flag     (text)       — warning shown in the log sheet (mussels, oysters)
 sort_order    (int)        — ordering within a category
 RLS on, NO anon policies — reachable only through the nutrition-* edge functions.
+```
+
+#### `app_allowed_users` Table (Macro Tracker auth)
+```
+email         (text, PK)   — lowercase; who may call the nutrition-* functions
+RLS on, NO policies — read only by the service role inside _shared/auth.ts.
+Add a person: insert their email. The repo is public, so emails live here, not in code.
 ```
 
 #### `nutrition_log` Table (Macro Tracker)
@@ -518,8 +526,25 @@ bold, bullets and `1.` numbering are stripped from names; `protein: 52g` order a
 
 Source lives in `supabase/functions/nutrition-*/index.ts`; all five are registered
 `verify_jwt = false` in `config.toml` and authenticate to PostgREST with
-`SUPABASE_SERVICE_ROLE_KEY` **server-side**. The macro tracker client carries no
-anon key at all — unlike index.html, which still calls `/rest/v1/` directly.
+`SUPABASE_SERVICE_ROLE_KEY` **server-side** — so the functions themselves are the
+access control. Each calls `requireUser()` from `supabase/functions/_shared/auth.ts`
+right after the CORS preflight:
+- Bearer token → `GET /auth/v1/user` → email must be in `app_allowed_users`
+  (a valid session alone is not enough: anyone can request a magic link). Verdicts are
+  cached per token for 5 min. Bad/expired token → 401, unlisted email → 403.
+- `ENFORCE_AUTH` in `_shared/auth.ts`: `false` = rollout stage (no token still allowed,
+  a presented token is fully checked); `true` = no token → 401.
+- **Deploying:** each function ships with the shared module. Via the Supabase MCP, pass
+  files `nutrition-X/index.ts` + `_shared/auth.ts` with `entrypoint_path:
+  nutrition-X/index.ts` (the `../_shared` import resolves). A change to `auth.ts` means
+  redeploying all five.
+
+Client side (`macros.html`): supabase-js is loaded async from jsDelivr, pinned with an
+SRI hash, so first paint never waits on the CDN. `api()` attaches the session token;
+any 401/403 opens the sign-in sheet (link or 6-digit code — the code exists because a
+link tapped in a mail app can open in a different browser than the one you log from).
+The magic link redirects to `/macros.html`, which must be in Supabase Auth → URL
+Configuration → Redirect URLs.
 
 | Function | Method | Contract |
 |---|---|---|
@@ -643,6 +668,8 @@ macro-composer                  // { meal_1, shake, meal_2, snack } day-builder 
 macro-daytype-YYYY-MM-DD        // 'training' | 'rest' — picks which calorie target applies
 macro-targets-cache             // last nutrition-targets response
 macro-trend-N                   // last nutrition-history response per range
+macro-auth                      // supabase-js session (storageKey) — access + refresh token
+macro-auth-email                // last email typed into the sign-in sheet
 ```
 
 ---

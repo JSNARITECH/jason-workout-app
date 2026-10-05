@@ -1,16 +1,20 @@
+import { requireUser, CORS_ALLOW_HEADERS } from '../_shared/auth.ts';
+
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
 const SERVICE_ROLE = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Allow-Headers': CORS_ALLOW_HEADERS,
 };
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: CORS_HEADERS });
+  const denied = await requireUser(req, CORS_HEADERS);
+  if (denied) return denied;
   if (req.method !== 'GET') return new Response('Method not allowed', { status: 405, headers: CORS_HEADERS });
 
   const url = new URL(req.url);

@@ -206,6 +206,9 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 .sync-pill{position:fixed;top:10px;left:50%;transform:translateX(-50%) translateY(-60px);background:var(--red-dim);border:1px solid rgba(255,77,77,0.4);color:var(--red);padding:7px 14px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:1px;z-index:300;transition:transform 0.3s;display:flex;align-items:center;gap:8px;cursor:pointer;}
 .sync-pill.show{transform:translateX(-50%) translateY(0);}
+.auth-input{width:100%;background:var(--card);border:1px solid var(--border2);border-radius:12px;color:var(--white);padding:13px 12px;font-size:15px;font-family:'DM Sans',sans-serif;margin:8px 0 10px;}
+.auth-banner{display:block;width:100%;margin-bottom:12px;padding:10px 12px;border-radius:12px;border:1px dashed var(--border2);background:none;color:var(--dim2);font-size:11px;font-weight:600;text-align:left;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.link-btn{background:none;border:none;color:var(--dim2);font:inherit;letter-spacing:inherit;text-decoration:underline;cursor:pointer;padding:0;}
 .version-foot{text-align:center;font-size:8px;color:var(--dim);letter-spacing:1.5px;padding:20px 0 2px;}
 </style>
 </head>
@@ -234,6 +237,7 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
     <div class="view" id="viewPlans"></div>
     <div class="view" id="viewTrend"></div>
     <div class="version-foot" id="versionBadge"></div>
+    <div class="version-foot" id="authFoot" style="padding-top:4px"></div>
   </div>
 </div>
 
@@ -408,10 +412,142 @@ function renderSyncPill() {
   }
 }
 
+/* ---------- auth (magic link or emailed code) ---------- */
+// The nutrition-* functions run with the service role, so they check who's calling:
+// a Supabase session whose email is in app_allowed_users. The publishable key below is
+// public by design — it identifies the project, it grants nothing on its own.
+const SUPABASE_URL = 'https://fnjjfnsdxibjbzldfgit.supabase.co';
+const SUPABASE_PUBLISHABLE = 'sb_publishable_i82l0p0isy_TYlXNq5WqlA_fikvd5K6';
+const SUPABASE_JS = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.min.js';
+const SUPABASE_JS_SRI = 'sha384-WgXwGL6fUsYJWNaKJgVbrJKGRQwc1vieh2oy4kw9nXqpNDz3tdSsqEYUgeHD/NuF';
+
+let sb = null;
+let authEmail = null;
+let authReady = false;
+let signInPrompted = false;
+
+// Loaded without blocking first paint — the cached log must show instantly in the kitchen
+// even when the CDN is slow. Resolves null offline; api() then goes out unauthenticated.
+const sbReady = new Promise((resolve) => {
+  const el = document.createElement('script');
+  el.src = SUPABASE_JS;
+  el.integrity = SUPABASE_JS_SRI;
+  el.crossOrigin = 'anonymous';
+  el.onload = () => {
+    try {
+      sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE, {
+        auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'implicit', storageKey: 'macro-auth' },
+      });
+      sb.auth.onAuthStateChange(onAuthChange);
+    } catch { sb = null; }
+    resolve(sb);
+  };
+  el.onerror = () => resolve(null);
+  document.head.appendChild(el);
+  setTimeout(() => resolve(sb), 8000);
+});
+
+function onAuthChange(event, session) {
+  const wasSignedIn = !!authEmail;
+  authEmail = session?.user?.email || null;
+  authReady = true;
+  renderAuthFoot();
+  if (currentView === 'today') renderToday();
+  if (!wasSignedIn && authEmail && event === 'SIGNED_IN') {
+    // don't call back into supabase-js from inside its own callback
+    setTimeout(() => {
+      signInPrompted = false;
+      if (sheetState?.auth) closeSheet();
+      toast('Signed in');
+      loadFoods(); loadTargets().then(renderHeader); loadToday(); flushQueue();
+    }, 0);
+  }
+}
+
+async function authHeader() {
+  const client = await sbReady;
+  if (!client) return {};
+  try {
+    const { data } = await client.auth.getSession();
+    const token = data.session?.access_token;
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  } catch { return {}; }
+}
+
+function renderAuthFoot() {
+  const el = $('authFoot');
+  if (!el || !authReady) return;
+  el.innerHTML = authEmail
+    ? `${esc(authEmail)} · <button class="link-btn" onclick="signOut()">Sign out</button>`
+    : `<button class="link-btn" onclick="openSignIn()">Sign in</button>`;
+}
+
+function promptSignIn(status) {
+  if (signInPrompted || $('sheet').classList.contains('open')) return;
+  signInPrompted = true;
+  openSignIn(status === 403
+    ? "That account isn't allowed to use this tracker. Sign in with your own email."
+    : 'Sign in to sync your log. Anything you log meanwhile is kept and sent once you\'re in.');
+}
+
+function openSignIn(note = null) {
+  sheetState = { auth: true, sent: false, email: authEmail || lsGet('macro-auth-email', ''), note, error: null };
+  renderSignIn();
+  openSheet();
+}
+
+function renderSignIn() {
+  const s = sheetState;
+  $('sheetBody').innerHTML = `
+    <div class="sheet-title">Sign in</div>
+    <div class="sheet-sub">${esc(s.note || "We'll email you a sign-in link. No password.")}</div>
+    <input class="auth-input" id="authEmail" type="email" inputmode="email" autocomplete="email" placeholder="Email" value="${esc(s.email)}">
+    <button class="btn btn-primary" onclick="sendMagicLink()">${s.sent ? 'Resend link' : 'Email me a link'}</button>
+    ${s.sent ? `
+      <div class="paste-hint">Sent to ${esc(s.email)}. Tap the link in the email — or, if it opens in another browser, type the code from the same email here:</div>
+      <input class="auth-input" id="authCode" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="6-digit code">
+      <button class="btn" onclick="verifyCode()">Verify code</button>` : ''}
+    ${s.error ? `<div class="flag-warn" style="margin-top:12px">${esc(s.error)}</div>` : ''}
+  `;
+}
+
+async function sendMagicLink() {
+  const email = ($('authEmail')?.value || '').trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { sheetState.error = 'Enter your email address.'; renderSignIn(); return; }
+  const client = await sbReady;
+  if (!client) { sheetState.error = "Can't reach the sign-in service — try again with signal."; renderSignIn(); return; }
+  sheetState.email = email;
+  lsSet('macro-auth-email', email);
+  const { error } = await client.auth.signInWithOtp({
+    email, options: { emailRedirectTo: location.origin + location.pathname },
+  });
+  sheetState.sent = !error;
+  sheetState.error = error ? error.message : null;
+  renderSignIn();
+}
+
+async function verifyCode() {
+  const token = ($('authCode')?.value || '').replace(/\s/g, '');
+  if (!token) return;
+  const client = await sbReady;
+  if (!client) return;
+  const { error } = await client.auth.verifyOtp({ email: sheetState.email, token, type: 'email' });
+  if (error) { sheetState.error = error.message; renderSignIn(); }
+  // success closes the sheet via onAuthChange
+}
+
+async function signOut() {
+  const client = await sbReady;
+  if (client) await client.auth.signOut();
+  toast('Signed out');
+}
+
 // kitchen signal can hang a request for minutes; without a timeout one stuck POST
 // holds the whole flush loop (and every save behind it)
 async function api(path, opts = {}) {
-  const res = await fetch(`${API}${path}`, { ...opts, signal: AbortSignal.timeout(15000) });
+  const headers = { ...(opts.headers || {}), ...(await authHeader()) };
+  const res = await fetch(`${API}${path}`, { ...opts, headers, signal: AbortSignal.timeout(15000) });
+  if (res.status === 401 || res.status === 403) promptSignIn(res.status);
   if (!res.ok) throw new Error(`${res.status} ${await res.text()}`);
   return res.json();
 }
@@ -679,6 +815,7 @@ function renderToday() {
   }).join('');
 
   $('viewToday').innerHTML = `
+    ${authReady && sb && !authEmail ? '<button class="auth-banner" onclick="openSignIn()">🔒 Sign in to keep your log private →</button>' : ''}
     <div class="daytype-row">
       <span class="daytype-label">Day</span>
       <button class="daytype-btn ${dayType === 'training' ? 'active' : ''}" onclick="setDayType('training')">Training</button>

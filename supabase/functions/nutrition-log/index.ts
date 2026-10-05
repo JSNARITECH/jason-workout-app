@@ -1,10 +1,12 @@
+import { requireUser, CORS_ALLOW_HEADERS } from '../_shared/auth.ts';
+
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
 const SERVICE_ROLE = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'POST, PATCH, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Allow-Headers': CORS_ALLOW_HEADERS,
 };
 
 const MEAL_SLOTS = new Set(['meal_1', 'meal_2', 'shake', 'snack']);
@@ -12,6 +14,8 @@ const ENTRY_SOURCES = new Set(['preset', 'photo_estimate', 'manual', 'saved_cust
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: CORS_HEADERS });
+  const denied = await requireUser(req, CORS_HEADERS);
+  if (denied) return denied;
 
   if (req.method === 'POST') {
     let body: Record<string, unknown>;
