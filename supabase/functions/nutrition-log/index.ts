@@ -3,12 +3,12 @@ const SERVICE_ROLE = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'POST, DELETE, OPTIONS',
+  'Access-Control-Allow-Methods': 'POST, PATCH, DELETE, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type',
 };
 
 const MEAL_SLOTS = new Set(['meal_1', 'meal_2', 'shake', 'snack']);
-const ENTRY_SOURCES = new Set(['preset', 'photo_estimate', 'manual']);
+const ENTRY_SOURCES = new Set(['preset', 'photo_estimate', 'manual', 'saved_custom']);
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: CORS_HEADERS });
@@ -73,6 +73,30 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: e.message }), {
         status: 500, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
       });
+    }
+  }
+
+  // PATCH ?id=123  body: { food_id: number }  — link a log row to a saved food
+  if (req.method === 'PATCH') {
+    const id = new URL(req.url).searchParams.get('id');
+    const json = (b: unknown, status = 200) =>
+      new Response(JSON.stringify(b), { status, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } });
+    if (!id) return json({ error: 'Missing id' }, 400);
+    try {
+      const { food_id } = await req.json();
+      if (!Number.isInteger(food_id)) return json({ error: 'food_id must be an integer' }, 400);
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/nutrition_log?id=eq.${encodeURIComponent(id)}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json', apikey: SERVICE_ROLE,
+          Authorization: `Bearer ${SERVICE_ROLE}`, Prefer: 'return=representation',
+        },
+        body: JSON.stringify({ food_id }),
+      });
+      if (!res.ok) return json({ error: 'Supabase error', detail: await res.text() }, 502);
+      return json({ entry: (await res.json())[0] ?? null });
+    } catch (e) {
+      return json({ error: e.message }, 400);
     }
   }
 
