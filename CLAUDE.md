@@ -476,12 +476,18 @@ logged entry is tappable and reopens in the stepper with **"Ate half"** and
    and retries on `online` and on visibility change.
 4. `loadToday()` treats the server as truth for persisted rows but preserves local
    entries still sitting in the queue.
+5. Deletes are queued too (`macro-deletes`, `flushDeletes()`): a failed DELETE stays
+   pending and `loadToday()` hides those ids instead of resurrecting them. A row
+   deleted or edited while its POST was still in flight is deleted server-side when
+   the POST returns, so it can't orphan and inflate history. `api()` times out at 15s.
 
 ### Paste from Claude
 Accepts lines like `Ribeye, 14 oz cooked | 98g protein | 1260 cal | 0g net carbs`,
 forgiving about spacing/order/bullets, several at once, logged as
 `entry_source = 'photo_estimate'`. **A protein figure is required** for a line to
 parse — otherwise stray prose ("1260 calories of nothing useful") logs itself as food.
+Lines mentioning a total/subtotal are skipped (they double-count the day); markdown
+bold, bullets and `1.` numbering are stripped from names; `protein: 52g` order also parses.
 
 ---
 
@@ -632,6 +638,7 @@ exercise-history                // Completed sessions
 macro-foods-cache               // { foods, ts } — 12h TTL, app opens instantly from this
 macro-day-YYYY-MM-DD            // today's entries incl. optimistic ones not yet synced
 macro-queue                     // [{ tempId, row }] writes awaiting POST — drives the retry pill
+macro-deletes                   // [id] server rows awaiting DELETE — also counted in the retry pill
 macro-composer                  // { meal_1, shake, meal_2, snack } day-builder picks
 macro-daytype-YYYY-MM-DD        // 'training' | 'rest' — picks which calorie target applies
 macro-targets-cache             // last nutrition-targets response

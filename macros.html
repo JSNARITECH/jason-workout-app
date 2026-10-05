@@ -399,17 +399,19 @@ function saveQueue() { lsSet('macro-queue', queue); renderSyncPill(); }
 
 function renderSyncPill() {
   const pill = $('syncPill');
-  const failed = queue.length;
+  const failed = queue.length + deletes.length;
   if (failed > 0) {
-    $('syncTxt').textContent = `${failed} ${failed === 1 ? 'entry' : 'entries'} not synced — tap to retry`;
+    $('syncTxt').textContent = `${failed} ${failed === 1 ? 'change' : 'changes'} not synced — tap to retry`;
     pill.classList.add('show');
   } else {
     pill.classList.remove('show');
   }
 }
 
+// kitchen signal can hang a request for minutes; without a timeout one stuck POST
+// holds the whole flush loop (and every save behind it)
 async function api(path, opts = {}) {
-  const res = await fetch(`${API}${path}`, opts);
+  const res = await fetch(`${API}${path}`, { ...opts, signal: AbortSignal.timeout(15000) });
   if (!res.ok) throw new Error(`${res.status} ${await res.text()}`);
   return res.json();
 }
@@ -434,7 +436,8 @@ let flushAgain = false;
 
 async function flushQueue(manual = false) {
   if (flushing) { flushAgain = true; return; }
-  if (!queue.length) { if (manual) toast('Synced'); return; }
+  await flushDeletes();
+  if (!queue.length) { if (manual) toast(deletes.length ? 'Still offline' : 'Synced'); return; }
 
   flushing = true;
   try {
@@ -451,6 +454,9 @@ async function flushQueue(manual = false) {
           queue = queue.filter((q) => q.tempId !== job.tempId);
           const idx = entries.findIndex((e) => e.tempId === job.tempId);
           if (idx >= 0) entries[idx] = { ...entry, tempId: job.tempId }; // keep tempId so a later food link can find the row
+          // deleted or edited while this POST was in the air — the server row is now an orphan
+          // that would silently inflate history, so remove it too
+          else if (entry?.id) queueDelete(entry.id);
           saveDay(); saveQueue();
           // a "save to my foods" result can land while this POST was already in flight
           const linked = foodLinks[job.tempId];
@@ -467,7 +473,8 @@ async function flushQueue(manual = false) {
   }
 
   renderToday();
-  if (manual) toast(queue.length ? 'Still offline' : 'Synced');
+  await flushDeletes();
+  if (manual) toast(queue.length || deletes.length ? 'Still offline' : 'Synced');
 }
 
 async function deleteEntry(idOrTemp) {
@@ -477,9 +484,32 @@ async function deleteEntry(idOrTemp) {
   entries.splice(idx, 1);
   queue = queue.filter((q) => q.tempId !== entry.tempId);
   saveDay(); saveQueue(); renderToday();
-  if (entry.id) {
-    try { await api(`/nutrition-log?id=${entry.id}`, { method: 'DELETE' }); }
-    catch { toast('Delete failed — will retry on reload'); }
+  if (entry.id) queueDelete(entry.id);
+}
+
+// Deletes are queued like inserts: a failed DELETE used to vanish locally and then
+// come back from the server on the next load.
+let deletes = [];
+let deleting = false;
+function saveDeletes() { lsSet('macro-deletes', deletes); renderSyncPill(); }
+function queueDelete(id) {
+  if (!deletes.includes(id)) deletes.push(id);
+  saveDeletes();
+  flushDeletes();
+}
+async function flushDeletes() {
+  if (deleting || !deletes.length) return;
+  deleting = true;
+  try {
+    for (const id of [...deletes]) {
+      try {
+        await api(`/nutrition-log?id=${id}`, { method: 'DELETE' });
+        deletes = deletes.filter((d) => d !== id);
+        saveDeletes();
+      } catch {}
+    }
+  } finally {
+    deleting = false;
   }
 }
 
@@ -517,7 +547,8 @@ async function loadToday() {
     const data = await api(`/nutrition-today?date=${todayStr()}`);
     // server owns persisted rows; keep local entries that never made it up
     const unsynced = entries.filter((e) => e.tempId && queue.some((q) => q.tempId === e.tempId));
-    entries = [...(data.entries || []), ...unsynced];
+    const server = (data.entries || []).filter((e) => !deletes.includes(e.id));
+    entries = [...server, ...unsynced];
     saveDay();
   } catch {}
   renderToday();
@@ -1131,12 +1162,25 @@ function logComposedDay() {
 }
 
 /* ---------- PASTE FROM CLAUDE ---------- */
+// "98g protein" and "protein: 98g" both count; the match index marks where the name ends
+function grabMacro(line, word, unit) {
+  const before = line.match(new RegExp(`~?([\\d.]+)\\s*${unit}\\s*(?:of\\s+)?${word}`, 'i'));
+  if (before) return before;
+  return line.match(new RegExp(`${word}\\s*[:=-]?\\s*~?([\\d.]+)\\s*${unit}`, 'i'));
+}
+
 function parseLine(raw) {
-  const line = raw.replace(/^\s*[-•*]\s*/, '').trim();
+  const line = raw
+    .replace(/\*\*|__|`/g, '')                  // markdown bold / code
+    .replace(/^\s*(?:[-•*]|\d+[.)])\s*/, '')    // bullets and "1." / "1)" numbering
+    .trim();
   if (!line) return null;
-  const protein = line.match(/([\d.]+)\s*g?\s*(?:of\s+)?protein/i);
-  const cals = line.match(/([\d.]+)\s*(?:kcal|cal(?:orie)?s?)\b/i);
-  const carbs = line.match(/([\d.]+)\s*g?\s*(?:net\s*)?carb/i);
+  // Claude's summaries end with a "Total: 204g protein" line — logging it double-counts the day
+  if (/\b(?:sub|grand\s*|day\s*|daily\s*)?totals?\b/i.test(line)) return { raw: line, ok: false, total: true };
+
+  const protein = grabMacro(line, 'protein', 'g?');
+  const cals = grabMacro(line, '(?:kcal|cal(?:orie)?s?)\\b', '');
+  const carbs = grabMacro(line, '(?:net\\s*)?carbs?', 'g?');
   // a protein figure is what makes a line a food entry — without it, prose like
   // "1260 calories of nothing useful" would log itself as a real item
   if (!protein) return { raw: line, ok: false };
@@ -1148,7 +1192,7 @@ function parseLine(raw) {
     const cut = Math.min(...[protein, cals, carbs].filter(Boolean).map((m) => m.index));
     name = line.slice(0, cut);
   }
-  name = name.replace(/[,|\s]+$/, '').trim();
+  name = name.replace(/[\s,|:;~—–-]+$/, '').trim();
 
   return {
     raw: line, ok: true, name: name || 'Estimated item',
@@ -1184,7 +1228,7 @@ function renderPasteSheet() {
         </div>`
       : `<div class="parsed bad">
           <div class="parsed-main">
-            <div class="parsed-name" style="color:var(--red)">Couldn't read this line</div>
+            <div class="parsed-name" style="color:${p.total ? 'var(--dim2)' : 'var(--red)'}">${p.total ? 'Skipped — looks like a total' : "Couldn't read this line"}</div>
             <div class="parsed-macros">${esc(p.raw)}</div>
           </div>
         </div>`).join('')}
@@ -1387,6 +1431,7 @@ function renderHeader() {
 /* ---------- init ---------- */
 async function init() {
   queue = lsGet('macro-queue', []);
+  deletes = lsGet('macro-deletes', []);
   composer = { meal_1: null, shake: null, meal_2: null, snack: null, ...lsGet('macro-composer', {}) };
   renderSyncPill();
   renderHeader();
