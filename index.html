@@ -149,6 +149,9 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .ex-card.pr-ready{border-color:#ff8c00!important;animation:prReadyGlow 2s ease-in-out infinite;}
 @keyframes prReadyGlow{0%,100%{box-shadow:0 0 8px 2px rgba(255,140,0,0.45),0 0 22px 5px rgba(255,60,0,0.18);}50%{box-shadow:0 0 18px 7px rgba(255,140,0,0.75),0 0 45px 14px rgba(255,60,0,0.32);}}
 .pr-ready-badge{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:800;letter-spacing:1px;background:rgba(255,140,0,0.15);color:#ff8c00;padding:2px 7px;border-radius:8px;border:1px solid rgba(255,140,0,0.4);flex-shrink:0;}
+.rot-inline{display:flex;flex-wrap:wrap;align-items:center;gap:7px;background:var(--purple-dim);border:1px solid rgba(192,132,252,0.3);border-radius:9px;padding:8px 10px;margin-bottom:10px;font-size:11px;color:var(--purple);}
+.rot-inline span{flex:1 1 100%;}
+.rot-keep{background:none;border:1px solid var(--border2);color:var(--dim2);border-radius:7px;padding:5px 9px;font-size:10px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;}
 .rotation-flag{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:700;letter-spacing:1px;background:var(--purple-dim);color:var(--purple);padding:2px 7px;border-radius:8px;border:1px solid rgba(192,132,252,0.25);flex-shrink:0;}
 .ex-chips{display:flex;gap:4px;margin-top:4px;flex-wrap:wrap;}
 .chip{font-size:9px;padding:2px 6px;border-radius:9px;font-weight:700;}
@@ -621,6 +624,39 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .kb-btn{min-width:32px;height:30px;padding:0 7px;border-radius:7px;border:1px solid var(--border2);background:none;color:var(--dim2);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;}
 .kb-btn.kb-plus{color:var(--accent);border-color:rgba(232,255,71,0.35);}
 .kb-btn.kb-on{background:var(--green-dim);border-color:rgba(77,255,170,0.4);color:var(--green);}
+.kb-start{width:100%;margin-top:10px;padding:11px;border-radius:10px;border:1px solid rgba(232,255,71,0.45);background:var(--accent-dim);color:var(--accent);font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.kbt-overlay{position:fixed;inset:0;z-index:400;background:rgba(8,8,8,0.97);display:flex;align-items:center;justify-content:center;padding:16px;}
+.kbt-box{width:100%;max-width:420px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px;}
+.kbt-total{width:100%;height:4px;background:var(--card2);border-radius:3px;overflow:hidden;margin-bottom:8px;}
+.kbt-total div{height:100%;background:var(--dim2);}
+.kbt-phase{font-size:11px;letter-spacing:3px;font-weight:700;color:var(--dim2);}
+.kbt-work .kbt-phase{color:var(--accent);}
+.kbt-rest .kbt-phase{color:var(--blue);}
+.kbt-move{font-family:'Bebas Neue',sans-serif;font-size:34px;line-height:1.05;color:var(--white);}
+.kbt-clock{font-family:'Bebas Neue',sans-serif;font-size:120px;line-height:1;color:var(--white);font-variant-numeric:tabular-nums;}
+.kbt-work .kbt-clock{color:var(--accent);}
+.kbt-stepbar{width:80%;height:6px;background:var(--card2);border-radius:4px;overflow:hidden;}
+.kbt-stepbar div{height:100%;background:var(--accent);transition:width 0.25s linear;}
+.kbt-rest .kbt-stepbar div{background:var(--blue);}
+.kbt-sub{font-size:13px;color:var(--dim2);}
+.kbt-next{font-size:12px;color:var(--white);background:var(--card2);border:1px solid var(--border2);border-radius:9px;padding:7px 12px;}
+.kbt-ctrls{display:flex;gap:8px;width:100%;margin-top:6px;}
+.kbt-ctrl{flex:1;padding:14px 0;border-radius:11px;border:1px solid var(--border2);background:var(--card);color:var(--white);font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.kbt-chips{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;}
+.kbt-chip{padding:7px 12px;border-radius:18px;border:1px solid var(--border2);background:none;color:var(--dim2);font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.kbt-chip.on{border-color:var(--accent);color:var(--accent);}
+.kbt-main{width:100%;padding:16px;border-radius:12px;border:none;background:var(--accent);color:#000;font-size:16px;font-weight:800;letter-spacing:1px;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:6px;}
+.kbt-link{background:none;border:none;color:var(--dim2);font-size:12px;cursor:pointer;padding:8px;}
+.kb-hist{margin-top:10px;}
+.kb-dots{display:grid;grid-template-columns:repeat(14,1fr);gap:4px;}
+.kb-dot{display:inline-block;aspect-ratio:1;min-width:8px;border-radius:3px;background:var(--card2);border:1px solid var(--border2);}
+.kb-dot.part{background:var(--accent-dim);border-color:rgba(232,255,71,0.45);}
+.kb-dot.full{background:var(--green);border-color:var(--green);}
+.kb-dot.today{outline:1px solid var(--white);outline-offset:1px;}
+.kb-hist-meta{display:flex;gap:12px;flex-wrap:wrap;margin-top:7px;font-size:9px;color:var(--dim2);letter-spacing:0.5px;}
+.kb-hist-meta strong{color:var(--white);}
+.kb-legend{margin-left:auto;display:flex;align-items:center;gap:4px;}
+.kb-legend .kb-dot{width:8px;height:8px;min-width:8px;}
 .kb-foot{font-size:9px;color:var(--dim);margin-top:8px;line-height:1.35;}
 .vf-row{display:flex;gap:11px;align-items:center;margin-top:8px;background:var(--card2);border:1px solid var(--border2);border-left-width:3px;border-radius:10px;padding:9px 11px;}
 .vf-row.vf-empty{font-size:10px;color:var(--dim2);}
@@ -773,7 +809,7 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 // ============================================================
 // APP VERSION — update this on every release
 // ============================================================
-const APP_VERSION = 'v12.6';
+const APP_VERSION = 'v12.7';
 
 // ============================================================
 // WEEKLY SCHEDULE
@@ -2129,8 +2165,8 @@ function alcoholFreeDays() {
 
 // ============================================================
 // FEAT-20: DAILY KETTLEBELL — 50-rep finisher circuit, every day, logged to daily_habits
-// Rotational swings were swapped for suitcase carries (twist + ballistic load is the
-// classic lower-back flare pattern). Swings drop to 25 on heavy leg days (Tue/Sun),
+// Rotational swings were dropped (twist + ballistic load is the classic lower-back
+// flare pattern); Jason's own single-arm kettlebell knee raise replaced the carry (v12.7). Swings drop to 25 on heavy leg days (Tue/Sun),
 // presses stay light on the main pressing days (Mon/Thu).
 // ============================================================
 const KB_MOVES = [
@@ -2138,13 +2174,13 @@ const KB_MOVES = [
   { id:'atw',   name:'Around the World', target:50, step:10, bell:'light', cue:'Pass around the waist with hips locked still. Switch direction every 10.' },
   { id:'press', name:'Horizontal Press', target:50, step:10, bell:'light', cue:'Floor press or squeeze press, slow lower. Split across both arms.' },
   { id:'swing', name:'Swings',           target:50, step:10, bell:'heavy', cue:'Sets of 10. Hike, snap the hips, float to chest height. If your low back takes over, stop.' },
-  { id:'carry', name:'Suitcase Carry',   target:5,  step:1,  bell:'heavy', unit:'× 30m', cue:'Replaces rotational swings — anti-rotation core without the twist. Alternate hands each trip.' },
+  { id:'march', name:'Single-Arm Knee Raise', target:50, step:5, bell:'light', cue:'Bell in one hand, stand tall, drive each knee up — 25 per leg, then switch the bell to the other hand. Ribs down, no leaning.' },
 ];
 let kbOpen = null; // null = auto (open until done)
 
 function kbBells() {
   try { const v = JSON.parse(localStorage.getItem('kb-bells') || 'null'); if (v && v.heavy && v.light) return v; } catch(e) {}
-  return { heavy: 35, light: 20 };
+  return { heavy: 25, light: 20 }; // heaviest bell at the home gym is 25 lb
 }
 function kbDow(date) { return new Date(date + 'T12:00:00').getDay(); }
 // Day-aware targets: legs Tue/Sun already load the hinge via RDLs
@@ -2159,7 +2195,12 @@ function kbDayNote(m, date) {
   return '';
 }
 function kbLogFor(date) { return (dailyHabits[date] || {}).kettlebell_log || null; }
-function kbRepsOf(log, id) { return (log && log.reps && +log.reps[id]) || 0; }
+function kbRepsOf(log, id) {
+  if (!log || !log.reps) return 0;
+  // v12.7: the carry slot became the knee raise — a finished legacy carry counts as a finished knee raise
+  if (id === 'march' && log.reps.march === undefined && +log.reps.carry >= 5) return 50;
+  return +log.reps[id] || 0;
+}
 function kbProgressScore(log) {
   if (!log || !log.reps) return 0;
   return Object.values(log.reps).reduce((a, b) => a + (+b || 0), 0);
@@ -2209,6 +2250,228 @@ function kbToggleOpen() {
   mountDashboard();
 }
 
+
+// ============================================================
+// FEAT-22: GUIDED KETTLEBELL TIMER — no counting. Each move is split into timed
+// work blocks (reps ÷ pace) with rest between; voice + beeps call the move, the
+// set and what's next, and every finished block logs its reps to the card.
+// Timing runs off timestamps, so a throttled/locked phone catches up instead of drifting.
+// ============================================================
+const KB_TIMING = {
+  halo:  { perSet:10, secPerRep:2.5, rest:15, say:'Halos' },
+  atw:   { perSet:10, secPerRep:2.0, rest:15, say:'Around the world' },
+  press: { perSet:10, secPerRep:2.5, rest:20, say:'Horizontal press' },
+  swing: { perSet:10, secPerRep:2.0, rest:30, say:'Kettlebell swings' },
+  march: { perSet:25, secPerRep:1.6, rest:30, say:'Single arm knee raises', sides:['bell in your left hand','bell in your right hand'] },
+};
+const KB_PACES = { easy:{ label:'Easy', mult:1.2 }, normal:{ label:'Normal', mult:1.0 }, fast:{ label:'Fast', mult:0.85 } };
+const KB_TRANSITION_SECS = 10;
+let kbT = null; // { steps, idx, stepStart, pausedAt, running, done, pace, voice }
+
+function kbPace() { try { return localStorage.getItem('kb-pace') || 'normal'; } catch(e) { return 'normal'; } }
+function kbVoiceOn() { try { return localStorage.getItem('kb-voice') !== 'off'; } catch(e) { return true; } }
+
+function kbBuildPlan(date, paceKey) {
+  const mult = (KB_PACES[paceKey] || KB_PACES.normal).mult;
+  const log = kbLogFor(date);
+  const steps = [];
+  const moves = KB_MOVES.filter(m => kbRepsOf(log, m.id) < kbTarget(m, date) && KB_TIMING[m.id]);
+  moves.forEach((m, mi) => {
+    const t = KB_TIMING[m.id];
+    let left = kbTarget(m, date) - kbRepsOf(log, m.id);
+    const chunks = [];
+    while (left > 0) { const c = Math.min(t.perSet, left); chunks.push(c); left -= c; }
+    steps.push({ kind: mi === 0 ? 'ready' : 'next', moveId: m.id, name: m.name, secs: mi === 0 ? 10 : KB_TRANSITION_SECS,
+      say: (mi === 0 ? 'Get ready. First up, ' : 'Next up, ') + t.say + (t.sides ? ', ' + t.sides[0] : '') });
+    chunks.forEach((reps, ci) => {
+      const side = t.sides ? t.sides[ci % t.sides.length] : '';
+      steps.push({ kind:'work', moveId:m.id, name:m.name, reps, set:ci+1, sets:chunks.length, side,
+        secs: Math.max(10, Math.round(reps * t.secPerRep * mult)),
+        say: `${t.say}${side ? ', ' + side : ''}. Set ${ci+1} of ${chunks.length}. ${reps} reps. Go.` });
+      if (ci < chunks.length - 1) {
+        const nextSide = t.sides ? t.sides[(ci + 1) % t.sides.length] : '';
+        steps.push({ kind:'rest', moveId:m.id, name:m.name, secs:t.rest,
+          say: nextSide ? `Rest. Switch the bell, ${nextSide}.` : 'Rest.' });
+      }
+    });
+  });
+  return steps;
+}
+
+let kbAudio = null;
+function kbTone(freq, ms, vol = 0.25, delay = 0) {
+  try {
+    if (!kbAudio) kbAudio = new (window.AudioContext || window.webkitAudioContext)();
+    const o = kbAudio.createOscillator(), g = kbAudio.createGain();
+    o.connect(g); g.connect(kbAudio.destination);
+    const t0 = kbAudio.currentTime + delay / 1000;
+    o.frequency.value = freq;
+    g.gain.setValueAtTime(vol, t0);
+    g.gain.exponentialRampToValueAtTime(0.001, t0 + ms / 1000);
+    o.start(t0); o.stop(t0 + ms / 1000 + 0.05);
+  } catch(e) {}
+}
+function kbDing() { kbTone(880, 350, 0.3); kbTone(1320, 500, 0.25, 160); vibrateDevice([120, 60, 120]); }
+function kbGo() { kbTone(1040, 450, 0.3); vibrateDevice(200); }
+function kbTick() { kbTone(660, 120, 0.2); }
+function kbSay(text) {
+  if (!kbT || !kbT.voice || !('speechSynthesis' in window)) return;
+  try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.rate = 1.05; speechSynthesis.speak(u); } catch(e) {}
+}
+
+function openKbTimer() {
+  const date = getDateStr();
+  kbT = { steps: kbBuildPlan(date, kbPace()), idx: -1, running: false, done: false, pace: kbPace(), voice: kbVoiceOn(), date };
+  kbRenderTimer();
+}
+function kbSetPace(p) {
+  try { localStorage.setItem('kb-pace', p); } catch(e) {}
+  if (kbT && kbT.idx < 0) { kbT.pace = p; kbT.steps = kbBuildPlan(kbT.date, p); kbRenderTimer(); }
+}
+function kbToggleVoice() {
+  if (!kbT) return;
+  kbT.voice = !kbT.voice;
+  try { localStorage.setItem('kb-voice', kbT.voice ? 'on' : 'off'); } catch(e) {}
+  if (!kbT.voice && 'speechSynthesis' in window) speechSynthesis.cancel();
+  kbRenderTimer();
+}
+function kbStartTimer() {
+  if (!kbT || !kbT.steps.length) return;
+  kbTone(1, 1, 0.0001); // unlock audio on the tap (iOS/Android need a user gesture)
+  acquireWakeLock();
+  kbT.running = true;
+  kbEnterStep(0);
+  kbT.interval = setInterval(kbTimerTick, 250);
+}
+function kbEnterStep(i) {
+  kbT.idx = i; kbT.stepStart = Date.now(); kbT.lastTick = null;
+  const st = kbT.steps[i];
+  if (st.kind === 'work') kbGo();
+  kbSay(st.say);
+  kbRenderTimer();
+}
+function kbStepRemaining() {
+  const st = kbT.steps[kbT.idx];
+  const now = kbT.pausedAt || Date.now();
+  return Math.max(0, st.secs - (now - kbT.stepStart) / 1000);
+}
+function kbFinishStep() {
+  const st = kbT.steps[kbT.idx];
+  if (st.kind === 'work') {
+    const id = st.moveId, add = st.reps;
+    kbUpdate(kbT.date, log => { log.reps[id] = Math.min(kbTarget(KB_MOVES.find(m => m.id === id), kbT.date), kbRepsOf(log, id) + add); });
+    kbDing();
+  }
+  if (kbT.idx + 1 >= kbT.steps.length) {
+    kbT.done = true; kbT.running = false;
+    clearInterval(kbT.interval); releaseWakeLock();
+    kbSay('Circuit complete. Nice work.');
+    kbRenderTimer();
+    return;
+  }
+  kbEnterStep(kbT.idx + 1);
+}
+function kbTimerTick() {
+  if (!kbT || !kbT.running || kbT.pausedAt) return;
+  const rem = kbStepRemaining();
+  const whole = Math.ceil(rem);
+  if (whole <= 3 && whole >= 1 && kbT.lastTick !== whole) { kbT.lastTick = whole; kbTick(); }
+  if (rem <= 0) { kbFinishStep(); return; }
+  const el = document.getElementById('kbtClock');
+  if (el) el.textContent = kbFmt(whole);
+  const bar = document.getElementById('kbtStepBar');
+  if (bar) bar.style.width = (100 - rem / kbT.steps[kbT.idx].secs * 100) + '%';
+}
+function kbPauseTimer() {
+  if (!kbT || !kbT.running) return;
+  if (kbT.pausedAt) { kbT.stepStart += Date.now() - kbT.pausedAt; kbT.pausedAt = null; acquireWakeLock(); }
+  else { kbT.pausedAt = Date.now(); if ('speechSynthesis' in window) speechSynthesis.cancel(); }
+  kbRenderTimer();
+}
+function kbSkipStep() { if (kbT && kbT.running) { kbT.pausedAt = null; kbFinishStep(); } }
+function closeKbTimer() {
+  if (kbT) { clearInterval(kbT.interval); if (kbT.running) releaseWakeLock(); }
+  if ('speechSynthesis' in window) try { speechSynthesis.cancel(); } catch(e) {}
+  kbT = null;
+  const o = document.getElementById('kbTimer'); if (o) o.remove();
+  mountDashboard();
+}
+function kbFmt(sec) { sec = Math.max(0, Math.round(sec)); return Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0'); }
+
+function kbRenderTimer() {
+  let o = document.getElementById('kbTimer');
+  if (!o) { o = document.createElement('div'); o.id = 'kbTimer'; o.className = 'kbt-overlay'; document.body.appendChild(o); }
+  if (!kbT) { o.remove(); return; }
+  const totalSecs = kbT.steps.reduce((a, st) => a + st.secs, 0);
+  const voiceBtn = `<button class="kbt-chip" onclick="kbToggleVoice()">${kbT.voice ? '🔊 Voice on' : '🔇 Voice off'}</button>`;
+  if (!kbT.steps.length) {
+    o.innerHTML = `<div class="kbt-box"><div class="kbt-phase">ALL DONE</div><div class="kbt-move">Today's circuit is already complete</div>
+      <button class="kbt-main" onclick="closeKbTimer()">Close</button></div>`;
+    return;
+  }
+  if (kbT.idx < 0) {
+    const moves = [...new Set(kbT.steps.filter(x => x.kind === 'work').map(x => x.name))];
+    o.innerHTML = `<div class="kbt-box">
+      <div class="kbt-phase">GUIDED KETTLEBELL</div>
+      <div class="kbt-move">${moves.join(' → ')}</div>
+      <div class="kbt-sub">≈ ${Math.round(totalSecs / 60)} min · timed sets, no counting · reps log automatically</div>
+      <div class="kbt-chips">${Object.entries(KB_PACES).map(([k, v]) => `<button class="kbt-chip ${kbT.pace === k ? 'on' : ''}" onclick="kbSetPace('${k}')">${v.label}</button>`).join('')}${voiceBtn}</div>
+      <button class="kbt-main" onclick="kbStartTimer()">▶ Start</button>
+      <button class="kbt-link" onclick="closeKbTimer()">Cancel</button>
+    </div>`;
+    return;
+  }
+  if (kbT.done) {
+    o.innerHTML = `<div class="kbt-box"><div class="kbt-phase" style="color:var(--green)">CIRCUIT COMPLETE</div>
+      <div class="kbt-move">🔔 ${habitStreak('kettlebell')} day streak</div>
+      <button class="kbt-main" onclick="closeKbTimer()">Done</button></div>`;
+    return;
+  }
+  const st = kbT.steps[kbT.idx];
+  const nextWork = kbT.steps.slice(kbT.idx + 1).find(x => x.kind === 'work');
+  const phase = st.kind === 'work' ? 'WORK' : st.kind === 'rest' ? 'REST' : 'UP NEXT';
+  const phaseCls = st.kind === 'work' ? 'work' : 'rest';
+  const elapsedTotal = kbT.steps.slice(0, kbT.idx).reduce((a, x) => a + x.secs, 0);
+  const setLine = st.kind === 'work' ? `Set ${st.set} of ${st.sets} · ${st.reps} reps${st.side ? ' · ' + st.side : ''}`
+    : st.kind === 'rest' ? `Breathe — set ${kbT.steps[kbT.idx + 1]?.set || ''} coming` : 'Grab the bell and set up';
+  o.innerHTML = `<div class="kbt-box kbt-${phaseCls}">
+    <div class="kbt-total"><div style="width:${elapsedTotal / totalSecs * 100}%"></div></div>
+    <div class="kbt-phase">${phase}${kbT.pausedAt ? ' · PAUSED' : ''}</div>
+    <div class="kbt-move">${st.name}</div>
+    <div class="kbt-clock" id="kbtClock">${kbFmt(Math.ceil(kbStepRemaining()))}</div>
+    <div class="kbt-stepbar"><div id="kbtStepBar" style="width:${100 - kbStepRemaining() / st.secs * 100}%"></div></div>
+    <div class="kbt-sub">${setLine}</div>
+    ${nextWork && st.kind !== 'work' ? '' : nextWork ? `<div class="kbt-next">Next: ${nextWork.name}${nextWork.moveId === st.moveId ? ` · set ${nextWork.set}` : ''}</div>` : '<div class="kbt-next">Last set — finish strong</div>'}
+    <div class="kbt-ctrls">
+      <button class="kbt-ctrl" onclick="kbPauseTimer()">${kbT.pausedAt ? '▶ Resume' : '❚❚ Pause'}</button>
+      <button class="kbt-ctrl" onclick="kbSkipStep()">Skip ⏭</button>
+      <button class="kbt-ctrl" onclick="closeKbTimer()">End</button>
+    </div>
+    <div class="kbt-chips">${voiceBtn}</div>
+  </div>`;
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && kbT && kbT.running && !kbT.pausedAt) { acquireWakeLock(); kbTimerTick(); }
+});
+
+// FEAT-21: how often the circuit actually happens — last 28 days as dots, plus 7/30-day counts
+function kbHistoryHTML() {
+  const today = getDateStr();
+  const state = d => { const h = dailyHabits[d] || {}; return h.kettlebell ? 'full' : kbProgressScore(h.kettlebell_log) > 0 ? 'part' : ''; };
+  let dots = '';
+  for (let i = 27; i >= 0; i--) {
+    const d = dateOffset(today, -i);
+    const lbl = new Date(d + 'T12:00:00').toLocaleDateString('en-US', { month:'short', day:'numeric' });
+    dots += `<span class="kb-dot ${state(d)} ${i === 0 ? 'today' : ''}" title="${lbl}"></span>`;
+  }
+  let w = 0, m = 0;
+  for (let i = 0; i < 30; i++) { const st = state(dateOffset(today, -i)); if (st === 'full') { m++; if (i < 7) w++; } }
+  return `<div class="kb-hist">
+    <div class="kb-dots">${dots}</div>
+    <div class="kb-hist-meta"><span><strong>${w}/7</strong> this week</span><span><strong>${m}</strong> in 30 days</span><span class="kb-legend"><i class="kb-dot full"></i>done <i class="kb-dot part"></i>partial</span></div>
+  </div>`;
+}
+
 function kbPanelHTML() {
   const date = getDateStr();
   const log = kbLogFor(date);
@@ -2223,7 +2486,7 @@ function kbPanelHTML() {
       <div class="dash-title" style="margin:0"><span>🔔 Daily Kettlebell</span><span class="dash-date">${done ? '✓ DONE' : pct + '%'} · ${streak} day streak ${open ? '▴' : '▾'}</span></div>
       <div class="kb-bar"><div class="kb-bar-fill ${done ? 'done' : ''}" style="width:${pct}%"></div></div>
     </div>`;
-  if (!open) return `<div class="dash-panel kb-panel" id="kbPanel">${head}</div>`;
+  if (!open) return `<div class="dash-panel kb-panel" id="kbPanel">${head}${kbHistoryHTML()}</div>`;
   const rows = KB_MOVES.map(m => {
     const t = kbTarget(m, date);
     const r = Math.min(kbRepsOf(log, m.id), t);
@@ -2248,11 +2511,13 @@ function kbPanelHTML() {
   }).join('');
   return `<div class="dash-panel kb-panel" id="kbPanel">
     ${head}
+    ${done ? '' : `<button class="kb-start" onclick="event.stopPropagation();openKbTimer()">▶ Guided timer — no counting</button>`}
     <div class="kb-bells">
       <label>Heavy bell <input type="number" inputmode="numeric" value="${bells.heavy}" onchange="kbSetBell('heavy',this.value)"> lb</label>
       <label>Light bell <input type="number" inputmode="numeric" value="${bells.light}" onchange="kbSetBell('light',this.value)"> lb</label>
     </div>
     ${rows}
+    ${kbHistoryHTML()}
     <div class="kb-foot">~12–15 min · morning or as a finisher · tight low back the next morning = skip swings for 2 days</div>
   </div>`;
 }
@@ -2963,8 +3228,8 @@ function renderWorkoutBody() {
     <span class="recovery-dismiss" onclick="document.getElementById('recoveryBanner').classList.remove('visible')">Dismiss</span>
   </div>`;
 
-  // Rotation alerts
-  if (rotationAlerts.length > 0) {
+  // Rotation alerts: moved onto each exercise card (v12.7) — the stacked banners at the top were noise
+  if (false && rotationAlerts.length > 0) {
     rotationAlerts.forEach(alert => {
       html += `<div class="rotation-alert visible" id="rot-${alert.exId}">
         <div class="rotation-title">🔄 Time to Mix It Up — ${alert.exName}</div>
@@ -3085,7 +3350,10 @@ function buildExCard(ex, isDone, savedWeights, hasPR, type) {
 
   const prBadgeHtml = hasPR ? `<span class="pr-badge">🏆 NEW PR</span>` : '';
   const isRotation = exerciseFreq[ex.id] >= 3;
-  const rotFlagHtml = isRotation ? `<span class="rotation-flag">🔄 Vary soon</span>` : '';
+  const rotSwapCall = ex.muscle && ROTATION_POOLS[ex.muscle]
+    ? `showSwapSheet('${ex.id}','${ex.muscle}','${type}','${ex.name.replace(/'/g,"\\'")}')` : '';
+  const rotFlagHtml = isRotation
+    ? `<span class="rotation-flag"${rotSwapCall ? ` style="cursor:pointer" onclick="event.stopPropagation();${rotSwapCall}"` : ''}>🔄 Switch up</span>` : '';
 
   // Swap override: use alternate name if set
   const isSwapped = !!getSwap(ex.id);
@@ -3117,6 +3385,13 @@ function buildExCard(ex, isDone, savedWeights, hasPR, type) {
     detail += warningHtml;
   }
 
+  if (isRotation) {
+    detail += `<div class="rot-inline">
+      <span>🔄 ${exerciseFreq[ex.id]} sessions without a PR — time to switch it up.</span>
+      ${rotSwapCall ? `<button class="swap-btn" onclick="event.stopPropagation();${rotSwapCall}">⟳ Pick a swap</button>` : ''}
+      <button class="rot-keep" onclick="event.stopPropagation();keepExercise('${ex.id}')">Keep it</button>
+    </div>`;
+  }
   if (ex.hassan) detail += `<div class="hassan-tag">⚡ Hassan Protocol — To Failure</div>`;
   if (ex.ladder?.length) {
     detail += `<div class="ladder-display">${ex.ladder.map((s,i) => `<span class="ladder-step">${s}</span>${i<ex.ladder.length-1?'<span class="ladder-arrow">→</span>':''}`).join('')}</div>`;
@@ -3308,6 +3583,15 @@ function getRotationAlerts(workoutType) {
     });
   });
   return alerts;
+}
+
+// "Keep it" on the in-card switch-up prompt: reset the counter so it stops nagging
+function keepExercise(exId) {
+  exerciseFreq[exId] = 0;
+  try { localStorage.setItem('exercise-freq', JSON.stringify(exerciseFreq)); } catch(e) {}
+  window.storage.set('exercise-freq', JSON.stringify(exerciseFreq)).catch(()=>{});
+  showToast('👍 Keeping it — switch-up prompt cleared');
+  renderWorkoutView();
 }
 
 function dismissAlert(id) {
