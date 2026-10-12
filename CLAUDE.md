@@ -2,7 +2,7 @@
 
 **Purpose:** Personal strength training tracker with adaptive workout protocols, PR management, recovery modes, and multi-location gym support — plus a keto macro tracker (see §6.5) sharing the same repo, Supabase project and deployment.
 
-**Current Version:** v12.7 (2026-10-12) · macro tracker v1.0 (2026-09-16)  
+**Current Version:** v12.8 (2026-10-12) · macro tracker v1.0 (2026-09-16)  
 **Development Branch:** per session (latest: `claude/sweet-hamilton-w4maed`) — never push to `main` directly; merge after a Vercel preview check  
 **Deployment:** Vercel (two static HTML files + Supabase backend)
 
@@ -289,7 +289,9 @@ Global toggle (🦴 pill in header) that:
 - Shows ⚠️ Spinal Caution badges on risky exercises
 
 ### 4.3 Hassan Protocol
-Progressive ladder system for main compound movements:
+**v12.8:** ladders retired from the main lifts. Program is warm-up + 2 working sets (last to failure, double progression, `restWork` per exercise). Each day keeps ONE Hassan finisher (`hassan:true, ladder:[]`, work-to-failure + 20-rep burnout). Location subs: `HOME_GYM_SUBS` / `LIFETIME_SUBS` via `getExForLocation`, applied in `getSessionSections`.
+
+Legacy — progressive ladder system (pre-v12.8):
 ```
 E.g., Barbell Bench Press ladder: 121×6 → 132×4 → 143×FAIL → 121×20 Burnout
 - First weight: 6 reps warm-up/first set
