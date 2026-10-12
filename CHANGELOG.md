@@ -1,5 +1,14 @@
 # Workout App Changelog
 
+## v12.7 — 2026-10-12
+### Added
+- **FEAT-22 Guided kettlebell timer** — "▶ Guided timer — no counting" on the kettlebell card opens a full-screen interval timer. Each move is split into timed sets (reps × pace) with rests, a 10s "up next" between moves, voice callouts ("Kettlebell swings. Set 2 of 5. 10 reps. Go."), a go-tone, 3-2-1 ticks and a ding at the end of each set. Every finished set logs its reps to the card automatically. Easy / Normal / Fast pace, voice on/off, pause/skip/end, screen kept awake. Timing runs off timestamps so a locked phone catches up instead of drifting. ≈16 min for the full circuit at Normal pace.
+- **FEAT-21 Kettlebell history** — 28-day dot strip (done / partial) with this-week and 30-day counts on the kettlebell card.
+### Changed
+- **Suitcase carry → Single-Arm Knee Raise** (50: 25 holding the bell in each hand). A day already logged with the old carry still counts as complete.
+- Default heavy bell is now 25 lb (heaviest at the home gym).
+- **"Time to switch up" moved onto the exercise** — the stacked banners at the top of the workout are gone. The flag on the card reads "🔄 Switch up" and opens the swap sheet; inside the card there's a "Pick a swap" / "Keep it" row ("Keep it" clears the prompt).
+
 ## v12.6 — 2026-10-12
 ### Added
 - **FEAT-20 Daily Kettlebell circuit** — a 🔔 card under the accountability dashboard on every day type: Halos 50, Around the World 50, Horizontal Press 50, Swings 50, Suitcase Carry 5 × 30m. Tap +10 per set, ✓ to fill a move, − to undo. Heavy/light bell weights are remembered between days.

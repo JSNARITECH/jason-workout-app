@@ -2,7 +2,7 @@
 
 **Purpose:** Personal strength training tracker with adaptive workout protocols, PR management, recovery modes, and multi-location gym support — plus a keto macro tracker (see §6.5) sharing the same repo, Supabase project and deployment.
 
-**Current Version:** v12.6 (2026-10-12) · macro tracker v1.0 (2026-09-16)  
+**Current Version:** v12.7 (2026-10-12) · macro tracker v1.0 (2026-09-16)  
 **Development Branch:** per session (latest: `claude/sweet-hamilton-w4maed`) — never push to `main` directly; merge after a Vercel preview check  
 **Deployment:** Vercel (two static HTML files + Supabase backend)
 
@@ -80,7 +80,7 @@ sleep          (bool)       — in bed by 10PM (last night)
 alcohol        (bool)       — had a drink that day (resets the alcohol-free streak)
 sprint / walk  (bool)       — reset-week checklist items
 kettlebell     (bool)       — FEAT-20 daily circuit complete
-kettlebell_log (jsonb)      — FEAT-20 { reps: {halo, atw, press, swing, carry}, heavy, light, updated }
+kettlebell_log (jsonb)      — FEAT-20 { reps: {halo, atw, press, swing, march}, heavy, light, updated } (legacy 'carry' ≥5 counts as march done)
 Anon: select / insert / update. Upsert on habit_date.
 ```
 
@@ -651,6 +651,7 @@ group-activity-overrides        // { date: activityId } (FEAT-15)
 session-plan                    // { date: { added, removed, order } } (FEAT-9)
 daily-habits                    // { date: { protein, sleep, alcohol, sprint, walk, kettlebell, kettlebell_log } } cache (FEAT-11/20)
 kb-bells                        // { heavy, light } last-used kettlebell weights (FEAT-20)
+kb-pace / kb-voice              // guided kettlebell timer pace (easy|normal|fast) and voice on/off (FEAT-22)
 checkin-done-YYYY-MM-DD         // this week's submitted check-in (FEAT-12); sessionStorage checkin-snoozed
 reset-protocol                  // { active, entryDate } (FEAT-14); reset-prompt-dismissed = last logged date
 pr-store                        // JSON stringified PRs
