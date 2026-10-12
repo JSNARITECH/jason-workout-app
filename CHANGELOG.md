@@ -1,5 +1,16 @@
 # Workout App Changelog
 
+## v12.8 — 2026-10-12
+### Changed — lean program, Hassan ladders retired
+- **Every lift is now warm-up (first lifts only) + 2 working sets, the last to failure.** Double progression: hit the top of the rep range on both sets → add a plate. Each card shows the target ("10 + 10 → add a plate").
+- **One Hassan finisher per day** — work set to failure + 20-rep rest-pause burnout: Upper → rope pushdown, Push → overhead rope extension, Pull → supinated cable curl, Legs → calf raise.
+- **Shorter sessions:** Upper 9 → 8 slots (biceps/triceps supersetted), Push 7 → 6, Pull 5, Legs 8 → 6. Heaviest lifts come first while fresh (chest press now before pec deck).
+- **Knee-safe legs:** Smith squat to a box/pain-free depth (auto-swaps to Belt Squat at Lifetime), Smith RDL added, Bulgarian split squat, leg extension and lying leg curl removed; cable crunches are standing (no kneeling); couch-stretch cue offers a standing version.
+- **Abs:** heavier standing cable crunch Mon/Sun, hanging knee raise on Push day (replaces bicycle crunch), plus the daily kettlebell circuit.
+- Removed: Cable Low-to-High Fly (Upper/Push), Straight-Arm Pulldown (Pull). Added: Reverse Pec Deck (Pull).
+- Per-exercise rest for working sets (`restWork`): ~2.5 min main lifts, 60–75s isolation.
+- Location substitutions now apply in `getSessionSections`, so render, timer and save all see the same exercise.
+
 ## v12.7 — 2026-10-12
 ### Added
 - **FEAT-22 Guided kettlebell timer** — "▶ Guided timer — no counting" on the kettlebell card opens a full-screen interval timer. Each move is split into timed sets (reps × pace) with rests, a 10s "up next" between moves, voice callouts ("Kettlebell swings. Set 2 of 5. 10 reps. Go."), a go-tone, 3-2-1 ticks and a ding at the end of each set. Every finished set logs its reps to the card automatically. Easy / Normal / Fast pace, voice on/off, pause/skip/end, screen kept awake. Timing runs off timestamps so a locked phone catches up instead of drifting. ≈16 min for the full circuit at Normal pace.
