@@ -598,6 +598,30 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .dash-toggle.warn{background:var(--red-dim);border-color:rgba(255,77,77,0.4);color:var(--red);}
 
 /* VISCERAL FAT GRADE WIDGET (FEAT-13) */
+.kb-head{cursor:pointer;}
+.kb-bar{height:4px;background:var(--card2);border-radius:3px;margin-top:8px;overflow:hidden;}
+.kb-bar-fill{height:100%;background:var(--accent);border-radius:3px;transition:width 0.25s;}
+.kb-bar-fill.done{background:var(--green);}
+.kb-bells{display:flex;gap:8px;margin:10px 0 4px;}
+.kb-bells label{flex:1;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--dim2);font-weight:700;display:flex;align-items:center;gap:5px;}
+.kb-bells input{width:48px;background:var(--card2);border:1px solid var(--border2);border-radius:7px;color:var(--white);padding:5px 6px;font-size:13px;font-weight:700;font-family:'DM Sans',sans-serif;text-align:center;}
+.kb-row{display:flex;gap:10px;align-items:center;background:var(--card2);border:1px solid var(--border2);border-radius:10px;padding:9px 10px;margin-top:7px;}
+.kb-row.full{border-color:rgba(77,255,170,0.4);}
+.kb-row-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;}
+.kb-name{font-size:12px;font-weight:700;color:var(--white);}
+.kb-row.full .kb-name{color:var(--green);}
+.kb-bell{font-size:9px;color:var(--dim2);font-weight:600;margin-left:4px;}
+.kb-cue{font-size:9px;color:var(--dim2);line-height:1.35;}
+.kb-note{font-size:9px;color:var(--orange);font-weight:600;line-height:1.35;}
+.kb-ctrl{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0;}
+.kb-count{font-family:'Bebas Neue',sans-serif;font-size:20px;line-height:1;color:var(--white);}
+.kb-row.full .kb-count{color:var(--green);}
+.kb-unit{font-family:'DM Sans',sans-serif;font-size:9px;color:var(--dim2);}
+.kb-btns{display:flex;gap:4px;}
+.kb-btn{min-width:32px;height:30px;padding:0 7px;border-radius:7px;border:1px solid var(--border2);background:none;color:var(--dim2);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.kb-btn.kb-plus{color:var(--accent);border-color:rgba(232,255,71,0.35);}
+.kb-btn.kb-on{background:var(--green-dim);border-color:rgba(77,255,170,0.4);color:var(--green);}
+.kb-foot{font-size:9px;color:var(--dim);margin-top:8px;line-height:1.35;}
 .vf-row{display:flex;gap:11px;align-items:center;margin-top:8px;background:var(--card2);border:1px solid var(--border2);border-left-width:3px;border-radius:10px;padding:9px 11px;}
 .vf-row.vf-empty{font-size:10px;color:var(--dim2);}
 .vf-grade{font-family:'Bebas Neue',sans-serif;font-size:34px;line-height:1;min-width:34px;text-align:center;}
@@ -749,7 +773,7 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 // ============================================================
 // APP VERSION — update this on every release
 // ============================================================
-const APP_VERSION = 'v12.4';
+const APP_VERSION = 'v12.6';
 
 // ============================================================
 // WEEKLY SCHEDULE
@@ -1980,11 +2004,16 @@ async function loadAll() {
   try { const v = localStorage.getItem('daily-habits'); if (v) dailyHabits = JSON.parse(v); } catch(e) { dailyHabits = {}; }
   const sbGet = { headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` } };
   await Promise.all([
-    fetch(`${SUPABASE_URL}/rest/v1/daily_habits?habit_date=gte.${getDateStr(-90)}&select=habit_date,protein,sleep,alcohol,sprint,walk`, sbGet)
+    fetch(`${SUPABASE_URL}/rest/v1/daily_habits?habit_date=gte.${getDateStr(-90)}&select=habit_date,protein,sleep,alcohol,sprint,walk,kettlebell,kettlebell_log`, sbGet)
       .then(r => r.ok ? r.json() : [])
       .then(rows => {
         if (!Array.isArray(rows)) return;
-        rows.forEach(r => { dailyHabits[r.habit_date] = { protein: !!r.protein, sleep: !!r.sleep, alcohol: !!r.alcohol, sprint: !!r.sprint, walk: !!r.walk }; });
+        rows.forEach(r => {
+          // FEAT-20: keep a local kettlebell log if it's further along than the server copy (offline taps not yet synced)
+          const local = (dailyHabits[r.habit_date] || {}).kettlebell_log;
+          const kbLog = kbProgressScore(local) > kbProgressScore(r.kettlebell_log) ? local : (r.kettlebell_log || null);
+          dailyHabits[r.habit_date] = { protein: !!r.protein, sleep: !!r.sleep, alcohol: !!r.alcohol, sprint: !!r.sprint, walk: !!r.walk, kettlebell: !!r.kettlebell || kbIsComplete(kbLog, r.habit_date), kettlebell_log: kbLog };
+        });
         persistHabitsLocal();
       })
       .catch(() => {}),
@@ -2039,9 +2068,13 @@ function habitFor(date) { return dailyHabits[date] || {}; }
 function persistHabitsLocal() { try { localStorage.setItem('daily-habits', JSON.stringify(dailyHabits)); } catch(e) {} }
 
 async function setHabit(date, field, val) {
-  dailyHabits[date] = { protein:false, sleep:false, alcohol:false, sprint:false, walk:false, ...(dailyHabits[date] || {}), [field]: !!val };
+  dailyHabits[date] = { protein:false, sleep:false, alcohol:false, sprint:false, walk:false, kettlebell:false, ...(dailyHabits[date] || {}), [field]: !!val };
   persistHabitsLocal();
   mountDashboard();
+  await pushHabitRow(date);
+}
+// Upserts the whole day row (habits + FEAT-20 kettlebell log) — local copy is always written first
+async function pushHabitRow(date) {
   try {
     await fetch(`${SUPABASE_URL}/rest/v1/daily_habits?on_conflict=habit_date`, {
       method: 'POST',
@@ -2092,6 +2125,136 @@ function lastAlcoholDate() {
 function alcoholFreeDays() {
   const last = lastAlcoholDate();
   return last ? Math.max(0, daysBetween(last, getDateStr())) : null;
+}
+
+// ============================================================
+// FEAT-20: DAILY KETTLEBELL — 50-rep finisher circuit, every day, logged to daily_habits
+// Rotational swings were swapped for suitcase carries (twist + ballistic load is the
+// classic lower-back flare pattern). Swings drop to 25 on heavy leg days (Tue/Sun),
+// presses stay light on the main pressing days (Mon/Thu).
+// ============================================================
+const KB_MOVES = [
+  { id:'halo',  name:'Halos',            target:50, step:10, bell:'light', cue:'Tight circle around the head, ribs down. Switch direction every 10.' },
+  { id:'atw',   name:'Around the World', target:50, step:10, bell:'light', cue:'Pass around the waist with hips locked still. Switch direction every 10.' },
+  { id:'press', name:'Horizontal Press', target:50, step:10, bell:'light', cue:'Floor press or squeeze press, slow lower. Split across both arms.' },
+  { id:'swing', name:'Swings',           target:50, step:10, bell:'heavy', cue:'Sets of 10. Hike, snap the hips, float to chest height. If your low back takes over, stop.' },
+  { id:'carry', name:'Suitcase Carry',   target:5,  step:1,  bell:'heavy', unit:'× 30m', cue:'Replaces rotational swings — anti-rotation core without the twist. Alternate hands each trip.' },
+];
+let kbOpen = null; // null = auto (open until done)
+
+function kbBells() {
+  try { const v = JSON.parse(localStorage.getItem('kb-bells') || 'null'); if (v && v.heavy && v.light) return v; } catch(e) {}
+  return { heavy: 35, light: 20 };
+}
+function kbDow(date) { return new Date(date + 'T12:00:00').getDay(); }
+// Day-aware targets: legs Tue/Sun already load the hinge via RDLs
+function kbTarget(m, date) {
+  if (m.id === 'swing' && [0, 2].includes(kbDow(date))) return 25;
+  return m.target;
+}
+function kbDayNote(m, date) {
+  const dow = kbDow(date);
+  if (m.id === 'swing' && (dow === 0 || dow === 2)) return 'Leg day — swings capped at 25 (RDLs already hit the hinge)';
+  if (m.id === 'press' && (dow === 1 || dow === 4)) return 'Main press day — go light, this is pump work';
+  return '';
+}
+function kbLogFor(date) { return (dailyHabits[date] || {}).kettlebell_log || null; }
+function kbRepsOf(log, id) { return (log && log.reps && +log.reps[id]) || 0; }
+function kbProgressScore(log) {
+  if (!log || !log.reps) return 0;
+  return Object.values(log.reps).reduce((a, b) => a + (+b || 0), 0);
+}
+function kbIsComplete(log, date) {
+  if (!log || !log.reps) return false;
+  return KB_MOVES.every(m => kbRepsOf(log, m.id) >= kbTarget(m, date));
+}
+function kbUpdate(date, mutate) {
+  const day = { protein:false, sleep:false, alcohol:false, sprint:false, walk:false, kettlebell:false, ...(dailyHabits[date] || {}) };
+  const bells = kbBells();
+  const log = { reps: {}, heavy: bells.heavy, light: bells.light, ...(day.kettlebell_log || {}) };
+  log.reps = { ...(log.reps || {}) };
+  mutate(log);
+  log.updated = new Date().toISOString();
+  const wasDone = day.kettlebell;
+  day.kettlebell_log = log;
+  day.kettlebell = kbIsComplete(log, date);
+  dailyHabits[date] = day;
+  persistHabitsLocal();
+  if (day.kettlebell && !wasDone) { kbOpen = null; showToast('🔔 Kettlebell circuit done — ' + (habitStreak('kettlebell')) + ' day streak', true); }
+  mountDashboard();
+  pushHabitRow(date);
+}
+function kbAdd(id, dir) {
+  const m = KB_MOVES.find(x => x.id === id); if (!m) return;
+  const date = getDateStr();
+  const t = kbTarget(m, date);
+  kbUpdate(date, log => { log.reps[id] = Math.max(0, Math.min(t, kbRepsOf(log, id) + dir * m.step)); });
+}
+function kbFill(id) {
+  const m = KB_MOVES.find(x => x.id === id); if (!m) return;
+  const date = getDateStr();
+  const t = kbTarget(m, date);
+  kbUpdate(date, log => { log.reps[id] = kbRepsOf(log, id) >= t ? 0 : t; });
+}
+function kbSetBell(which, val) {
+  const n = parseInt(val, 10);
+  if (!n || n < 5 || n > 200) return;
+  const b = kbBells(); b[which] = n;
+  try { localStorage.setItem('kb-bells', JSON.stringify(b)); } catch(e) {}
+  kbUpdate(getDateStr(), log => { log[which] = n; });
+}
+function kbToggleOpen() {
+  const done = !!habitFor(getDateStr()).kettlebell;
+  kbOpen = !(kbOpen === null ? !done : kbOpen);
+  mountDashboard();
+}
+
+function kbPanelHTML() {
+  const date = getDateStr();
+  const log = kbLogFor(date);
+  const done = !!habitFor(date).kettlebell;
+  const streak = habitStreak('kettlebell');
+  const open = kbOpen === null ? !done : kbOpen;
+  const bells = log ? { heavy: log.heavy || kbBells().heavy, light: log.light || kbBells().light } : kbBells();
+  const totalT = KB_MOVES.reduce((a, m) => a + kbTarget(m, date), 0);
+  const totalD = KB_MOVES.reduce((a, m) => a + Math.min(kbRepsOf(log, m.id), kbTarget(m, date)), 0);
+  const pct = Math.round(totalD / totalT * 100);
+  const head = `<div class="kb-head" onclick="kbToggleOpen()">
+      <div class="dash-title" style="margin:0"><span>🔔 Daily Kettlebell</span><span class="dash-date">${done ? '✓ DONE' : pct + '%'} · ${streak} day streak ${open ? '▴' : '▾'}</span></div>
+      <div class="kb-bar"><div class="kb-bar-fill ${done ? 'done' : ''}" style="width:${pct}%"></div></div>
+    </div>`;
+  if (!open) return `<div class="dash-panel kb-panel" id="kbPanel">${head}</div>`;
+  const rows = KB_MOVES.map(m => {
+    const t = kbTarget(m, date);
+    const r = Math.min(kbRepsOf(log, m.id), t);
+    const full = r >= t;
+    const note = kbDayNote(m, date);
+    const amt = m.unit ? `${r}/${t} <span class="kb-unit">${m.unit}</span>` : `${r}/${t}`;
+    return `<div class="kb-row ${full ? 'full' : ''}">
+      <div class="kb-row-main">
+        <div class="kb-name">${m.name} <span class="kb-bell">${m.bell === 'heavy' ? bells.heavy : bells.light} lb</span></div>
+        <div class="kb-cue">${m.cue}</div>
+        ${note ? `<div class="kb-note">${note}</div>` : ''}
+      </div>
+      <div class="kb-ctrl">
+        <div class="kb-count">${amt}</div>
+        <div class="kb-btns">
+          <button class="kb-btn" onclick="kbAdd('${m.id}',-1)" aria-label="Undo ${m.step}">−</button>
+          <button class="kb-btn kb-plus" onclick="kbAdd('${m.id}',1)">+${m.step}</button>
+          <button class="kb-btn ${full ? 'kb-on' : ''}" onclick="kbFill('${m.id}')" aria-label="Mark ${m.name} complete">✓</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  return `<div class="dash-panel kb-panel" id="kbPanel">
+    ${head}
+    <div class="kb-bells">
+      <label>Heavy bell <input type="number" inputmode="numeric" value="${bells.heavy}" onchange="kbSetBell('heavy',this.value)"> lb</label>
+      <label>Light bell <input type="number" inputmode="numeric" value="${bells.light}" onchange="kbSetBell('light',this.value)"> lb</label>
+    </div>
+    ${rows}
+    <div class="kb-foot">~12–15 min · morning or as a finisher · tight low back the next morning = skip swings for 2 days</div>
+  </div>`;
 }
 
 function dashboardHTML() {
@@ -2586,7 +2749,9 @@ function mountDashboard() {
   if (!scroll || currentView !== 'workout') return;
   const old = document.getElementById('dashPanel');
   if (old) old.remove();
-  scroll.insertAdjacentHTML('afterbegin', dashboardHTML());
+  const oldKb = document.getElementById('kbPanel');
+  if (oldKb) oldKb.remove();
+  scroll.insertAdjacentHTML('afterbegin', dashboardHTML() + kbPanelHTML());
 }
 
 // ============================================================

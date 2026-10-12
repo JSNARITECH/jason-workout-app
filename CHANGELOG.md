@@ -1,5 +1,13 @@
 # Workout App Changelog
 
+## v12.6 — 2026-10-12
+### Added
+- **FEAT-20 Daily Kettlebell circuit** — a 🔔 card under the accountability dashboard on every day type: Halos 50, Around the World 50, Horizontal Press 50, Swings 50, Suitcase Carry 5 × 30m. Tap +10 per set, ✓ to fill a move, − to undo. Heavy/light bell weights are remembered between days.
+  - Rotational swings were swapped for suitcase carries (twisting under a ballistic load is the classic lower-back flare pattern).
+  - Day-aware: swings drop to 25 on Tue/Sun leg days (RDLs already load the hinge); presses carry a "go light" note on Mon/Thu.
+  - Collapses to a ✓ DONE line with a day streak once complete. Saved to `daily_habits.kettlebell` (bool) + `daily_habits.kettlebell_log` (jsonb: reps per move, bell weights) — local copy first, server upsert after.
+- Version note: v12.5 is reserved for the FEAT-19 watch-screenshot branch that isn't merged yet.
+
 ## v12.4 — 2026-09-16
 ### Added
 - **🍖 FUEL button** in the bottom nav — opens the new keto macro tracker at `/macros.html`. The tracker carries a 🏋️ LIFT button back, so the two apps read as one system without merging their code.
