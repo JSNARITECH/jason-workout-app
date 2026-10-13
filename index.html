@@ -809,7 +809,18 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 // ============================================================
 // APP VERSION — update this on every release
 // ============================================================
-const APP_VERSION = 'v12.8';
+const APP_VERSION = 'v12.8.1';
+// v12.8.1: if a home-screen / cached copy is older than what Vercel is serving, reload once
+(async function checkForNewerBuild() {
+  try {
+    const r = await fetch(location.pathname + '?v=' + Date.now(), { cache: 'no-store' });
+    const m = (await r.text()).match(/const APP_VERSION = '([^']+)'/);
+    if (m && m[1] !== APP_VERSION && sessionStorage.getItem('reloaded-for') !== m[1]) {
+      sessionStorage.setItem('reloaded-for', m[1]);
+      location.reload();
+    }
+  } catch(e) {}
+})();
 
 // ============================================================
 // WEEKLY SCHEDULE

@@ -1,5 +1,9 @@
 # Workout App Changelog
 
+## v12.8.1 — 2026-10-12
+### Fixed
+- Phones kept showing a stale copy of the app (the old Hassan-on-every-exercise program) after v12.8 deployed. `vercel.json` now sends `Cache-Control: no-cache` for the HTML, and the app checks the served version on load and reloads once if it's newer.
+
 ## v12.8 — 2026-10-12
 ### Changed — lean program, Hassan ladders retired
 - **Every lift is now warm-up (first lifts only) + 2 working sets, the last to failure.** Double progression: hit the top of the rep range on both sets → add a plate. Each card shows the target ("10 + 10 → add a plate").
