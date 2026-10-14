@@ -809,7 +809,7 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 // ============================================================
 // APP VERSION — update this on every release
 // ============================================================
-const APP_VERSION = 'v12.8.1';
+const APP_VERSION = 'v12.9';
 // v12.8.1: if a home-screen / cached copy is older than what Vercel is serving, reload once
 (async function checkForNewerBuild() {
   try {
@@ -2511,6 +2511,83 @@ function kbPanelHTML() {
   </div>`;
 }
 
+// ============================================================
+// FEAT-23: WEIGH-IN PREP — day-aware routine so Thursday's scale reads the real number.
+// Built around the Tuesday-night dose (slower digestion Wed) + Thursday post-void weigh-in.
+// Ticks are local-only (per day); nothing is written to Supabase.
+// ============================================================
+const WIP_PLAN = {
+  0: { tag:'Load-up day', steps:[
+    'Psyllium with your first meal (2pm) + 12–16 oz water',
+    'Normal keto meals — hit protein',
+    'Water spread across the day' ] },
+  1: { tag:'Load-up day', steps:[
+    'Psyllium with your first meal (2pm) + 12–16 oz water',
+    'Normal keto meals — hit protein',
+    'Water spread across the day' ] },
+  2: { tag:'Dose night', steps:[
+    'Psyllium at 2pm ONLY — none near the 8pm meal or the dose',
+    '8pm meal lighter + protein-first (skip big fat: cheese, nuts, fatty cuts)',
+    'Dose after the last meal, as usual' ] },
+  3: { tag:'Slow-gut day', steps:[
+    'Skip psyllium (or half dose at 2pm with plenty of water)',
+    '~1 gallon water, spread out',
+    'Normal sodium + get potassium in (keto — don\'t cut salt)',
+    '10–15 min walk after each meal',
+    'Finish eating by 8pm · magnesium at night' ] },
+  4: { tag:'Weigh-in day', steps:[
+    'Wake → water + coffee/matcha',
+    'Short walk or start the incline session',
+    'Bathroom first',
+    'Weigh post-void, before eating — same conditions every week' ] },
+  5: { tag:'Normal day', steps:[
+    'Psyllium with your first meal + 12–16 oz water',
+    'Water spread across the day' ] },
+  6: { tag:'Normal day', steps:[
+    'Psyllium with your first meal + 12–16 oz water',
+    'Water spread across the day' ] },
+};
+let wipOpen = null; // null = auto (open Tue–Thu)
+function wipKey(date) { return 'wip-' + date; }
+function wipTicks(date) { try { return JSON.parse(localStorage.getItem(wipKey(date)) || '[]'); } catch(e) { return []; } }
+function wipToggle(i) {
+  const date = getDateStr();
+  const t = new Set(wipTicks(date));
+  t.has(i) ? t.delete(i) : t.add(i);
+  try { localStorage.setItem(wipKey(date), JSON.stringify([...t])); } catch(e) {}
+  mountDashboard();
+}
+function wipToggleOpen() {
+  const dow = kbDow(getDateStr());
+  wipOpen = !(wipOpen === null ? [2,3,4].includes(dow) : wipOpen);
+  mountDashboard();
+}
+function wipPanelHTML() {
+  const date = getDateStr();
+  const dow = kbDow(date);
+  const plan = WIP_PLAN[dow];
+  const ticks = new Set(wipTicks(date));
+  const done = plan.steps.filter((_, i) => ticks.has(i)).length;
+  const open = wipOpen === null ? [2,3,4].includes(dow) : wipOpen;
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const next = dow === 4 ? 'today' : `in ${(4 - dow + 7) % 7} day${(4 - dow + 7) % 7 === 1 ? '' : 's'}`;
+  const head = `<div class="kb-head" onclick="wipToggleOpen()">
+      <div class="dash-title" style="margin:0"><span>⚖️ Weigh-in Prep</span><span class="dash-date">${days[dow]} · ${plan.tag} · ${done}/${plan.steps.length} ${open ? '▴' : '▾'}</span></div>
+      <div class="kb-bar"><div class="kb-bar-fill ${done === plan.steps.length ? 'done' : ''}" style="width:${Math.round(done / plan.steps.length * 100)}%"></div></div>
+    </div>`;
+  if (!open) return `<div class="dash-panel kb-panel" id="wipPanel">${head}</div>`;
+  const rows = plan.steps.map((st, i) => `<div class="kb-row ${ticks.has(i) ? 'full' : ''}" onclick="wipToggle(${i})" style="cursor:pointer">
+      <div class="kb-row-main"><div class="kb-name" style="font-weight:500">${st}</div></div>
+      <div class="kb-ctrl"><button class="kb-btn ${ticks.has(i) ? 'kb-on' : ''}" aria-label="Mark done">✓</button></div>
+    </div>`).join('');
+  return `<div class="dash-panel kb-panel" id="wipPanel">
+    ${head}
+    ${rows}
+    <div class="kb-note" style="margin-top:6px">Weigh-in Thursday (${next}). Tue/Wed readings run high from slow digestion — Thursday is the real number.</div>
+    <div class="kb-foot">Never cut water, use diuretics or stimulant laxatives to hit a number. 3+ days without a bowel movement, real belly pain or vomiting after a dose → tell your prescriber.</div>
+  </div>`;
+}
+
 function dashboardHTML() {
   const today = getDateStr();
   const h = habitFor(today);
@@ -3006,7 +3083,9 @@ function mountDashboard() {
   if (old) old.remove();
   const oldKb = document.getElementById('kbPanel');
   if (oldKb) oldKb.remove();
-  scroll.insertAdjacentHTML('afterbegin', dashboardHTML() + kbPanelHTML());
+  const oldWip = document.getElementById('wipPanel');
+  if (oldWip) oldWip.remove();
+  scroll.insertAdjacentHTML('afterbegin', dashboardHTML() + wipPanelHTML() + kbPanelHTML());
 }
 
 // ============================================================

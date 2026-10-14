@@ -1,5 +1,9 @@
 # Workout App Changelog
 
+## v12.9 — 2026-10-14
+### Added
+- **FEAT-23 Weigh-in Prep** — ⚖️ card under the accountability dashboard with today's steps for a clean Thursday weigh-in, built around the Tuesday-night dose: psyllium with the first meal Sun/Mon, 2pm-only on Tuesday with a lighter protein-first dinner, skip/half psyllium + ~1 gal water + post-meal walks on Wednesday, and a post-void routine Thursday morning. Tap a step to tick it (local only, resets daily). Auto-opens Tue–Thu, collapsed the rest of the week.
+
 ## v12.8.1 — 2026-10-12
 ### Fixed
 - Phones kept showing a stale copy of the app (the old Hassan-on-every-exercise program) after v12.8 deployed. `vercel.json` now sends `Cache-Control: no-cache` for the HTML, and the app checks the served version on load and reloads once if it's newer.
