@@ -809,7 +809,7 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 // ============================================================
 // APP VERSION — update this on every release
 // ============================================================
-const APP_VERSION = 'v12.8.1';
+const APP_VERSION = 'v12.8.2';
 // v12.8.1: if a home-screen / cached copy is older than what Vercel is serving, reload once
 (async function checkForNewerBuild() {
   try {
@@ -1224,7 +1224,7 @@ const MOBILITY_EXERCISES = {
 const REST_CONTENT = {
   wed:{ title:'SPRINT DAY ⚡', icon:'⚡', sub:'Visceral fat weapon. 90-min/wk HIIT target.', tips:[
     {icon:'🚶',text:'AM fasted incline walk FIRST: 6% grade, 3.0 mph, 30–45 min. Zone 2 (108–128 bpm). Fasted keto state = maximum fat oxidation.'},
-    {icon:'⚡',text:'SPRINT PROTOCOL — counts toward your 90-min/week HIIT threshold: 5-min warm-up walk → 6 × 30-sec MAX effort sprints (manual treadmill, lean hard) → 75-sec walking recovery between each (trial, was 90s) → 5-min cool-down. Total: ~24 min. Zone 4–5 target: 140–165+ bpm. Dr. O\'Mara data: short maximal sprints eliminate visceral fat faster than any other cardio modality.'},
+    {icon:'⚡',text:'SPRINT PROTOCOL — counts toward your 90-min/week HIIT threshold: 5-min warm-up walk → 8 × 30-sec MAX effort sprints (manual treadmill, lean hard) → 75-sec walking recovery between each → 5-min cool-down. Push the last rounds to 170+ bpm. Total: ~27 min. Zone 4–5 target: 140–165+ bpm. Dr. O\'Mara data: short maximal sprints eliminate visceral fat faster than any other cardio modality.'},
     {icon:'📈',text:'PROGRESSIVE OVERLOAD: Week 1–2 = 4 rounds. Add 1 round every 2 weeks. Goal = 8 rounds by Week 8. Intensity rule: if it doesn\'t feel hard, lean harder into the belt.'},
     {icon:'♨️',text:'POST-SPRINT SAUNA (non-optional): 20 min @ 175°F traditional sauna. Using sauna post-exercise amplifies VO2 max gains and anabolic signaling beyond exercise alone. Do not exceed 200°F. Dr. Rhonda Patrick protocol.'},
     {icon:'🧘',text:'Hip mobility + thoracic spine work: 15–20 min. Counteracts desk compression from sitting.'},
@@ -1232,7 +1232,7 @@ const REST_CONTENT = {
     {icon:'😴',text:'Sleep is visceral fat medicine. Two weeks of poor sleep = 11% more visceral fat with zero weight change (RCT). Protect tonight\'s window. Magnesium before bed.'}
   ]},
   sat:{ title:'SPRINT + RECOVERY', icon:'⚡', sub:'Second HIIT session. Then full recharge.', tips:[
-    {icon:'⚡',text:'SPRINT PROTOCOL (2nd weekly HIIT session): 5-min warm-up walk → 6 × 30-sec MAX effort sprints (manual treadmill, lean hard) → 75-sec walking recovery between each (trial, was 90s) → 5-min cool-down. Total: ~24 min. Zone 4–5 target: 140–165+ bpm. Wed + Sat sprints = ~48 min pure HIIT. Add a group class any day (swap button on any workout day) and you clear the 90-min/week visceral fat threshold.'},
+    {icon:'⚡',text:'SPRINT PROTOCOL (2nd weekly HIIT session): 5-min warm-up walk → 8 × 30-sec MAX effort sprints (manual treadmill, lean hard) → 75-sec walking recovery between each → 5-min cool-down. Push the last rounds to 170+ bpm. Total: ~27 min. Zone 4–5 target: 140–165+ bpm. Wed + Sat sprints = ~54 min pure HIIT. Add a group class any day (swap button on any workout day) and you clear the 90-min/week visceral fat threshold.'},
     {icon:'📈',text:'Progressive overload: Start at 4 rounds. Add 1 round every 2 weeks alongside Wednesday. Both days progress together. Goal = 8 rounds each by Week 8.'},
     {icon:'♨️',text:'POST-SPRINT SAUNA: 20–30 min @ 175°F. No rush today — weekend. This is the best day to extend the session. Do not exceed 200°F. Amplifies VO2 max and anabolic signaling beyond exercise alone.'},
     {icon:'🚶',text:'After sauna: done. No more cardio. Zone 1–2 walking only if you feel like moving. Legs are tomorrow — protect recovery.'},
@@ -1543,7 +1543,7 @@ const ALTERNATIVE_ACTIVITIES = {
     id: 'sprint',
     title: '⚡ Sprint Timer',
     emoji: '⚡',
-    description: 'High-intensity interval training on treadmill. 6 rounds × 30-sec max effort.',
+    description: 'High-intensity interval training on treadmill. 8 rounds × 30-sec max effort.',
     type: 'timer'
   },
   yoga: {
@@ -5691,11 +5691,12 @@ function renderRestDay(dayKey) {
 // ============================================================
 // SPRINT TIMER ENGINE
 // ============================================================
+const SPRINT_DEFAULT_ROUNDS = 8; // Oct 2026: 6 -> 8 after VF held at 12
 let sprintState = {
   running: false,
   phase: 'idle',   // idle | warmup | sprint | rest | cooldown | done
   round: 0,
-  totalRounds: 6,
+  totalRounds: SPRINT_DEFAULT_ROUNDS,
   elapsed: 0,
   phaseDuration: 0,
   interval: null,
@@ -5729,7 +5730,7 @@ const SPRINT_PHASES = {
 };
 
 function renderSprintDay(dayKey, content) {
-  sprintState = { running: false, phase: 'idle', round: 0, totalRounds: 6, elapsed: 0, phaseDuration: 0, interval: null, hrAvg: '', hrMax: '' };
+  sprintState = { running: false, phase: 'idle', round: 0, totalRounds: SPRINT_DEFAULT_ROUNDS, elapsed: 0, phaseDuration: 0, interval: null, hrAvg: '', hrMax: '' };
   const watch = sessionState['__watch__'] || {};
 
   const tipsHtml = content.tips.slice(2).map(t =>
