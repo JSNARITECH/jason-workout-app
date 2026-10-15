@@ -1,5 +1,9 @@
 # Workout App Changelog
 
+## v12.8.2 — 2026-10-15
+### Changed
+- **Sprints default to 8 rounds** (was 6) on Wed, Sat and make-up sprints: same 30s max effort / 75s walk recovery. One `SPRINT_DEFAULT_ROUNDS` constant; the ± stepper still allows 4–10. Tips updated (~27 min/session, push the last rounds to 170+ bpm). Replaces the unmerged PR #18, which was built on v12.4 and went stale.
+
 ## v12.8.1 — 2026-10-12
 ### Fixed
 - Phones kept showing a stale copy of the app (the old Hassan-on-every-exercise program) after v12.8 deployed. `vercel.json` now sends `Cache-Control: no-cache` for the HTML, and the app checks the served version on load and reloads once if it's newer.
