@@ -635,6 +635,15 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .kbt-move{font-family:'Bebas Neue',sans-serif;font-size:34px;line-height:1.05;color:var(--white);}
 .kbt-clock{font-family:'Bebas Neue',sans-serif;font-size:120px;line-height:1;color:var(--white);font-variant-numeric:tabular-nums;}
 .kbt-work .kbt-clock{color:var(--accent);}
+.kbt-clock.sm{font-size:40px;color:var(--dim2);}
+.kbt-reps{font-family:'Bebas Neue',sans-serif;font-size:140px;line-height:0.9;color:var(--accent);font-variant-numeric:tabular-nums;}
+.kbt-reps small{font-size:44px;color:var(--dim2);margin-left:6px;}
+.kbt-side{font-size:20px;font-weight:800;letter-spacing:3px;padding:8px 18px;border-radius:24px;color:#000;}
+.kbt-side.l{background:var(--accent);}
+.kbt-side.r{background:var(--blue);}
+.kbt-side.soon{background:none;border:2px solid currentColor;}
+.kbt-side.soon.l{color:var(--accent);}
+.kbt-side.soon.r{color:var(--blue);}
 .kbt-stepbar{width:80%;height:6px;background:var(--card2);border-radius:4px;overflow:hidden;}
 .kbt-stepbar div{height:100%;background:var(--accent);transition:width 0.25s linear;}
 .kbt-rest .kbt-stepbar div{background:var(--blue);}
@@ -809,7 +818,7 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 // ============================================================
 // APP VERSION — update this on every release
 // ============================================================
-const APP_VERSION = 'v12.8.1';
+const APP_VERSION = 'v12.9';
 // v12.8.1: if a home-screen / cached copy is older than what Vercel is serving, reload once
 (async function checkForNewerBuild() {
   try {
@@ -2159,10 +2168,10 @@ function alcoholFreeDays() {
 // presses stay light on the main pressing days (Mon/Thu).
 // ============================================================
 const KB_MOVES = [
-  { id:'halo',  name:'Halos',            target:50, step:10, bell:'light', cue:'Tight circle around the head, ribs down. Switch direction every 10.' },
-  { id:'atw',   name:'Around the World', target:50, step:10, bell:'light', cue:'Pass around the waist with hips locked still. Switch direction every 10.' },
+  { id:'halo',  name:'Halos',            target:50, step:25, bell:'light', cue:'Tight circle around the head, ribs down. 25 circling left, then 25 circling right.' },
+  { id:'atw',   name:'Around the World', target:50, step:25, bell:'light', cue:'Pass around the waist with hips locked still. 25 passing left, then 25 passing right.' },
   { id:'press', name:'Horizontal Press', target:50, step:10, bell:'light', cue:'Floor press or squeeze press, slow lower. Split across both arms.' },
-  { id:'swing', name:'Swings',           target:50, step:10, bell:'heavy', cue:'Sets of 10. Hike, snap the hips, float to chest height. If your low back takes over, stop.' },
+  { id:'swing', name:'Swings',           target:50, step:10, bell:'heavy', cue:'One unbroken set. Hike, snap the hips, float to chest height. If your low back takes over, stop.' },
   { id:'march', name:'Single-Arm Knee Raise', target:50, step:5, bell:'light', cue:'Bell in one hand, stand tall, drive each knee up — 25 per leg, then switch the bell to the other hand. Ribs down, no leaning.' },
 ];
 let kbOpen = null; // null = auto (open until done)
@@ -2245,13 +2254,15 @@ function kbToggleOpen() {
 // work blocks (reps ÷ pace) with rest between; voice + beeps call the move, the
 // set and what's next, and every finished block logs its reps to the card.
 // Timing runs off timestamps, so a throttled/locked phone catches up instead of drifting.
+// v12.9: two-sided moves are 25 one way + 25 the other with one short switch; swings
+// go unbroken; a live rep counter paced to the timer shows the rep and the side.
 // ============================================================
 const KB_TIMING = {
-  halo:  { perSet:10, secPerRep:2.5, rest:15, say:'Halos' },
-  atw:   { perSet:10, secPerRep:2.0, rest:15, say:'Around the world' },
+  halo:  { perSet:25, secPerRep:2.4, rest:10, say:'Halos', sides:['circling left','circling right'], tags:['LEFT','RIGHT'] },
+  atw:   { perSet:25, secPerRep:1.8, rest:10, say:'Around the world', sides:['passing left','passing right'], tags:['LEFT','RIGHT'] },
   press: { perSet:10, secPerRep:2.5, rest:20, say:'Horizontal press' },
-  swing: { perSet:10, secPerRep:2.0, rest:30, say:'Kettlebell swings' },
-  march: { perSet:25, secPerRep:1.6, rest:30, say:'Single arm knee raises', sides:['bell in your left hand','bell in your right hand'] },
+  swing: { perSet:50, secPerRep:1.6, rest:30, say:'Kettlebell swings' },
+  march: { perSet:25, secPerRep:1.6, rest:15, say:'Single arm knee raises', sides:['bell in your left hand','bell in your right hand'], tags:['LEFT HAND','RIGHT HAND'] },
 };
 const KB_PACES = { easy:{ label:'Easy', mult:1.2 }, normal:{ label:'Normal', mult:1.0 }, fast:{ label:'Fast', mult:0.85 } };
 const KB_TRANSITION_SECS = 10;
@@ -2267,20 +2278,28 @@ function kbBuildPlan(date, paceKey) {
   const moves = KB_MOVES.filter(m => kbRepsOf(log, m.id) < kbTarget(m, date) && KB_TIMING[m.id]);
   moves.forEach((m, mi) => {
     const t = KB_TIMING[m.id];
-    let left = kbTarget(m, date) - kbRepsOf(log, m.id);
+    let done = kbRepsOf(log, m.id), left = kbTarget(m, date) - done;
+    // Chunks end on side boundaries, so a half-finished move resumes on the right side
     const chunks = [];
-    while (left > 0) { const c = Math.min(t.perSet, left); chunks.push(c); left -= c; }
+    while (left > 0) {
+      const c = Math.min(t.perSet - (done % t.perSet), left);
+      chunks.push({ reps: c, sideIdx: Math.floor(done / t.perSet) % 2 });
+      done += c; left -= c;
+    }
+    const sideOf = ch => t.sides ? t.sides[ch.sideIdx] : '';
+    const tagOf = ch => t.tags ? t.tags[ch.sideIdx] : '';
     steps.push({ kind: mi === 0 ? 'ready' : 'next', moveId: m.id, name: m.name, secs: mi === 0 ? 10 : KB_TRANSITION_SECS,
-      say: (mi === 0 ? 'Get ready. First up, ' : 'Next up, ') + t.say + (t.sides ? ', ' + t.sides[0] : '') });
-    chunks.forEach((reps, ci) => {
-      const side = t.sides ? t.sides[ci % t.sides.length] : '';
-      steps.push({ kind:'work', moveId:m.id, name:m.name, reps, set:ci+1, sets:chunks.length, side,
+      tag: tagOf(chunks[0]), say: (mi === 0 ? 'Get ready. First up, ' : 'Next up, ') + t.say + (t.sides ? ', ' + sideOf(chunks[0]) : '') });
+    chunks.forEach((ch, ci) => {
+      const side = sideOf(ch), reps = ch.reps;
+      const setWord = chunks.length > 1 ? ` Set ${ci+1} of ${chunks.length}.` : '';
+      steps.push({ kind:'work', moveId:m.id, name:m.name, reps, set:ci+1, sets:chunks.length, side, tag: tagOf(ch),
         secs: Math.max(10, Math.round(reps * t.secPerRep * mult)),
-        say: `${t.say}${side ? ', ' + side : ''}. Set ${ci+1} of ${chunks.length}. ${reps} reps. Go.` });
+        say: `${t.say}${side ? ', ' + side : ''}.${setWord} ${reps} reps. Go.` });
       if (ci < chunks.length - 1) {
-        const nextSide = t.sides ? t.sides[(ci + 1) % t.sides.length] : '';
-        steps.push({ kind:'rest', moveId:m.id, name:m.name, secs:t.rest,
-          say: nextSide ? `Rest. Switch the bell, ${nextSide}.` : 'Rest.' });
+        const next = chunks[ci + 1];
+        steps.push({ kind:'rest', moveId:m.id, name:m.name, secs:t.rest, tag: tagOf(next),
+          say: t.tags ? `Switch. ${sideOf(next)} next.` : 'Rest.' });
       }
     });
   });
@@ -2344,6 +2363,11 @@ function kbStepRemaining() {
   const now = kbT.pausedAt || Date.now();
   return Math.max(0, st.secs - (now - kbT.stepStart) / 1000);
 }
+// Rep the timer expects you to be on — the work block spread evenly over its reps
+function kbCurrentRep() {
+  const st = kbT.steps[kbT.idx];
+  return Math.min(st.reps, Math.floor((st.secs - kbStepRemaining()) / (st.secs / st.reps)) + 1);
+}
 function kbFinishStep() {
   const st = kbT.steps[kbT.idx];
   if (st.kind === 'work') {
@@ -2368,6 +2392,8 @@ function kbTimerTick() {
   if (rem <= 0) { kbFinishStep(); return; }
   const el = document.getElementById('kbtClock');
   if (el) el.textContent = kbFmt(whole);
+  const repEl = document.getElementById('kbtRep');
+  if (repEl) repEl.textContent = kbCurrentRep();
   const bar = document.getElementById('kbtStepBar');
   if (bar) bar.style.width = (100 - rem / kbT.steps[kbT.idx].secs * 100) + '%';
 }
@@ -2403,7 +2429,7 @@ function kbRenderTimer() {
     o.innerHTML = `<div class="kbt-box">
       <div class="kbt-phase">GUIDED KETTLEBELL</div>
       <div class="kbt-move">${moves.join(' → ')}</div>
-      <div class="kbt-sub">≈ ${Math.round(totalSecs / 60)} min · timed sets, no counting · reps log automatically</div>
+      <div class="kbt-sub">≈ ${Math.round(totalSecs / 60)} min · live rep counter · reps log automatically</div>
       <div class="kbt-chips">${Object.entries(KB_PACES).map(([k, v]) => `<button class="kbt-chip ${kbT.pace === k ? 'on' : ''}" onclick="kbSetPace('${k}')">${v.label}</button>`).join('')}${voiceBtn}</div>
       <button class="kbt-main" onclick="kbStartTimer()">▶ Start</button>
       <button class="kbt-link" onclick="closeKbTimer()">Cancel</button>
@@ -2421,16 +2447,24 @@ function kbRenderTimer() {
   const phase = st.kind === 'work' ? 'WORK' : st.kind === 'rest' ? 'REST' : 'UP NEXT';
   const phaseCls = st.kind === 'work' ? 'work' : 'rest';
   const elapsedTotal = kbT.steps.slice(0, kbT.idx).reduce((a, x) => a + x.secs, 0);
-  const setLine = st.kind === 'work' ? `Set ${st.set} of ${st.sets} · ${st.reps} reps${st.side ? ' · ' + st.side : ''}`
-    : st.kind === 'rest' ? `Breathe — set ${kbT.steps[kbT.idx + 1]?.set || ''} coming` : 'Grab the bell and set up';
+  const setLine = st.kind === 'work' ? `${st.sets > 1 ? `Set ${st.set} of ${st.sets} · ` : 'Unbroken · '}${st.reps} reps${st.side ? ' · ' + st.side : ''}`
+    : st.kind === 'rest' ? (st.tag ? `Switch sides — ${kbT.steps[kbT.idx + 1]?.side || ''} next` : `Breathe — set ${kbT.steps[kbT.idx + 1]?.set || ''} coming`)
+    : 'Grab the bell and set up';
+  // Side badge: arrow points the way you're working; on rest / up next it shows the side coming up
+  const sideBadge = st.tag ? `<div class="kbt-side ${st.tag.startsWith('LEFT') ? 'l' : 'r'}${st.kind === 'work' ? '' : ' soon'}">${st.tag.startsWith('LEFT') ? '◀ ' + st.tag : st.tag + ' ▶'}</div>` : '';
+  const counter = st.kind === 'work'
+    ? `<div class="kbt-reps"><span id="kbtRep">${kbCurrentRep()}</span><small>/ ${st.reps}</small></div>
+       <div class="kbt-clock sm" id="kbtClock">${kbFmt(Math.ceil(kbStepRemaining()))}</div>`
+    : `<div class="kbt-clock" id="kbtClock">${kbFmt(Math.ceil(kbStepRemaining()))}</div>`;
   o.innerHTML = `<div class="kbt-box kbt-${phaseCls}">
     <div class="kbt-total"><div style="width:${elapsedTotal / totalSecs * 100}%"></div></div>
     <div class="kbt-phase">${phase}${kbT.pausedAt ? ' · PAUSED' : ''}</div>
     <div class="kbt-move">${st.name}</div>
-    <div class="kbt-clock" id="kbtClock">${kbFmt(Math.ceil(kbStepRemaining()))}</div>
+    ${sideBadge}
+    ${counter}
     <div class="kbt-stepbar"><div id="kbtStepBar" style="width:${100 - kbStepRemaining() / st.secs * 100}%"></div></div>
     <div class="kbt-sub">${setLine}</div>
-    ${nextWork && st.kind !== 'work' ? '' : nextWork ? `<div class="kbt-next">Next: ${nextWork.name}${nextWork.moveId === st.moveId ? ` · set ${nextWork.set}` : ''}</div>` : '<div class="kbt-next">Last set — finish strong</div>'}
+    ${nextWork && st.kind !== 'work' ? '' : nextWork ? `<div class="kbt-next">Next: ${nextWork.name}${nextWork.moveId === st.moveId ? (nextWork.tag ? ` · ${nextWork.tag}` : ` · set ${nextWork.set}`) : ''}</div>` : '<div class="kbt-next">Last set — finish strong</div>'}
     <div class="kbt-ctrls">
       <button class="kbt-ctrl" onclick="kbPauseTimer()">${kbT.pausedAt ? '▶ Resume' : '❚❚ Pause'}</button>
       <button class="kbt-ctrl" onclick="kbSkipStep()">Skip ⏭</button>
@@ -2507,7 +2541,7 @@ function kbPanelHTML() {
     </div>
     ${rows}
     ${kbHistoryHTML()}
-    <div class="kb-foot">~12–15 min · morning or as a finisher · tight low back the next morning = skip swings for 2 days</div>
+    <div class="kb-foot">~11 min · morning or as a finisher · tight low back the next morning = skip swings for 2 days</div>
   </div>`;
 }
 

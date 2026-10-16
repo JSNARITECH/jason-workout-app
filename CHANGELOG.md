@@ -1,5 +1,14 @@
 # Workout App Changelog
 
+## v12.9 — 2026-10-16
+### Changed — kettlebell timer: fewer breaks, live rep counter
+- **Live rep counter** on every work set — a big "12 / 25" that counts up at the selected pace (Easy / Normal / Fast), with the clock underneath. Use it to judge whether you're moving faster or slower than the pace.
+- **Left / right badge** — Halos, Around the World and the knee raise show ◀ LEFT or RIGHT ▶ while you work, and the side coming up during the switch.
+- **Halos and Around the World: 25 one way, 25 the other** with a single 10s switch (was 5 sets of 10 with 15s rests).
+- **Swings: one unbroken set** of 50 (25 on leg days), ≈80s at Normal (was 5 sets of 10 with 30s rests).
+- Knee raise switch cut from 30s to 15s. Horizontal press unchanged.
+- Full circuit ≈ 11 min at Normal (was ≈ 16): ≈ 10 Fast, ≈ 13 Easy. A half-done move resumes on the correct side.
+
 ## v12.8.1 — 2026-10-12
 ### Fixed
 - Phones kept showing a stale copy of the app (the old Hassan-on-every-exercise program) after v12.8 deployed. `vercel.json` now sends `Cache-Control: no-cache` for the HTML, and the app checks the served version on load and reloads once if it's newer.
