@@ -1,5 +1,9 @@
 # Workout App Changelog
 
+## Macro tracker — Psyllium reminder — 2026-10-18
+
+- FUEL (`macros.html`) TODAY tab: daily psyllium reminder card under the fasting card. Text per weekday comes from the `PSYLLIUM` config object; checkbox is stored per America/New_York date (`macro-psyllium-YYYY-MM-DD`); highlights after 2pm ET when unchecked (never on a skip day).
+
 ## v12.9 — 2026-10-18
 
 - FEAT-23: RDLs removed from every day. The leg-day RDL slot is now **Glute Kick Back (Cable)** as the Hassan finisher (fail + 20 burnout); RDL/stiff-leg removed from the swap library and the back-recovery suggestions.

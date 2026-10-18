@@ -80,6 +80,21 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .fast-window{font-size:10px;color:var(--dim2);margin-top:7px;letter-spacing:0.3px;}
 .fast-nudge{background:var(--orange-dim);border:1px solid rgba(255,154,77,0.3);border-radius:10px;padding:9px 11px;margin-top:10px;font-size:12px;color:var(--orange);font-weight:600;line-height:1.45;}
 
+/* PSYLLIUM REMINDER */
+.psy-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px 14px;margin-bottom:12px;transition:border-color 0.2s,background 0.2s;}
+.psy-card.due{border-color:var(--orange);background:var(--orange-dim);}
+.psy-card.done{border-color:rgba(77,255,170,0.3);}
+.psy-top{display:flex;align-items:flex-start;gap:12px;}
+.psy-check{flex-shrink:0;width:30px;height:30px;border-radius:8px;border:2px solid var(--border2);background:var(--card2);color:var(--black);font-size:18px;font-weight:700;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;}
+.psy-card.due .psy-check{border-color:var(--orange);}
+.psy-card.done .psy-check{background:var(--green);border-color:var(--green);}
+.psy-main{flex:1;min-width:0;}
+.psy-lbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;font-weight:700;color:var(--dim2);display:flex;justify-content:space-between;gap:8px;}
+.psy-card.due .psy-lbl{color:var(--orange);}
+.psy-text{font-size:13px;font-weight:600;line-height:1.4;margin-top:4px;}
+.psy-card.done .psy-text{color:var(--dim2);text-decoration:line-through;}
+.psy-notes{margin:9px 0 0 42px;padding:0;list-style:none;font-size:10px;color:var(--dim2);line-height:1.5;}
+
 /* SECTION */
 .sec-title{font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--dim2);font-weight:700;margin:16px 2px 9px;display:flex;align-items:center;justify-content:space-between;}
 .sec-title .sec-note{color:var(--dim);letter-spacing:0.5px;text-transform:none;font-size:10px;font-weight:600;}
@@ -338,6 +353,59 @@ function todayStr() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
+/* ---------- PSYLLIUM REMINDER ----------
+   Edit the text/skip flags here — the card renders from this object only.
+   Keys are day of week, 0 = Sunday. skip:true = no dose due (never highlights). */
+const PSYLLIUM = {
+  schedule: {
+    0: { text: 'Psyllium with first meal (2pm) + 12–16 oz water' },
+    1: { text: 'Psyllium with first meal (2pm) + 12–16 oz water' },
+    2: { text: 'Psyllium at 2pm ONLY — none near the 8pm meal' },
+    3: { text: 'Skip psyllium (or half dose at 2pm with plenty of water)', skip: true },
+    4: { text: 'Weigh-in day — optional dose at 2pm after weigh-in', optional: true },
+    5: { text: 'Psyllium with first meal + 12–16 oz water' },
+    6: { text: 'Psyllium with first meal + 12–16 oz water' }
+  },
+  always: [
+    'Mix in 12+ oz water, drink within 60 seconds',
+    'Chase with 8 oz water',
+    'Keep 30+ min away from creatine, omega-3, and other supplements'
+  ],
+  dueHour: 14,            // highlight after this hour (24h) if unchecked
+  tz: 'America/New_York'
+};
+// Today's date, weekday and hour in the PSYLLIUM timezone (independent of device zone)
+function psyNow() {
+  const p = {};
+  new Intl.DateTimeFormat('en-US', { timeZone: PSYLLIUM.tz, year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short', hour: '2-digit', hourCycle: 'h23' })
+    .formatToParts(new Date()).forEach((x) => { p[x.type] = x.value; });
+  return { date: `${p.year}-${p.month}-${p.day}`, dow: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(p.weekday), hour: +p.hour };
+}
+function psyKey(date) { return `macro-psyllium-${date}`; }
+function togglePsyllium() {
+  const k = psyKey(psyNow().date);
+  lsSet(k, !lsGet(k, false));
+  renderToday();
+}
+function psylliumCard() {
+  const n = psyNow();
+  const day = PSYLLIUM.schedule[n.dow];
+  if (!day) return '';
+  const done = !!lsGet(psyKey(n.date), false);
+  const due = !done && !day.skip && n.hour >= PSYLLIUM.dueHour;
+  const tag = done ? 'Done' : day.skip ? 'Skip day' : due ? 'Due now' : day.optional ? 'Optional' : 'Today';
+  return `<div class="psy-card${done ? ' done' : ''}${due ? ' due' : ''}">
+    <div class="psy-top">
+      <button class="psy-check" onclick="togglePsyllium()" aria-pressed="${done}" aria-label="Mark psyllium done">${done ? '✓' : ''}</button>
+      <div class="psy-main">
+        <div class="psy-lbl"><span>🌾 Psyllium</span><span>${tag}</span></div>
+        <div class="psy-text">${esc(day.text)}</div>
+      </div>
+    </div>
+    <ul class="psy-notes">${PSYLLIUM.always.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>
+  </div>`;
+}
+
 function lsGet(key, fallback) {
   try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
   catch { return fallback; }
@@ -879,6 +947,8 @@ function renderToday() {
       <div class="fast-window">${fmtHour(fw.openMin)}–${fmtHour(fw.closeMin)} · ${fw.weekend ? '16:8 weekend' : '18:6 weekday'}</div>
       ${nudge}
     </div>
+
+    ${psylliumCard()}
 
     <div class="sec-title">Today's Log
       <span class="sec-note">${entries.length} ${entries.length === 1 ? 'entry' : 'entries'}</span>

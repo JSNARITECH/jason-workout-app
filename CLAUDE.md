@@ -676,6 +676,7 @@ macro-targets-cache             // last nutrition-targets response
 macro-trend-N                   // last nutrition-history response per range
 macro-auth                      // supabase-js session (storageKey) — access + refresh token
 macro-auth-email                // last email typed into the sign-in sheet
+macro-psyllium-YYYY-MM-DD       // true when that ET day's psyllium reminder is checked off (schedule: PSYLLIUM const in macros.html)
 ```
 
 ---
