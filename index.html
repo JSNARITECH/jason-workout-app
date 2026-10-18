@@ -809,7 +809,7 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 // ============================================================
 // APP VERSION — update this on every release
 // ============================================================
-const APP_VERSION = 'v12.8.1';
+const APP_VERSION = 'v12.9';
 // v12.8.1: if a home-screen / cached copy is older than what Vercel is serving, reload once
 (async function checkForNewerBuild() {
   try {
@@ -907,14 +907,13 @@ const ROTATION_POOLS = {
     { name:'Lying Leg Curl',             tier:'A',  equip:'machine' },
     { name:'Seated Leg Curl',            tier:'S',  equip:'machine' },
     { name:'Single-Leg Curl',            tier:'A',  equip:'machine' },
-    { name:'Smith Machine RDL',          tier:'A',  equip:'smith'   },
     { name:'Nordic Curl',                tier:'S',  equip:'free'    },
-    { name:'Stiff-Leg Deadlift',         tier:'A',  equip:'free'    },
   ],
   glutes: [
     { name:'Hip Abduction Machine',       tier:'A',  equip:'machine' },
     { name:'Hip Thrust (Smith)',          tier:'S',  equip:'smith'   },
-    { name:'Glute Kickback Cable',        tier:'A',  equip:'cable'   },
+    { name:'Glute Kick Back (Cable)',      tier:'A',  equip:'cable'   },
+    { name:'45° Hyperextension (Glute-Biased)', tier:'A', equip:'free' },
     { name:'Cable Pull-Through',          tier:'A',  equip:'cable'   },
   ],
   calves: [
@@ -980,10 +979,10 @@ const WORKOUTS = {
           cue:'Today\'s Hassan finisher: one set to failure, drop the pin ~25%, then 20 reps rest-pause (short breaths, keep going). Elbows pinned, spread the rope.' }
       ]},
       { label:'Abs 🎯', exercises:[
-        { id:'u-cable-crunch', name:'Cable Crunch (Standing)', muscle:'abs', restWork:60,
-          sets:[{wt:80,reps:'10-15'},{wt:80,reps:'10-15 → fail'}],
+        { id:'u-rev-crunch', name:'Reverse Crunch (Decline Bench)', muscle:'abs', restWork:60,
+          sets:[{wt:0,reps:'10-15'},{wt:0,reps:'10-15 → fail'}],
           chips:{sets:'2 hard sets',reps:'10-15 reps',tag:'Abs'},
-          cue:'Standing or seated on a bench — no kneeling (knee). Rope at the forehead, crunch the ribs toward the hips. Go heavy enough that 15 is a fight, and log the stack weight.' }
+          cue:'Lie on a decline bench, hands overhead gripping the bench. Curl the hips off the pad toward the ribs — tailbone up, no swinging. Slow lowering. Add a DB between the feet once 15 is easy.' }
       ]}
     ]
   },
@@ -1068,16 +1067,21 @@ const WORKOUTS = {
           sets:[{wt:132,reps:'8',note:'Warm'},{wt:154,reps:'8-12'},{wt:154,reps:'8-12 → fail'}],
           chips:{sets:'1 warm + 2 work',reps:'8-12 reps',target:'12 + 12 → add a plate'},
           cue:'Seated keeps the spine neutral. Squeeze, control the negative, no hip rise.' },
-        { id:'l-rdl', name:'Smith Machine RDL', muscle:'hams', restWork:150, warnSpinal:true,
-          sets:[{wt:95,reps:'8',note:'Warm'},{wt:135,reps:'8-10'},{wt:135,reps:'8-10 → fail'}],
-          chips:{sets:'1 warm + 2 work',reps:'8-10 reps',target:'10 + 10 → add 10 lbs'},
-          cue:'Hinge, don\'t squat: soft knees, push the hips back, bar slides down the thighs to mid-shin, flat back. Any lower-back pinch — stop and swap to the seated curl for an extra set.' }
+        { id:'l-kickback', name:'Glute Kick Back (Cable)', muscle:'glutes', restWork:60,
+          sets:[{wt:30,reps:'12-15 → fail'},{wt:20,reps:'20',note:'Burnout'}],
+          chips:{sets:'Finisher',reps:'Fail + 20 burnout',tag:'Hassan Finisher'},
+          hassan:true, ladder:[], burnout:'Drop ~30%, 20 reps rest-pause',
+          cue:'Ankle cuff on the low cable, slight hip hinge, hands on the frame. Kick back and slightly up, squeeze the glute 1 sec, control the return. Hips square — no lower-back arching. Each leg: fail, then drop and 20 rest-pause.' }
       ]},
       { label:'Glutes + Calves', exercises:[
         { id:'l-abduct', name:'Hip Abduction Machine', muscle:'glutes', restWork:75,
           sets:[{wt:110,reps:'15-20'},{wt:110,reps:'15-20 → fail'}],
           chips:{sets:'2 work',reps:'15-20 reps',target:'20 + 20 → go up'},
           cue:'Lean forward ~30°. Feel the side of the glute, not the front of the hip.' },
+        { id:'l-hyperext', name:'45° Hyperextension (Glute-Biased)', muscle:'glutes', restWork:75, optional:true,
+          sets:[{wt:0,reps:'12-15'},{wt:0,reps:'12-15'}],
+          chips:{sets:'2 work',reps:'12-15 reps',tag:'Optional'},
+          cue:'Bodyweight first. Pad at the hip crease, toes turned slightly out, round the upper back a touch and squeeze the glutes to rise only to a straight line — do NOT hyperextend. 3-sec lowering. Back-friendly posterior chain; any pinch, stop.' },
         { id:'l-calf', name:'Smith Machine Calf Raise', muscle:'calves', restWork:60,
           sets:[{wt:225,reps:'12-15 → fail'},{wt:185,reps:'20',note:'Burnout'}],
           chips:{sets:'Finisher',reps:'Fail + 20 burnout',tag:'Hassan Finisher'},
@@ -1085,10 +1089,10 @@ const WORKOUTS = {
           cue:'Today\'s Hassan finisher: straight knees, deep stretch, 2-sec squeeze — to failure, then drop and 20 rest-pause reps. No bouncing.' }
       ]},
       { label:'Abs 🎯', exercises:[
-        { id:'l-cable-crunch', name:'Cable Crunch (Standing)', muscle:'abs', restWork:60,
-          sets:[{wt:80,reps:'10-15'},{wt:80,reps:'10-15 → fail'}],
-          chips:{sets:'2 hard sets',reps:'10-15 reps',tag:'Abs'},
-          cue:'Standing or seated on a bench — no kneeling (knee). Crunch ribs to hips, go heavy enough that 15 is a fight.' }
+        { id:'l-hanging-leg-raise', name:'Hanging Leg Raise', muscle:'abs', restWork:60,
+          sets:[{wt:0,reps:'8-12'},{wt:0,reps:'8-12 → fail'}],
+          chips:{sets:'2 hard sets',reps:'8-12 reps',tag:'Abs'},
+          cue:'Hang (or use the captain\'s chair), legs straight or knees slightly bent, raise toward hip height with the pelvis curling up — no swinging. Drop to knee raises if the form breaks.' }
       ]}
     ]
   },
@@ -1627,14 +1631,15 @@ let selectedActivity = 'sprint'; // FEAT-4: Track which activity is selected for
 const BACK_RECOVERY_RULES = {
   risky_patterns: ['deadlift', 'barbell row', 'squat', 'bend over', 'spinal load', 'rotation'],
   safe_substitutions: {
-    'deadlift': 'Trap Bar RDL (lighter load, neutral grip)',
+    'deadlift': 'Leg Press or Cable Pull-Through (no hinge loading)',
     'Barbell Bent Over Row': 'Supported T-Bar Row (chest-supported)',
     'Barbell Squat': 'Goblet Squat or Leg Press (back support)',
     'Dumbbell Row': 'Landmine Row (neutral angle)',
     'Power Clean': 'Trapbar Deadlift (lighter weight)',
     'Hack Squat': 'Leg Press (back support)',
     'Leg Press': 'Machine Squat (guided path)',
-    'Cable Crunch': 'Pallof Press (anti-rotation)',
+    'Hanging Leg Raise': 'Pallof Press (anti-rotation)',
+    'Reverse Crunch (Decline Bench)': 'Pallof Press (anti-rotation)',
     'V-Taper Lat Pulldown': 'Chest-Supported Row'
   }
 };
@@ -1708,7 +1713,7 @@ function showBackRecoveryGuide() {
 
       <div style="margin-bottom:12px;">
         <strong>Safe Alternatives:</strong><br>
-        Trap Bar RDL, Supported Rows, Leg Press, Anti-rotation work (Pallof), Isometric holds
+        Supported Rows, Leg Press, Anti-rotation work (Pallof), Isometric holds
       </div>
 
       <div>
@@ -2172,14 +2177,14 @@ function kbBells() {
   return { heavy: 25, light: 20 }; // heaviest bell at the home gym is 25 lb
 }
 function kbDow(date) { return new Date(date + 'T12:00:00').getDay(); }
-// Day-aware targets: legs Tue/Sun already load the hinge via RDLs
+// Day-aware targets: legs Tue/Sun already load the hinge (squat + curls)
 function kbTarget(m, date) {
   if (m.id === 'swing' && [0, 2].includes(kbDow(date))) return 25;
   return m.target;
 }
 function kbDayNote(m, date) {
   const dow = kbDow(date);
-  if (m.id === 'swing' && (dow === 0 || dow === 2)) return 'Leg day — swings capped at 25 (RDLs already hit the hinge)';
+  if (m.id === 'swing' && (dow === 0 || dow === 2)) return 'Leg day — swings capped at 25 (leg day already loads the hinge)';
   if (m.id === 'press' && (dow === 1 || dow === 4)) return 'Main press day — go light, this is pump work';
   return '';
 }
