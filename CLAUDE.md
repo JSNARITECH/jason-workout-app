@@ -2,7 +2,7 @@
 
 **Purpose:** Personal strength training tracker with adaptive workout protocols, PR management, recovery modes, and multi-location gym support — plus a keto macro tracker (see §6.5) sharing the same repo, Supabase project and deployment.
 
-**Current Version:** v12.8 (2026-10-12) · macro tracker v1.0 (2026-09-16)  
+**Current Version:** v12.8 (2026-10-12) · macro tracker v1.1 (2026-10-19)  
 **Development Branch:** per session (latest: `claude/sweet-hamilton-w4maed`) — never push to `main` directly; merge after a Vercel preview check  
 **Deployment:** Vercel (two static HTML files + Supabase backend)
 
@@ -455,7 +455,7 @@ taps while standing in the kitchen.
 ### Views
 | Tab | What it does |
 |---|---|
-| 🎯 TODAY | Three rings, fasting window, entries grouped by meal slot, gap-closer chips |
+| 🎯 TODAY | Three rings, fasting window, psyllium reminder, entries grouped by meal slot, gap-closer chips |
 | ➕ LOG | Category-grouped food tiles (favorites first), tap → quantity stepper → log |
 | 📋 DAYS | **Meal composer** — see below |
 | 📈 TREND | 30/14-day protein bar chart vs target line, hit rate, avg cal, days over ceiling, table view |
@@ -492,6 +492,9 @@ logged entry is tappable and reopens in the stepper with **"Ate half"** and
    pending and `loadToday()` hides those ids instead of resurrecting them. A row
    deleted or edited while its POST was still in flight is deleted server-side when
    the POST returns, so it can't orphan and inflate history. `api()` times out at 15s.
+
+### Psyllium reminder (TODAY)
+A card under the fasting window. Everything it shows comes from the `PSYLLIUM` config object: `days` keyed by `getDay()` (0 = Sun) → `{ text, skip? }`, the always-shown `rules`, `dueHour` (14) and `timeZone` (`America/New_York`). The date, weekday and hour are read in that time zone whatever the phone is set to. The checkbox is stored at `macro-psyllium-YYYY-MM-DD` (localStorage only, not synced), so a new day starts unchecked. Older keys are cleared on load. After `dueHour`, an unchecked day without `skip` gets the orange `.due` highlight. Test with `?psyDay=wed&psyTime=15:00`, which stores the checkbox under `macro-psyllium-test-<day>` so real days aren't touched.
 
 ### Paste from Claude
 Accepts lines like `Ribeye, 14 oz cooked | 98g protein | 1260 cal | 0g net carbs`,
@@ -671,6 +674,7 @@ macro-day-YYYY-MM-DD            // today's entries incl. optimistic ones not yet
 macro-queue                     // [{ tempId, row }] writes awaiting POST — drives the retry pill
 macro-deletes                   // [id] server rows awaiting DELETE — also counted in the retry pill
 macro-composer                  // { meal_1, shake, meal_2, snack } day-builder picks
+macro-psyllium-YYYY-MM-DD       // true once today's psyllium reminder is checked (NY date); -test-<day> under ?psyDay
 macro-daytype-YYYY-MM-DD        // 'training' | 'rest' — picks which calorie target applies
 macro-targets-cache             // last nutrition-targets response
 macro-trend-N                   // last nutrition-history response per range

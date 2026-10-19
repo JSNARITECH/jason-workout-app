@@ -1,5 +1,9 @@
 # Workout App Changelog
 
+## Macro Tracker v1.1 — 2026-10-19
+### Added
+- **Psyllium reminder card** on the FUEL TODAY screen, under the fasting window. The text changes by day of the week, there's a checkbox to mark it done, and the three dosing rules always show underneath. The checkbox is saved per day using the New York date, so it starts unchecked every day. After 2pm New York time, an unchecked card turns orange, except on Wednesday (skip day). The schedule is the `PSYLLIUM` object near the top of `macros.html`, so days and text can be edited without touching the card code. For testing, `?psyDay=wed&psyTime=15:00` fakes the day and time.
+
 ## v12.8.1 — 2026-10-12
 ### Fixed
 - Phones kept showing a stale copy of the app (the old Hassan-on-every-exercise program) after v12.8 deployed. `vercel.json` now sends `Cache-Control: no-cache` for the HTML, and the app checks the served version on load and reloads once if it's newer.

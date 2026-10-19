@@ -80,6 +80,26 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .fast-window{font-size:10px;color:var(--dim2);margin-top:7px;letter-spacing:0.3px;}
 .fast-nudge{background:var(--orange-dim);border:1px solid rgba(255,154,77,0.3);border-radius:10px;padding:9px 11px;margin-top:10px;font-size:12px;color:var(--orange);font-weight:600;line-height:1.45;}
 
+/* PSYLLIUM REMINDER */
+.psy-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px 14px;margin-bottom:12px;transition:border-color 0.3s,background 0.3s;}
+.psy-card.due{background:var(--orange-dim);border-color:rgba(255,154,77,0.55);box-shadow:0 0 0 1px rgba(255,154,77,0.25);}
+.psy-card.done{opacity:0.7;}
+.psy-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;}
+.psy-cap{font-size:9px;letter-spacing:2px;text-transform:uppercase;font-weight:700;color:var(--purple);}
+.psy-card.due .psy-cap{color:var(--orange);}
+.psy-tag{font-size:9px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--dim2);}
+.psy-row{position:relative;display:flex;align-items:center;gap:12px;cursor:pointer;}
+.psy-row input{position:absolute;opacity:0;pointer-events:none;}
+.psy-box{flex-shrink:0;width:30px;height:30px;border-radius:8px;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:900;color:#000;transition:all 0.15s;}
+.psy-card.due .psy-box{border-color:var(--orange);}
+.psy-row input:checked + .psy-box{background:var(--accent);border-color:var(--accent);}
+.psy-row input:focus-visible + .psy-box{outline:2px solid var(--accent);outline-offset:2px;}
+.psy-text{font-size:14px;font-weight:600;line-height:1.35;}
+.psy-card.done .psy-text{text-decoration:line-through;color:var(--dim2);}
+.psy-rules{list-style:none;margin-top:10px;padding-top:9px;border-top:1px solid var(--border);}
+.psy-rules li{font-size:10.5px;color:var(--dim2);line-height:1.5;padding-left:12px;position:relative;}
+.psy-rules li::before{content:'·';position:absolute;left:3px;color:var(--dim);font-weight:900;}
+
 /* SECTION */
 .sec-title{font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--dim2);font-weight:700;margin:16px 2px 9px;display:flex;align-items:center;justify-content:space-between;}
 .sec-title .sec-note{color:var(--dim);letter-spacing:0.5px;text-transform:none;font-size:10px;font-weight:600;}
@@ -253,7 +273,7 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 <div class="sheet" id="sheet"><div class="sheet-grip"></div><div id="sheetBody"></div></div>
 
 <script>
-const APP_VERSION = 'v1.0';
+const APP_VERSION = 'v1.1';
 const API = 'https://fnjjfnsdxibjbzldfgit.supabase.co/functions/v1';
 
 const PROTEIN_TARGET = 225;
@@ -273,6 +293,28 @@ const CATS = [
   { id: 'veg',        label: 'Veg' },
   { id: 'fat',        label: 'Fats' },
 ];
+
+// Psyllium reminder on TODAY. Edit days/text here — the card reads only this object.
+// Keys are getDay() numbers (0 = Sunday). `skip: true` = no dose expected, so the
+// card is never highlighted as overdue that day.
+const PSYLLIUM = {
+  timeZone: 'America/New_York',
+  dueHour: 14, // after this hour, an unchecked non-skip day gets highlighted
+  days: {
+    0: { text: 'Psyllium with first meal (2pm) + 12–16 oz water' },
+    1: { text: 'Psyllium with first meal (2pm) + 12–16 oz water' },
+    2: { text: 'Psyllium at 2pm ONLY — none near the 8pm meal' },
+    3: { text: 'Skip psyllium (or half dose at 2pm with plenty of water)', skip: true },
+    4: { text: 'Weigh-in day — optional dose at 2pm after weigh-in' },
+    5: { text: 'Psyllium with first meal + 12–16 oz water' },
+    6: { text: 'Psyllium with first meal + 12–16 oz water' },
+  },
+  rules: [
+    'Mix in 12+ oz water, drink within 60 seconds',
+    'Chase with 8 oz water',
+    'Keep 30+ min away from creatine, omega-3, and other supplements',
+  ],
+};
 
 // Meals are the unit that gets swapped — any Meal 1 combines with any Meal 2.
 // `match` is a name fragment resolved against the live food library at load time.
@@ -385,6 +427,72 @@ function fmtHour(min) {
   const h24 = Math.floor(min / 60);
   const h = h24 % 12 === 0 ? 12 : h24 % 12;
   return `${h}${h24 >= 12 ? 'PM' : 'AM'}`;
+}
+
+/* ---------- psyllium reminder ---------- */
+const PSY_DAYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+
+// Date/day/hour in PSYLLIUM.timeZone, whatever zone the phone is set to.
+// Testing: ?psyDay=wed&psyTime=15:00 fakes the day/time (checkbox stored separately).
+function psylliumNow(now = new Date()) {
+  let date, day, hour, min;
+  try {
+    const parts = Object.fromEntries(new Intl.DateTimeFormat('en-US', {
+      timeZone: PSYLLIUM.timeZone, year: 'numeric', month: '2-digit', day: '2-digit',
+      weekday: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
+    }).formatToParts(now).map((p) => [p.type, p.value]));
+    date = `${parts.year}-${parts.month}-${parts.day}`;
+    day = PSY_DAYS.indexOf(parts.weekday.slice(0, 3).toLowerCase());
+    hour = Number(parts.hour) % 24;
+    min = Number(parts.minute);
+  } catch {
+    date = todayStr(); day = now.getDay(); hour = now.getHours(); min = now.getMinutes();
+  }
+  const q = new URLSearchParams(location.search);
+  const fakeDay = PSY_DAYS.indexOf((q.get('psyDay') || '').slice(0, 3).toLowerCase());
+  const fakeTime = /^(\d{1,2}):?(\d{2})$/.exec(q.get('psyTime') || '');
+  const test = fakeDay >= 0 || !!fakeTime;
+  if (fakeDay >= 0) day = fakeDay;
+  if (fakeTime) { hour = Number(fakeTime[1]); min = Number(fakeTime[2]); }
+  return { date, day, hour, min, key: test ? `macro-psyllium-test-${PSY_DAYS[day]}` : `macro-psyllium-${date}` };
+}
+
+function togglePsyllium(checked) {
+  const { key } = psylliumNow();
+  if (checked) lsSet(key, true);
+  else try { localStorage.removeItem(key); } catch {}
+  renderToday();
+}
+
+// One key per day; drop the old ones so localStorage doesn't collect them forever.
+function prunePsyllium() {
+  const keep = psylliumNow().key;
+  try {
+    Object.keys(localStorage)
+      .filter((k) => k.startsWith('macro-psyllium-') && !k.startsWith('macro-psyllium-test-') && k !== keep)
+      .forEach((k) => localStorage.removeItem(k));
+  } catch {}
+}
+
+function psylliumCard() {
+  const now = psylliumNow();
+  const cfg = PSYLLIUM.days[now.day];
+  if (!cfg) return '';
+  const done = lsGet(now.key, false) === true;
+  const due = !done && !cfg.skip && now.hour >= PSYLLIUM.dueHour;
+  const tag = done ? '✓ done' : cfg.skip ? 'skip day' : due ? 'due now' : `at ${fmtHour(PSYLLIUM.dueHour * 60)}`;
+  return `<div class="psy-card ${due ? 'due' : ''} ${done ? 'done' : ''}">
+    <div class="psy-top">
+      <div class="psy-cap">🌾 Psyllium · ${PSY_DAYS[now.day]}</div>
+      <div class="psy-tag" ${due ? 'style="color:var(--orange)"' : ''}>${tag}</div>
+    </div>
+    <label class="psy-row">
+      <input type="checkbox" ${done ? 'checked' : ''} onchange="togglePsyllium(this.checked)" aria-label="Mark psyllium done for today">
+      <span class="psy-box">${done ? '✓' : ''}</span>
+      <span class="psy-text">${esc(cfg.text)}</span>
+    </label>
+    <ul class="psy-rules">${PSYLLIUM.rules.map((r) => `<li>${esc(r)}</li>`).join('')}</ul>
+  </div>`;
 }
 
 /* ---------- totals ---------- */
@@ -879,6 +987,8 @@ function renderToday() {
       <div class="fast-window">${fmtHour(fw.openMin)}–${fmtHour(fw.closeMin)} · ${fw.weekend ? '16:8 weekend' : '18:6 weekday'}</div>
       ${nudge}
     </div>
+
+    ${psylliumCard()}
 
     <div class="sec-title">Today's Log
       <span class="sec-note">${entries.length} ${entries.length === 1 ? 'entry' : 'entries'}</span>
@@ -1570,6 +1680,7 @@ async function init() {
   queue = lsGet('macro-queue', []);
   deletes = lsGet('macro-deletes', []);
   composer = { meal_1: null, shake: null, meal_2: null, snack: null, ...lsGet('macro-composer', {}) };
+  prunePsyllium();
   renderSyncPill();
   renderHeader();
   renderToday();
