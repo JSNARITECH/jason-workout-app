@@ -299,20 +299,20 @@ const CATS = [
 // `optional: true` means the card is never highlighted as overdue that day.
 const PSYLLIUM = {
   timeZone: 'America/New_York',
-  dueHour: 14, // after this hour, an unchecked non-skip day gets highlighted
+  dueHour: 13, dueMinute: 30, // from this time on, an unchecked non-skip day gets highlighted
   days: {
-    0: { text: 'Psyllium with first meal (2pm) + 12–16 oz water' },
-    1: { text: 'Psyllium with first meal (2pm) + 12–16 oz water' },
-    2: { text: 'Psyllium at 2pm ONLY — none near the 8pm meal' },
-    3: { text: 'Skip psyllium (or half dose at 2pm with plenty of water)', skip: true },
-    4: { text: 'Weigh-in day — optional dose at 2pm after weigh-in', optional: true },
-    5: { text: 'Psyllium with first meal + 12–16 oz water' },
-    6: { text: 'Psyllium with first meal + 12–16 oz water' },
+    0: { text: 'Psyllium 30 min before first meal (~1:30pm) + 12–16 oz water' },
+    1: { text: 'Psyllium 30 min before first meal (~1:30pm) + 12–16 oz water' },
+    2: { text: 'Psyllium at 1:30pm ONLY — none near the 8pm meal' },
+    3: { text: 'Skip psyllium (or half dose at 1:30pm with plenty of water)', skip: true },
+    4: { text: 'Weigh-in day — optional dose at 1:30pm after weigh-in', optional: true },
+    5: { text: 'Psyllium 30 min before first meal (~1:30pm) + 12–16 oz water' },
+    6: { text: 'Psyllium 30 min before first meal (~1:30pm) + 12–16 oz water' },
   },
   rules: [
     'Mix in 12+ oz water, drink within 60 seconds',
     'Chase with 8 oz water',
-    'Keep 30+ min away from creatine, omega-3, and other supplements',
+    'Take it before your 2pm meal so it\'s 30+ min away from omega-3, multivitamin, creatine, and other supplements',
   ],
 };
 
@@ -523,8 +523,10 @@ function psylliumCard() {
   const cfg = PSYLLIUM.days[now.day];
   if (!cfg) return '';
   const done = lsGet(now.key, false) === true;
-  const due = !done && !cfg.skip && !cfg.optional && now.hour >= PSYLLIUM.dueHour;
-  const tag = done ? '✓ done' : cfg.skip ? 'skip day' : cfg.optional ? 'optional' : due ? 'due now' : `at ${fmtHour(PSYLLIUM.dueHour * 60)}`;
+  const dueAt = PSYLLIUM.dueHour * 60 + PSYLLIUM.dueMinute;
+  const due = !done && !cfg.skip && !cfg.optional && now.hour * 60 + now.min >= dueAt;
+  const dueLabel = `${PSYLLIUM.dueHour % 12 || 12}:${String(PSYLLIUM.dueMinute).padStart(2, '0')}${PSYLLIUM.dueHour >= 12 ? 'PM' : 'AM'}`;
+  const tag = done ? '✓ done' : cfg.skip ? 'skip day' : cfg.optional ? 'optional' : due ? 'due now' : `at ${dueLabel}`;
   return `<div class="psy-card ${due ? 'due' : ''} ${done ? 'done' : ''}">
     <div class="psy-top">
       <div class="psy-cap">🌾 Psyllium · ${PSY_DAYS[now.day]}</div>
