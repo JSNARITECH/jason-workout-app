@@ -295,8 +295,8 @@ const CATS = [
 ];
 
 // Psyllium reminder on TODAY. Edit days/text here — the card reads only this object.
-// Keys are getDay() numbers (0 = Sunday). `skip: true` = no dose expected, so the
-// card is never highlighted as overdue that day.
+// Keys are getDay() numbers (0 = Sunday). `skip: true` (no dose expected) or
+// `optional: true` means the card is never highlighted as overdue that day.
 const PSYLLIUM = {
   timeZone: 'America/New_York',
   dueHour: 14, // after this hour, an unchecked non-skip day gets highlighted
@@ -305,7 +305,7 @@ const PSYLLIUM = {
     1: { text: 'Psyllium with first meal (2pm) + 12–16 oz water' },
     2: { text: 'Psyllium at 2pm ONLY — none near the 8pm meal' },
     3: { text: 'Skip psyllium (or half dose at 2pm with plenty of water)', skip: true },
-    4: { text: 'Weigh-in day — optional dose at 2pm after weigh-in' },
+    4: { text: 'Weigh-in day — optional dose at 2pm after weigh-in', optional: true },
     5: { text: 'Psyllium with first meal + 12–16 oz water' },
     6: { text: 'Psyllium with first meal + 12–16 oz water' },
   },
@@ -454,14 +454,58 @@ function psylliumNow(now = new Date()) {
   const test = fakeDay >= 0 || !!fakeTime;
   if (fakeDay >= 0) day = fakeDay;
   if (fakeTime) { hour = Number(fakeTime[1]); min = Number(fakeTime[2]); }
-  return { date, day, hour, min, key: test ? `macro-psyllium-test-${PSY_DAYS[day]}` : `macro-psyllium-${date}` };
+  return { date, day, hour, min, test, key: test ? `macro-psyllium-test-${PSY_DAYS[day]}` : `macro-psyllium-${date}` };
 }
 
-function togglePsyllium(checked) {
-  const { key } = psylliumNow();
+function setPsyllium(key, checked) {
   if (checked) lsSet(key, true);
   else try { localStorage.removeItem(key); } catch {}
+}
+
+// Synced to daily_habits.psyllium so every device agrees. The local tick shows first;
+// an unsent change waits in macro-psyllium-pending and wins over the server until it lands.
+function togglePsyllium(checked) {
+  const now = psylliumNow();
+  setPsyllium(now.key, checked);
   renderToday();
+  if (now.test) return;
+  lsSet('macro-psyllium-pending', { date: now.date, psyllium: checked });
+  pushPsyllium();
+}
+
+async function pushPsyllium() {
+  const pending = lsGet('macro-psyllium-pending', null);
+  if (!pending) return;
+  try {
+    await api('/nutrition-habits', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(pending),
+    });
+    // only clear it if another tap didn't replace it while this was in flight
+    const still = lsGet('macro-psyllium-pending', null);
+    if (still && still.date === pending.date && still.psyllium === pending.psyllium) {
+      try { localStorage.removeItem('macro-psyllium-pending'); } catch {}
+    }
+  } catch {}
+}
+
+async function loadPsyllium() {
+  const now = psylliumNow();
+  if (now.test) return;
+  const pending = lsGet('macro-psyllium-pending', null);
+  if (pending) {
+    if (pending.date !== now.date) { try { localStorage.removeItem('macro-psyllium-pending'); } catch {} }
+    else return pushPsyllium();
+  }
+  try {
+    const data = await api(`/nutrition-habits?date=${now.date}`);
+    if (lsGet('macro-psyllium-pending', null)) return; // tapped while we were fetching
+    if (!!data.psyllium !== (lsGet(now.key, false) === true)) {
+      setPsyllium(now.key, !!data.psyllium);
+      if (currentView === 'today') renderToday();
+    }
+  } catch {}
 }
 
 // One key per day; drop the old ones so localStorage doesn't collect them forever.
@@ -469,7 +513,7 @@ function prunePsyllium() {
   const keep = psylliumNow().key;
   try {
     Object.keys(localStorage)
-      .filter((k) => k.startsWith('macro-psyllium-') && !k.startsWith('macro-psyllium-test-') && k !== keep)
+      .filter((k) => /^macro-psyllium-\d{4}-\d{2}-\d{2}$/.test(k) && k !== keep)
       .forEach((k) => localStorage.removeItem(k));
   } catch {}
 }
@@ -479,8 +523,8 @@ function psylliumCard() {
   const cfg = PSYLLIUM.days[now.day];
   if (!cfg) return '';
   const done = lsGet(now.key, false) === true;
-  const due = !done && !cfg.skip && now.hour >= PSYLLIUM.dueHour;
-  const tag = done ? '✓ done' : cfg.skip ? 'skip day' : due ? 'due now' : `at ${fmtHour(PSYLLIUM.dueHour * 60)}`;
+  const due = !done && !cfg.skip && !cfg.optional && now.hour >= PSYLLIUM.dueHour;
+  const tag = done ? '✓ done' : cfg.skip ? 'skip day' : cfg.optional ? 'optional' : due ? 'due now' : `at ${fmtHour(PSYLLIUM.dueHour * 60)}`;
   return `<div class="psy-card ${due ? 'due' : ''} ${done ? 'done' : ''}">
     <div class="psy-top">
       <div class="psy-cap">🌾 Psyllium · ${PSY_DAYS[now.day]}</div>
@@ -1689,6 +1733,7 @@ async function init() {
   renderPlans();
   loadTargets().then(renderHeader);
   loadToday();
+  loadPsyllium();
   flushQueue();
 
   clockTimer = setInterval(() => {
@@ -1696,9 +1741,9 @@ async function init() {
     if (currentView === 'today') renderToday();
   }, 30000);
 
-  window.addEventListener('online', () => flushQueue());
+  window.addEventListener('online', () => { flushQueue(); pushPsyllium(); });
   document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) { loadToday(); flushQueue(); }
+    if (!document.hidden) { loadToday(); loadPsyllium(); flushQueue(); }
   });
 }
 

@@ -81,6 +81,7 @@ alcohol        (bool)       — had a drink that day (resets the alcohol-free st
 sprint / walk  (bool)       — reset-week checklist items
 kettlebell     (bool)       — FEAT-20 daily circuit complete
 kettlebell_log (jsonb)      — FEAT-20 { reps: {halo, atw, press, swing, march}, heavy, light, updated } (legacy 'carry' ≥5 counts as march done)
+psyllium       (bool)       — macros.html psyllium reminder ticked; written only via nutrition-habits
 Anon: select / insert / update. Upsert on habit_date.
 ```
 
@@ -494,7 +495,7 @@ logged entry is tappable and reopens in the stepper with **"Ate half"** and
    the POST returns, so it can't orphan and inflate history. `api()` times out at 15s.
 
 ### Psyllium reminder (TODAY)
-A card under the fasting window. Everything it shows comes from the `PSYLLIUM` config object: `days` keyed by `getDay()` (0 = Sun) → `{ text, skip? }`, the always-shown `rules`, `dueHour` (14) and `timeZone` (`America/New_York`). The date, weekday and hour are read in that time zone whatever the phone is set to. The checkbox is stored at `macro-psyllium-YYYY-MM-DD` (localStorage only, not synced), so a new day starts unchecked. Older keys are cleared on load. After `dueHour`, an unchecked day without `skip` gets the orange `.due` highlight. Test with `?psyDay=wed&psyTime=15:00`, which stores the checkbox under `macro-psyllium-test-<day>` so real days aren't touched.
+A card under the fasting window. Everything it shows comes from the `PSYLLIUM` config object: `days` keyed by `getDay()` (0 = Sun) → `{ text, skip? }`, the always-shown `rules`, `dueHour` (14) and `timeZone` (`America/New_York`). `skip` or `optional` days never highlight (Wed skip, Thu optional). The date, weekday and hour are read in that time zone whatever the phone is set to. The checkbox is stored at `macro-psyllium-YYYY-MM-DD` and synced to `daily_habits.psyllium` through `nutrition-habits`, so a new day starts unchecked and every device agrees. A tick shows locally first. An unsent change waits in `macro-psyllium-pending` and is retried on load, `online` and visibility change; while it's pending it wins over the server value. Older keys are cleared on load. After `dueHour`, an unchecked day without `skip` gets the orange `.due` highlight. Test with `?psyDay=wed&psyTime=15:00`, which stores the checkbox under `macro-psyllium-test-<day>` so real days aren't touched.
 
 ### Paste from Claude
 Accepts lines like `Ribeye, 14 oz cooked | 98g protein | 1260 cal | 0g net carbs`,
@@ -531,7 +532,7 @@ bold, bullets and `1.` numbering are stripped from names; `protein: 52g` order a
 
 ### `nutrition-*` Functions (Macro Tracker)
 
-Source lives in `supabase/functions/nutrition-*/index.ts`; all five are registered
+Source lives in `supabase/functions/nutrition-*/index.ts`; all six are registered
 `verify_jwt = false` in `config.toml` and authenticate to PostgREST with
 `SUPABASE_SERVICE_ROLE_KEY` **server-side** — so the functions themselves are the
 access control. Each calls `requireUser()` from `supabase/functions/_shared/auth.ts`
@@ -544,7 +545,7 @@ right after the CORS preflight:
 - **Deploying:** each function ships with the shared module. Via the Supabase MCP, pass
   files `nutrition-X/index.ts` + `_shared/auth.ts` with `entrypoint_path:
   nutrition-X/index.ts` (the `../_shared` import resolves). A change to `auth.ts` means
-  redeploying all five.
+  redeploying all six.
 
 Client side (`macros.html`): supabase-js is loaded async from jsDelivr, pinned with an
 SRI hash, so first paint never waits on the CDN. `api()` attaches the session token;
@@ -564,6 +565,8 @@ Configuration → Redirect URLs.
 | `nutrition-today` | GET `?date=` | `{ entries, totals }` for that date |
 | `nutrition-history` | GET `?days=` | `{ daily[], summary }` — hit rate, avg cal, days over ceiling (days clamped 1–365) |
 | `nutrition-targets` | GET | Live weight/BMR/calorie targets — see below |
+| `nutrition-habits` | GET `?date=` | `{ date, psyllium }` from `daily_habits` |
+| `nutrition-habits` | POST | `{ date, psyllium: bool }` — upserts ONLY `psyllium` (merge-duplicates), so the workout app's columns on that row are untouched |
 
 **`nutrition-targets` must never hardcode targets.** It reads the most recent
 `body_composition` row and uses the scale's own `bmr_calories`, falling back to
@@ -675,6 +678,7 @@ macro-queue                     // [{ tempId, row }] writes awaiting POST — dr
 macro-deletes                   // [id] server rows awaiting DELETE — also counted in the retry pill
 macro-composer                  // { meal_1, shake, meal_2, snack } day-builder picks
 macro-psyllium-YYYY-MM-DD       // true once today's psyllium reminder is checked (NY date); -test-<day> under ?psyDay
+macro-psyllium-pending          // { date, psyllium } not yet confirmed by nutrition-habits
 macro-daytype-YYYY-MM-DD        // 'training' | 'rest' — picks which calorie target applies
 macro-targets-cache             // last nutrition-targets response
 macro-trend-N                   // last nutrition-history response per range
