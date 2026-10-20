@@ -809,7 +809,7 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 // ============================================================
 // APP VERSION — update this on every release
 // ============================================================
-const APP_VERSION = 'v12.8.1';
+const APP_VERSION = 'v12.9';
 // v12.8.1: if a home-screen / cached copy is older than what Vercel is serving, reload once
 (async function checkForNewerBuild() {
   try {
@@ -907,7 +907,6 @@ const ROTATION_POOLS = {
     { name:'Lying Leg Curl',             tier:'A',  equip:'machine' },
     { name:'Seated Leg Curl',            tier:'S',  equip:'machine' },
     { name:'Single-Leg Curl',            tier:'A',  equip:'machine' },
-    { name:'Smith Machine RDL',          tier:'A',  equip:'smith'   },
     { name:'Nordic Curl',                tier:'S',  equip:'free'    },
     { name:'Stiff-Leg Deadlift',         tier:'A',  equip:'free'    },
   ],
@@ -916,6 +915,7 @@ const ROTATION_POOLS = {
     { name:'Hip Thrust (Smith)',          tier:'S',  equip:'smith'   },
     { name:'Glute Kickback Cable',        tier:'A',  equip:'cable'   },
     { name:'Cable Pull-Through',          tier:'A',  equip:'cable'   },
+    { name:'45° Hyperextension',          tier:'A',  equip:'free'    },
   ],
   calves: [
     { name:'Leg Press Calf Press',        tier:'A',  equip:'machine' },
@@ -980,10 +980,10 @@ const WORKOUTS = {
           cue:'Today\'s Hassan finisher: one set to failure, drop the pin ~25%, then 20 reps rest-pause (short breaths, keep going). Elbows pinned, spread the rope.' }
       ]},
       { label:'Abs 🎯', exercises:[
-        { id:'u-cable-crunch', name:'Cable Crunch (Standing)', muscle:'abs', restWork:60,
-          sets:[{wt:80,reps:'10-15'},{wt:80,reps:'10-15 → fail'}],
-          chips:{sets:'2 hard sets',reps:'10-15 reps',tag:'Abs'},
-          cue:'Standing or seated on a bench — no kneeling (knee). Rope at the forehead, crunch the ribs toward the hips. Go heavy enough that 15 is a fight, and log the stack weight.' }
+        { id:'u-rev-crunch', name:'Reverse Crunch (Decline Bench)', muscle:'abs', restWork:60,
+          sets:[{wt:0,reps:'12-15'},{wt:0,reps:'12-15 → fail'}],
+          chips:{sets:'2 hard sets',reps:'12-15 reps',tag:'Abs'},
+          cue:'Lie on a decline bench, hands gripping behind your head. Curl the hips off the pad toward the ribs — tailbone rises, no swinging. Lower slow. Add a DB between the feet once 15 is easy.' }
       ]}
     ]
   },
@@ -1068,10 +1068,14 @@ const WORKOUTS = {
           sets:[{wt:132,reps:'8',note:'Warm'},{wt:154,reps:'8-12'},{wt:154,reps:'8-12 → fail'}],
           chips:{sets:'1 warm + 2 work',reps:'8-12 reps',target:'12 + 12 → add a plate'},
           cue:'Seated keeps the spine neutral. Squeeze, control the negative, no hip rise.' },
-        { id:'l-rdl', name:'Smith Machine RDL', muscle:'hams', restWork:150, warnSpinal:true,
-          sets:[{wt:95,reps:'8',note:'Warm'},{wt:135,reps:'8-10'},{wt:135,reps:'8-10 → fail'}],
-          chips:{sets:'1 warm + 2 work',reps:'8-10 reps',target:'10 + 10 → add 10 lbs'},
-          cue:'Hinge, don\'t squat: soft knees, push the hips back, bar slides down the thighs to mid-shin, flat back. Any lower-back pinch — stop and swap to the seated curl for an extra set.' }
+        { id:'l-glute-kickback', name:'Glute Kick Back (Cable)', muscle:'glutes', restWork:75, hassan:true, ladder:[],
+          sets:[{wt:30,reps:'12-15',note:'Warm'},{wt:40,reps:'12-15'},{wt:40,reps:'12-15 → fail'}],
+          chips:{sets:'1 warm + 2 work',reps:'12-15 reps',target:'15 + 15 → add a plate',tag:'Hassan'},
+          cue:'Replaces the RDL slot (no hinging — lower back). Ankle cuff, slight forward lean holding the tower, drive the heel back and squeeze the glute at the top. No lumbar arching. Log the stack weight per leg.' },
+        { id:'l-hyperext', name:'45° Hyperextension', muscle:'glutes', restWork:75,
+          sets:[{wt:0,reps:'12-15'},{wt:0,reps:'12-15'}],
+          chips:{sets:'2 Sets',reps:'12-15 reps',tag:'Glute-biased'},
+          cue:'Bodyweight first. Round the upper back slightly, hips pad just below the waist, feet turned slightly out. Controlled 3-sec lower, squeeze glutes to rise only to a straight line — do not hyperextend past neutral.' }
       ]},
       { label:'Glutes + Calves', exercises:[
         { id:'l-abduct', name:'Hip Abduction Machine', muscle:'glutes', restWork:75,
@@ -1085,10 +1089,10 @@ const WORKOUTS = {
           cue:'Today\'s Hassan finisher: straight knees, deep stretch, 2-sec squeeze — to failure, then drop and 20 rest-pause reps. No bouncing.' }
       ]},
       { label:'Abs 🎯', exercises:[
-        { id:'l-cable-crunch', name:'Cable Crunch (Standing)', muscle:'abs', restWork:60,
-          sets:[{wt:80,reps:'10-15'},{wt:80,reps:'10-15 → fail'}],
+        { id:'l-hanging-leg-raise', name:'Hanging Leg Raise', muscle:'abs', restWork:60,
+          sets:[{wt:0,reps:'10-15'},{wt:0,reps:'10-15 → fail'}],
           chips:{sets:'2 hard sets',reps:'10-15 reps',tag:'Abs'},
-          cue:'Standing or seated on a bench — no kneeling (knee). Crunch ribs to hips, go heavy enough that 15 is a fight.' }
+          cue:'Hang from the bar (or use captain\'s chair if the grip fades). Curl the pelvis up — knees to chest, no swinging. Straight legs once knees-bent hits 15.' }
       ]}
     ]
   },
@@ -1627,14 +1631,14 @@ let selectedActivity = 'sprint'; // FEAT-4: Track which activity is selected for
 const BACK_RECOVERY_RULES = {
   risky_patterns: ['deadlift', 'barbell row', 'squat', 'bend over', 'spinal load', 'rotation'],
   safe_substitutions: {
-    'deadlift': 'Trap Bar RDL (lighter load, neutral grip)',
+    'deadlift': 'Cable Pull-Through (light load, neutral spine)',
     'Barbell Bent Over Row': 'Supported T-Bar Row (chest-supported)',
     'Barbell Squat': 'Goblet Squat or Leg Press (back support)',
     'Dumbbell Row': 'Landmine Row (neutral angle)',
     'Power Clean': 'Trapbar Deadlift (lighter weight)',
     'Hack Squat': 'Leg Press (back support)',
     'Leg Press': 'Machine Squat (guided path)',
-    'Cable Crunch': 'Pallof Press (anti-rotation)',
+    'Hanging Leg Raise': 'Pallof Press (anti-rotation)',
     'V-Taper Lat Pulldown': 'Chest-Supported Row'
   }
 };
@@ -1708,7 +1712,7 @@ function showBackRecoveryGuide() {
 
       <div style="margin-bottom:12px;">
         <strong>Safe Alternatives:</strong><br>
-        Trap Bar RDL, Supported Rows, Leg Press, Anti-rotation work (Pallof), Isometric holds
+        Cable Pull-Through, Supported Rows, Leg Press, Anti-rotation work (Pallof), Isometric holds
       </div>
 
       <div>
@@ -2172,14 +2176,14 @@ function kbBells() {
   return { heavy: 25, light: 20 }; // heaviest bell at the home gym is 25 lb
 }
 function kbDow(date) { return new Date(date + 'T12:00:00').getDay(); }
-// Day-aware targets: legs Tue/Sun already load the hinge via RDLs
+// Day-aware targets: legs Tue/Sun already load the posterior chain
 function kbTarget(m, date) {
   if (m.id === 'swing' && [0, 2].includes(kbDow(date))) return 25;
   return m.target;
 }
 function kbDayNote(m, date) {
   const dow = kbDow(date);
-  if (m.id === 'swing' && (dow === 0 || dow === 2)) return 'Leg day — swings capped at 25 (RDLs already hit the hinge)';
+  if (m.id === 'swing' && (dow === 0 || dow === 2)) return 'Leg day — swings capped at 25 (leg day already hits the posterior chain)';
   if (m.id === 'press' && (dow === 1 || dow === 4)) return 'Main press day — go light, this is pump work';
   return '';
 }
