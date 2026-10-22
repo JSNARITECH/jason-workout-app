@@ -1,5 +1,10 @@
 # Workout App Changelog
 
+## v12.9 — 2026-10-22
+### Changed
+- **FEAT-23:** RDLs removed from every day. The leg-day RDL slot is now **Glute Kick Back (Cable)** (Hassan style: 2 work sets, last to failure, 20-rep burnout). Smith Machine RDL and Stiff-Leg Deadlift dropped from the swap library; back-recovery text no longer suggests Trap Bar RDL.
+- **FEAT-22:** Cable Crunch retired. Mon abs → **Reverse Crunch (Decline Bench)**; Tue/Sun legs abs → **Hanging Leg Raise**. Both keep the 2 hard sets/day (8/week quota). Added **45° Hyperextension** (glute-biased, bodyweight, controlled tempo) to leg day's Glutes + Calves block and the glute swap library.
+
 ## v12.8.1 — 2026-10-12
 ### Fixed
 - Phones kept showing a stale copy of the app (the old Hassan-on-every-exercise program) after v12.8 deployed. `vercel.json` now sends `Cache-Control: no-cache` for the HTML, and the app checks the served version on load and reloads once if it's newer.
