@@ -1,5 +1,12 @@
 # Workout App Changelog
 
+## v12.9 — 2026-10-26
+### Fixed
+- **BUG-EXSWITCH-HLR** — the ⟳ Swap button never appeared on ab exercises (no `abs` rotation pool), so a cable crunch couldn't be switched to hanging leg raises and exports logged the wrong move. Added an `abs` pool (Hanging Leg/Knee Raise, Reverse Crunch, Cable Crunch, Ab Wheel).
+### Added / Changed
+- **FEAT-22** — Cable Crunch removed: Upper → Reverse Crunch (Decline), Legs → Hanging Leg Raise. Added 45° Hyperextension (glute-biased, bodyweight) to leg day and the glutes swap pool.
+- **FEAT-23** — Smith Machine RDL and Stiff-Leg Deadlift removed everywhere (leg day slot, swap pool, back-recovery text). Leg day slot is now Glute Kick Back (Cable), Hassan finisher style.
+
 ## v12.8.1 — 2026-10-12
 ### Fixed
 - Phones kept showing a stale copy of the app (the old Hassan-on-every-exercise program) after v12.8 deployed. `vercel.json` now sends `Cache-Control: no-cache` for the HTML, and the app checks the served version on load and reloads once if it's newer.
