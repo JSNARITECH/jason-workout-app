@@ -181,6 +181,13 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .set-reps{color:var(--accent);font-weight:700;}
 .set-rpe{color:var(--dim2);font-size:10px;}
 .set-pr-cell{width:28px;}
+.pr-ref{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;font-size:12px;color:var(--dim2);margin:4px 0 6px;}
+.pr-ref:empty{display:none;}
+.pr-ref b{color:var(--white);}
+.pr-ref-delta{font-weight:700;}
+.pr-ref-delta.beat{color:var(--green);}
+.pr-ref-delta.tie{color:#ff8c00;}
+.pr-ref-delta.below{color:var(--dim2);}
 .pr-star{display:none;font-size:14px;}
 .pr-star.visible{display:inline;}
 .w-input{background:var(--border);border:1px solid var(--border2);border-radius:6px;color:var(--white);padding:4px 7px;font-size:14px;font-weight:700;width:62px;text-align:center;font-family:'DM Sans',sans-serif;transition:border-color 0.2s;}
@@ -809,7 +816,7 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 // ============================================================
 // APP VERSION — update this on every release
 // ============================================================
-const APP_VERSION = 'v12.8.1';
+const APP_VERSION = 'v12.9';
 // v12.8.1: if a home-screen / cached copy is older than what Vercel is serving, reload once
 (async function checkForNewerBuild() {
   try {
@@ -3388,6 +3395,7 @@ function buildExCard(ex, isDone, savedWeights, hasPR, type) {
   }
   if (ex.burnout) detail += `<div class="burnout-badge">🔥 Burnout: ${ex.burnout}</div>`;
 
+  detail += `<div class="pr-ref" id="prref-${ex.id}">${prRefInner(ex.id, ex.name, savedWeights.length ? savedWeights : ex.sets.map(x => x.wt))}</div>`;
   detail += `<table class="set-table">
     <tr><th>Set</th><th>Weight (lbs)</th><th>Target</th><th></th><th></th></tr>`;
   ex.sets.forEach((set, i) => {
@@ -3497,6 +3505,46 @@ function checkIfPR(exId, weights) {
   return weights.some(w => parseFloat(w) > parseFloat(stored.weight));
 }
 
+// FEAT-24: PR reference that re-evaluates against the weight currently entered
+function lastSessionTop(exId, exName) {
+  const full = ((getSwap(exId) || exName) + ' [' + sessionLocation + ']');
+  for (const h of historyStore) {
+    if (h.date === getDateStr() || !h.exercises) continue;
+    const e = h.exercises.find(x => x.name === full && x.done !== false);
+    if (!e) continue;
+    const top = Math.max(...e.sets.map(s => parseFloat(s.weight) || 0));
+    if (top > 0) return { weight: top, date: h.date };
+  }
+  return null;
+}
+
+function prRefInner(exId, exName, weights) {
+  const stored = prStore[getPRKey(exId)];
+  const last = lastSessionTop(exId, exName);
+  if (!stored && !last) return '';
+  const cur = Math.max(0, ...(weights || []).map(w => parseFloat(w) || 0));
+  let html = '';
+  if (stored) {
+    const pr = parseFloat(stored.weight), d = cur - pr;
+    let cls = 'below', txt = `${Math.abs(d)} lbs below PR`;
+    if (cur === 0) { cls = ''; txt = ''; }
+    else if (d > 0) { cls = 'beat'; txt = `🏆 +${d} lbs — beats PR`; }
+    else if (d === 0) { cls = 'tie'; txt = 'ties PR'; }
+    html += `<span>PR <b>${pr}</b> lbs</span>` + (txt ? `<span class="pr-ref-delta ${cls}">${txt}</span>` : '');
+  }
+  if (last) html += `<span>Last <b>${last.weight}</b> lbs</span>`;
+  return html;
+}
+
+function updatePRRef(exId) {
+  const el = document.getElementById(`prref-${exId}`);
+  if (!el) return;
+  const ex = getExById(exId);
+  if (!ex) return;
+  const weights = ex.sets.map((_, i) => document.getElementById(`wi-${exId}-${i}`)?.value);
+  el.innerHTML = prRefInner(exId, ex.name, weights);
+}
+
 function onWeightInput(input, exId, setIdx) {
   const val = parseFloat(input.value) || 0;
   const stored = prStore[getPRKey(exId)];
@@ -3510,6 +3558,7 @@ function onWeightInput(input, exId, setIdx) {
   if (isNewPR && card) card.classList.add('pr-card');
 
   updateWeight(exId, setIdx, val);
+  updatePRRef(exId);
 }
 
 async function updatePRStore(exId, weights) {
