@@ -134,6 +134,9 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 .sec-label::after{content:'';flex:1;height:1px;background:var(--border);}
 
 /* EXERCISE CARD */
+.ss-block{border:1px solid var(--accent);border-radius:15px;padding:6px 6px 0;margin-bottom:10px;background:rgba(232,255,71,0.03);}
+.ss-label{font-size:11px;font-weight:700;letter-spacing:1px;color:var(--accent);padding:4px 8px 8px;}
+.ss-block .ex-card{margin-bottom:6px;}
 .ex-card{background:var(--card);border:1px solid var(--border);border-radius:13px;margin-bottom:8px;overflow:hidden;transition:border-color 0.25s,opacity 0.25s;}
 .ex-card.done{opacity:0.52;border-color:var(--accent);}
 .ex-card.done .ex-hdr{background:rgba(232,255,71,0.04);}
@@ -809,7 +812,7 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 // ============================================================
 // APP VERSION — update this on every release
 // ============================================================
-const APP_VERSION = 'v12.8.1';
+const APP_VERSION = 'v12.9';
 // v12.8.1: if a home-screen / cached copy is older than what Vercel is serving, reload once
 (async function checkForNewerBuild() {
   try {
@@ -970,10 +973,10 @@ const WORKOUTS = {
           cue:'Lean away from the cable. Lead with the elbow, pinky slightly up.' },
         { id:'u-bicep', name:'Cable Bicep Curl', muscle:'biceps', restWork:60,
           sets:[{wt:50,reps:'10-12'},{wt:50,reps:'10-12 → fail'}],
-          chips:{sets:'2 work',reps:'10-12 reps',tag:'Superset'},
+          chips:{sets:'2 work',reps:'10-12 reps',tag:'Superset'}, superset:'u-arms',
           supersetWith:'Superset with Rope Pushdown — curl, then straight to pushdown',
           cue:'Full supination, drive the pinky up. Go straight into the pushdown, then rest.' },
-        { id:'u-tricep', name:'Tricep Rope Pushdown', muscle:'triceps', restWork:60,
+        { id:'u-tricep', name:'Tricep Rope Pushdown', muscle:'triceps', restWork:60, superset:'u-arms',
           sets:[{wt:55,reps:'10-12 → fail'},{wt:40,reps:'20',note:'Burnout'}],
           chips:{sets:'Finisher',reps:'Fail + 20 burnout',tag:'Hassan Finisher'},
           hassan:true, ladder:[], burnout:'Drop ~25%, 20 reps rest-pause',
@@ -3277,14 +3280,23 @@ function renderWorkoutBody() {
 
   sessionSections.forEach(section => {
     html += `<div class="sec-label">${section.label}</div>`;
+    let openSS = null;
     section.exercises.forEach(exRaw => {
       const ex = getExForLocation(exRaw);
       const state = sessionState[ex.id] || {};
       const isDone = state.done || false;
       const savedWeights = state.weights || ex.sets.map(s => s.wt);
       const hasPRThisSession = checkIfPR(ex.id, savedWeights);
+      // FEAT-25: adjacent exercises sharing a `superset` id render as one block
+      const ss = exRaw.superset || null;
+      if (openSS && openSS !== ss) { html += `</div>`; openSS = null; }
+      if (ss && !openSS) {
+        html += `<div class="ss-block"><div class="ss-label">⚡ SUPERSET — alternate sets, rest after the last exercise</div>`;
+        openSS = ss;
+      }
       html += buildExCard(ex, isDone, savedWeights, hasPRThisSession, effectiveType);
     });
+    if (openSS) html += `</div>`;
   });
 
   // FEAT-9: the preset is a starting point — add from the library, remove, reorder
@@ -4213,8 +4225,17 @@ function completeSet(exId, setIdx, type) {
   const swappedName = getSwap(exId);
   const effectiveEx = swappedName ? (findExByNameAnywhere(swappedName) || ex) : ex;
 
-  const restTime = restOverrides[exId] || getSmartRestTime(effectiveEx, setIdx);
+  let restTime = restOverrides[exId] || getSmartRestTime(effectiveEx, setIdx);
   const set = ex.sets[setIdx];
+  // FEAT-25: superset — non-final members get a short transition timer, the final member the full rest
+  let ssPartner = null;
+  if (ex.superset) {
+    const all = getSessionExercises(type);
+    const i = all.findIndex(e => e.id === exId);
+    const nxt = all[i + 1];
+    if (nxt && nxt.superset === ex.superset) ssPartner = nxt;
+  }
+  if (ssPartner) restTime = 15;
   const setLabel = set?.note || `Set ${setIdx + 1}`;
   const nextSetIdx = setIdx + 1;
   const hasNextSet = nextSetIdx < ex.sets.length;
@@ -4278,6 +4299,11 @@ function completeSet(exId, setIdx, type) {
   const protocol = effectiveEx.hassan ? 'Hassan' : 'Straight Sets';
   const burnoutLabel = (set.note === 'Burnout') ? ' · Burnout' : '';
   const setInfoLine = `${setLabel} of ${effectiveEx.sets?.length || ex.sets.length} · ${protocol}${burnoutLabel}`;
+  if (ssPartner) {
+    startTimer(getSwap(exId) || ex.name, null, restTime, setInfoLine + ' · Superset',
+      `Now: <strong>${ssPartner.name} — Set ${setIdx + 1}</strong>`, null);
+    return;
+  }
   startTimer(getSwap(exId) || ex.name, null, restTime, setInfoLine, nextInfo, nextTargetText);
 }
 
