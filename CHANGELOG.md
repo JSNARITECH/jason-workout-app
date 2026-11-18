@@ -1,9 +1,12 @@
 # Workout App Changelog
 
-## v12.8.2 — 2026-11-18
+## v12.9 — 2026-11-18
 ### Fixed
 - **Sprint timer racing** — any re-render of the TODAY view during a sprint (tapping a habit chip or the kettlebell card, switching tabs) reset the timer without stopping its 1-second ticker. The orphaned ticker kept advancing the clock, and every START added another, so the clock ran at 2×, 3×, 4×… speed. The sprint view now stops the old ticker before re-rendering, keeps an in-progress session running instead of silently resetting it, and START can never stack a second ticker.
-### Changed
+- **BUG-EXSWITCH-HLR** — the ⟳ Swap button never appeared on ab exercises (no `abs` rotation pool), so a cable crunch couldn't be switched to hanging leg raises and exports logged the wrong move. Added an `abs` pool (Hanging Leg/Knee Raise, Reverse Crunch, Cable Crunch, Ab Wheel).
+### Added / Changed
+- **FEAT-22** — Cable Crunch removed: Upper → Reverse Crunch (Decline), Legs → Hanging Leg Raise. Added 45° Hyperextension (glute-biased, bodyweight) to leg day and the glutes swap pool.
+- **FEAT-23** — Smith Machine RDL and Stiff-Leg Deadlift removed everywhere (leg day slot, swap pool, back-recovery text). Leg day slot is now Glute Kick Back (Cable), Hassan finisher style.
 - **Sprints default to 8 rounds** (was 6) on Wed, Sat and make-up sprints: same 30s max effort / 75s walk recovery. One `SPRINT_DEFAULT_ROUNDS` constant; the ± stepper still allows 4–10. Tips updated (~27 min/session, push the last rounds to 170+ bpm). Replaces the unmerged PR #18, which was built on v12.4 and went stale.
 
 ## v12.8.1 — 2026-10-12
