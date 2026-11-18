@@ -809,7 +809,7 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 // ============================================================
 // APP VERSION — update this on every release
 // ============================================================
-const APP_VERSION = 'v12.8.1';
+const APP_VERSION = 'v12.8.2';
 // v12.8.1: if a home-screen / cached copy is older than what Vercel is serving, reload once
 (async function checkForNewerBuild() {
   try {
@@ -5729,7 +5729,16 @@ const SPRINT_PHASES = {
 };
 
 function renderSprintDay(dayKey, content) {
-  sprintState = { running: false, phase: 'idle', round: 0, totalRounds: 6, elapsed: 0, phaseDuration: 0, interval: null, hrAvg: '', hrMax: '' };
+  // Any TODAY re-render (habit chips, kettlebell card, tab switch) lands here. Replacing
+  // sprintState without stopping its interval orphaned a ticker that kept advancing the
+  // new state, and each START stacked another — the clock ran at 2x, 3x, ... speed.
+  clearInterval(sprintState.interval);
+  const inProgress = sprintState.phase !== 'idle' && sprintState.phase !== 'done';
+  if (inProgress) {
+    sprintState.interval = sprintState.running ? setInterval(tickSprint, 1000) : null;
+  } else {
+    sprintState = { running: false, phase: 'idle', round: 0, totalRounds: 6, elapsed: 0, phaseDuration: 0, interval: null, hrAvg: '', hrMax: '' };
+  }
   const watch = sessionState['__watch__'] || {};
 
   const tipsHtml = content.tips.slice(2).map(t =>
@@ -5746,7 +5755,7 @@ function renderSprintDay(dayKey, content) {
     <div class="sprint-rounds-adj">
       <button class="sprint-rounds-adj-btn" onclick="adjustRounds(-1)">−</button>
       <div style="text-align:center">
-        <div class="sprint-rounds-adj-val" id="spRoundsVal">6</div>
+        <div class="sprint-rounds-adj-val" id="spRoundsVal">${sprintState.totalRounds}</div>
         <div class="sprint-rounds-adj-label">rounds</div>
       </div>
       <button class="sprint-rounds-adj-btn" onclick="adjustRounds(1)">+</button>
@@ -5834,6 +5843,11 @@ function renderSprintDay(dayKey, content) {
   }
 
   buildRoundDots();
+  if (inProgress) {
+    const btn = document.getElementById('spMainBtn');
+    if (btn) { btn.textContent = sprintState.running ? 'PAUSE' : 'RESUME'; btn.className = sprintState.running ? 'sprint-btn sprint-btn-main running' : 'sprint-btn sprint-btn-main'; }
+    updateSprintDisplay();
+  }
 }
 
 // FEAT-4: Render selected alternative activity (yoga, pilates, dance, boxing)
@@ -5956,6 +5970,7 @@ function toggleSprint() {
   sprintState.running = !sprintState.running;
   const btn = document.getElementById('spMainBtn');
   if (btn) { btn.textContent = sprintState.running ? 'PAUSE' : 'RESUME'; btn.className = sprintState.running ? 'sprint-btn sprint-btn-main running' : 'sprint-btn sprint-btn-main'; }
+  clearInterval(sprintState.interval);
   if (sprintState.running) {
     acquireWakeLock();
     sprintState.interval = setInterval(tickSprint, 1000);

@@ -1,5 +1,9 @@
 # Workout App Changelog
 
+## v12.8.2 — 2026-11-18
+### Fixed
+- **Sprint timer racing** — any re-render of the TODAY view during a sprint (tapping a habit chip or the kettlebell card, switching tabs) reset the timer without stopping its 1-second ticker. The orphaned ticker kept advancing the clock, and every START added another, so the clock ran at 2×, 3×, 4×… speed. The sprint view now stops the old ticker before re-rendering, keeps an in-progress session running instead of silently resetting it, and START can never stack a second ticker.
+
 ## v12.8.1 — 2026-10-12
 ### Fixed
 - Phones kept showing a stale copy of the app (the old Hassan-on-every-exercise program) after v12.8 deployed. `vercel.json` now sends `Cache-Control: no-cache` for the HTML, and the app checks the served version on load and reloads once if it's newer.
