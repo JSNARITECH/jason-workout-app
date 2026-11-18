@@ -420,7 +420,8 @@ git push -u origin claude/tender-newton-pHu5K
 - **Version constant** in HTML: `const APP_VERSION = 'v11.1'`
 - **Automatic logging** via GitHub Action on every main push
 - Logs to `app_versions` table with commit SHA
-- Rendered in bottom-right corner of UI
+- Rendered as a muted line at the end of each page (`.scroll-area::after` reads `data-version`)
+- **Design rules (v13.0):** text ≥ 12px, sentence case, lime `--accent` is the only accent, Bebas Neue for numerals only, no emoji in UI strings. Render data titles/labels through `disp()`; never rewrite saved titles (sprint streak matches `SPRINT`).
 
 ### Testing & Verification
 1. **Local testing** — Load index.html in browser (localhost or Vercel)

@@ -1,5 +1,18 @@
 # Workout App Changelog
 
+## v13.0 — 2026-11-18
+### Changed — design pass ("unslop"): built to read at arm's length between sets
+- **Type:** no text under 12px (169 rules were 7–10px). Sentence case everywhere instead of tracked uppercase labels. Bebas Neue now only for big numbers (timers, weights, streaks, day dates); titles and buttons use DM Sans.
+- **Color:** graphite neutrals, lime as the one accent (primary action, selection, the progression target). The 7 text colors are toned down and kept for meaning only: sprint phases, PRs (gold), warnings. Chips, swap, Claude export, type and location buttons are neutral.
+- **Signature:** each day in the strip shows a small bumper-plate dot for its workout type (red push, blue pull, yellow legs, green upper, white sprint).
+- **Icons:** about 320 emoji removed from the interface; the bottom nav uses one line-icon set. Saved data is unchanged: titles keep their original text and emoji, because the sprint streak matches "SPRINT" in saved titles. A display-only `disp()` helper strips emoji and sentence-cases ALL-CAPS labels at render.
+- **Header:** about 280px → 200px. The three mode toggles sit in one row and fold away once you scroll into the session (an active mode stays visible).
+- **Tap targets:** check buttons 36px, set/rest buttons 40px, rest-timer ±15 buttons 44px, primary buttons 48–52px, weight inputs 16px text.
+- **Motion:** removed looping glows/pulses (PR badge, PR-ready card, sprint round dot, loading icon) and `transition: all`. The sync dot and loading spinners still animate.
+- **Copy:** "Let's go ›" → "Next set", "Save to Supabase" → "Save sprint", "Save workout to history" → "Save workout", no exclamation marks.
+- **Version label:** the two floating badges (which overlapped the nav and disagreed) are replaced by one `vX` line at the end of each page.
+- Not changed: `macros.html`, the Claude Chat export text, anything saved to Supabase.
+
 ## v12.9 — 2026-10-16
 ### Changed — kettlebell timer: fewer breaks, live rep counter
 - **Live rep counter** on every work set — a big "12 / 25" that counts up at the selected pace (Easy / Normal / Fast), with the clock underneath. Use it to judge whether you're moving faster or slower than the pace.
