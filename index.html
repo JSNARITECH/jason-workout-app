@@ -5744,12 +5744,10 @@ function renderSprintDay(dayKey, content) {
   // Any TODAY re-render (habit chips, kettlebell card, tab switch) lands here. Replacing
   // sprintState without stopping its interval orphaned a ticker that kept advancing the
   // new state, and each START stacked another — the clock ran at 2x, 3x, ... speed.
-  clearInterval(sprintState.interval);
   const inProgress = sprintState.phase !== 'idle' && sprintState.phase !== 'done';
-  if (inProgress) {
-    sprintState.interval = sprintState.running ? setInterval(tickSprint, 1000) : null;
-  } else {
-    sprintState = { running: false, phase: 'idle', round: 0, totalRounds: SPRINT_DEFAULT_ROUNDS, elapsed: 0, phaseDuration: 0, interval: null, hrAvg: '', hrMax: '' };
+  if (!inProgress) {
+    clearInterval(sprintState.interval);
+    sprintState ={ running: false, phase: 'idle', round: 0, totalRounds: SPRINT_DEFAULT_ROUNDS, elapsed: 0, phaseDuration: 0, interval: null, hrAvg: '', hrMax: '' };
   }
   const watch = sessionState['__watch__'] || {};
 
