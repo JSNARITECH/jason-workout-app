@@ -809,7 +809,7 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 // ============================================================
 // APP VERSION — update this on every release
 // ============================================================
-const APP_VERSION = 'v12.8.1';
+const APP_VERSION = 'v12.9';
 // v12.8.1: if a home-screen / cached copy is older than what Vercel is serving, reload once
 (async function checkForNewerBuild() {
   try {
@@ -907,14 +907,13 @@ const ROTATION_POOLS = {
     { name:'Lying Leg Curl',             tier:'A',  equip:'machine' },
     { name:'Seated Leg Curl',            tier:'S',  equip:'machine' },
     { name:'Single-Leg Curl',            tier:'A',  equip:'machine' },
-    { name:'Smith Machine RDL',          tier:'A',  equip:'smith'   },
     { name:'Nordic Curl',                tier:'S',  equip:'free'    },
-    { name:'Stiff-Leg Deadlift',         tier:'A',  equip:'free'    },
   ],
   glutes: [
     { name:'Hip Abduction Machine',       tier:'A',  equip:'machine' },
     { name:'Hip Thrust (Smith)',          tier:'S',  equip:'smith'   },
-    { name:'Glute Kickback Cable',        tier:'A',  equip:'cable'   },
+    { name:'Glute Kick Back (Cable)',     tier:'A',  equip:'cable'   },
+    { name:'45° Hyperextension',          tier:'A',  equip:'machine' },
     { name:'Cable Pull-Through',          tier:'A',  equip:'cable'   },
   ],
   calves: [
@@ -922,6 +921,13 @@ const ROTATION_POOLS = {
     { name:'Smith Calf Raise',            tier:'A',  equip:'smith'   },
     { name:'Seated Calf Raise',           tier:'S',  equip:'free'    },
     { name:'Single-Leg Calf Raise (DB)',  tier:'A',  equip:'free'    },
+  ],
+  abs: [
+    { name:'Hanging Leg Raise',           tier:'S',  equip:'free'    },
+    { name:'Hanging Knee Raise',          tier:'A',  equip:'free'    },
+    { name:'Reverse Crunch (Decline)',    tier:'A',  equip:'free'    },
+    { name:'Cable Crunch (Standing)',     tier:'A',  equip:'cable'   },
+    { name:'Ab Wheel Rollout',            tier:'A',  equip:'free'    },
   ],
   back_fly: [
     { name:'Reverse Pec Deck',            tier:'A',  equip:'machine' },
@@ -980,10 +986,10 @@ const WORKOUTS = {
           cue:'Today\'s Hassan finisher: one set to failure, drop the pin ~25%, then 20 reps rest-pause (short breaths, keep going). Elbows pinned, spread the rope.' }
       ]},
       { label:'Abs 🎯', exercises:[
-        { id:'u-cable-crunch', name:'Cable Crunch (Standing)', muscle:'abs', restWork:60,
-          sets:[{wt:80,reps:'10-15'},{wt:80,reps:'10-15 → fail'}],
+        { id:'u-rev-crunch', name:'Reverse Crunch (Decline)', muscle:'abs', restWork:60,
+          sets:[{wt:0,reps:'10-15'},{wt:0,reps:'10-15 → fail'}],
           chips:{sets:'2 hard sets',reps:'10-15 reps',tag:'Abs'},
-          cue:'Standing or seated on a bench — no kneeling (knee). Rope at the forehead, crunch the ribs toward the hips. Go heavy enough that 15 is a fight, and log the stack weight.' }
+          cue:'Lie on a decline bench, hands overhead gripping the top. Curl the pelvis up toward the ribs — hips lift, legs don\'t swing. Lower slowly.' }
       ]}
     ]
   },
@@ -1068,12 +1074,17 @@ const WORKOUTS = {
           sets:[{wt:132,reps:'8',note:'Warm'},{wt:154,reps:'8-12'},{wt:154,reps:'8-12 → fail'}],
           chips:{sets:'1 warm + 2 work',reps:'8-12 reps',target:'12 + 12 → add a plate'},
           cue:'Seated keeps the spine neutral. Squeeze, control the negative, no hip rise.' },
-        { id:'l-rdl', name:'Smith Machine RDL', muscle:'hams', restWork:150, warnSpinal:true,
-          sets:[{wt:95,reps:'8',note:'Warm'},{wt:135,reps:'8-10'},{wt:135,reps:'8-10 → fail'}],
-          chips:{sets:'1 warm + 2 work',reps:'8-10 reps',target:'10 + 10 → add 10 lbs'},
-          cue:'Hinge, don\'t squat: soft knees, push the hips back, bar slides down the thighs to mid-shin, flat back. Any lower-back pinch — stop and swap to the seated curl for an extra set.' }
+        { id:'l-kickback', name:'Glute Kick Back (Cable)', muscle:'glutes', restWork:75,
+          sets:[{wt:30,reps:'12-15 → fail'},{wt:20,reps:'20',note:'Burnout'}],
+          chips:{sets:'Finisher',reps:'Fail + 20 burnout',tag:'Hassan'},
+          hassan:true, ladder:[], burnout:'Drop ~30%, 20 reps rest-pause',
+          cue:'Ankle strap, slight hinge at the hips, squeeze the glute at the top without arching the lower back. Work to failure, drop the pin, 20 rest-pause reps. Per leg.' }
       ]},
       { label:'Glutes + Calves', exercises:[
+        { id:'l-hyper', name:'45° Hyperextension', muscle:'glutes', restWork:75,
+          sets:[{wt:0,reps:'12-15'},{wt:0,reps:'12-15 → fail'}],
+          chips:{sets:'2 work',reps:'12-15 reps',target:'15 + 15 → add a plate'},
+          cue:'Glute-biased: round the upper back slightly, tuck the chin, drive the hips into the pad and squeeze the glutes at the top. Stop at neutral — never hyperextend. Bodyweight first, controlled 2-sec tempo.' },
         { id:'l-abduct', name:'Hip Abduction Machine', muscle:'glutes', restWork:75,
           sets:[{wt:110,reps:'15-20'},{wt:110,reps:'15-20 → fail'}],
           chips:{sets:'2 work',reps:'15-20 reps',target:'20 + 20 → go up'},
@@ -1085,10 +1096,10 @@ const WORKOUTS = {
           cue:'Today\'s Hassan finisher: straight knees, deep stretch, 2-sec squeeze — to failure, then drop and 20 rest-pause reps. No bouncing.' }
       ]},
       { label:'Abs 🎯', exercises:[
-        { id:'l-cable-crunch', name:'Cable Crunch (Standing)', muscle:'abs', restWork:60,
-          sets:[{wt:80,reps:'10-15'},{wt:80,reps:'10-15 → fail'}],
-          chips:{sets:'2 hard sets',reps:'10-15 reps',tag:'Abs'},
-          cue:'Standing or seated on a bench — no kneeling (knee). Crunch ribs to hips, go heavy enough that 15 is a fight.' }
+        { id:'l-hlr', name:'Hanging Leg Raise', muscle:'abs', restWork:60,
+          sets:[{wt:0,reps:'8-12'},{wt:0,reps:'8-12 → fail'}],
+          chips:{sets:'2 hard sets',reps:'8-12 reps',tag:'Abs'},
+          cue:'Hang (or captain\'s chair), legs straight or slightly bent, curl the pelvis up so the legs rise past hip height. No swinging. Drop to knee raises if form breaks.' }
       ]}
     ]
   },
@@ -1224,7 +1235,7 @@ const MOBILITY_EXERCISES = {
 const REST_CONTENT = {
   wed:{ title:'SPRINT DAY ⚡', icon:'⚡', sub:'Visceral fat weapon. 90-min/wk HIIT target.', tips:[
     {icon:'🚶',text:'AM fasted incline walk FIRST: 6% grade, 3.0 mph, 30–45 min. Zone 2 (108–128 bpm). Fasted keto state = maximum fat oxidation.'},
-    {icon:'⚡',text:'SPRINT PROTOCOL — counts toward your 90-min/week HIIT threshold: 5-min warm-up walk → 6 × 30-sec MAX effort sprints (manual treadmill, lean hard) → 75-sec walking recovery between each (trial, was 90s) → 5-min cool-down. Total: ~24 min. Zone 4–5 target: 140–165+ bpm. Dr. O\'Mara data: short maximal sprints eliminate visceral fat faster than any other cardio modality.'},
+    {icon:'⚡',text:'SPRINT PROTOCOL — counts toward your 90-min/week HIIT threshold: 5-min warm-up walk → 8 × 30-sec MAX effort sprints (manual treadmill, lean hard) → 75-sec walking recovery between each → 5-min cool-down. Push the last rounds to 170+ bpm. Total: ~27 min. Zone 4–5 target: 140–165+ bpm. Dr. O\'Mara data: short maximal sprints eliminate visceral fat faster than any other cardio modality.'},
     {icon:'📈',text:'PROGRESSIVE OVERLOAD: Week 1–2 = 4 rounds. Add 1 round every 2 weeks. Goal = 8 rounds by Week 8. Intensity rule: if it doesn\'t feel hard, lean harder into the belt.'},
     {icon:'♨️',text:'POST-SPRINT SAUNA (non-optional): 20 min @ 175°F traditional sauna. Using sauna post-exercise amplifies VO2 max gains and anabolic signaling beyond exercise alone. Do not exceed 200°F. Dr. Rhonda Patrick protocol.'},
     {icon:'🧘',text:'Hip mobility + thoracic spine work: 15–20 min. Counteracts desk compression from sitting.'},
@@ -1232,7 +1243,7 @@ const REST_CONTENT = {
     {icon:'😴',text:'Sleep is visceral fat medicine. Two weeks of poor sleep = 11% more visceral fat with zero weight change (RCT). Protect tonight\'s window. Magnesium before bed.'}
   ]},
   sat:{ title:'SPRINT + RECOVERY', icon:'⚡', sub:'Second HIIT session. Then full recharge.', tips:[
-    {icon:'⚡',text:'SPRINT PROTOCOL (2nd weekly HIIT session): 5-min warm-up walk → 6 × 30-sec MAX effort sprints (manual treadmill, lean hard) → 75-sec walking recovery between each (trial, was 90s) → 5-min cool-down. Total: ~24 min. Zone 4–5 target: 140–165+ bpm. Wed + Sat sprints = ~48 min pure HIIT. Add a group class any day (swap button on any workout day) and you clear the 90-min/week visceral fat threshold.'},
+    {icon:'⚡',text:'SPRINT PROTOCOL (2nd weekly HIIT session): 5-min warm-up walk → 8 × 30-sec MAX effort sprints (manual treadmill, lean hard) → 75-sec walking recovery between each → 5-min cool-down. Push the last rounds to 170+ bpm. Total: ~27 min. Zone 4–5 target: 140–165+ bpm. Wed + Sat sprints = ~54 min pure HIIT. Add a group class any day (swap button on any workout day) and you clear the 90-min/week visceral fat threshold.'},
     {icon:'📈',text:'Progressive overload: Start at 4 rounds. Add 1 round every 2 weeks alongside Wednesday. Both days progress together. Goal = 8 rounds each by Week 8.'},
     {icon:'♨️',text:'POST-SPRINT SAUNA: 20–30 min @ 175°F. No rush today — weekend. This is the best day to extend the session. Do not exceed 200°F. Amplifies VO2 max and anabolic signaling beyond exercise alone.'},
     {icon:'🚶',text:'After sauna: done. No more cardio. Zone 1–2 walking only if you feel like moving. Legs are tomorrow — protect recovery.'},
@@ -1543,7 +1554,7 @@ const ALTERNATIVE_ACTIVITIES = {
     id: 'sprint',
     title: '⚡ Sprint Timer',
     emoji: '⚡',
-    description: 'High-intensity interval training on treadmill. 6 rounds × 30-sec max effort.',
+    description: 'High-intensity interval training on treadmill. 8 rounds × 30-sec max effort.',
     type: 'timer'
   },
   yoga: {
@@ -1627,14 +1638,14 @@ let selectedActivity = 'sprint'; // FEAT-4: Track which activity is selected for
 const BACK_RECOVERY_RULES = {
   risky_patterns: ['deadlift', 'barbell row', 'squat', 'bend over', 'spinal load', 'rotation'],
   safe_substitutions: {
-    'deadlift': 'Trap Bar RDL (lighter load, neutral grip)',
+    'deadlift': 'Cable Pull-Through or Glute Bridge (neutral spine)',
     'Barbell Bent Over Row': 'Supported T-Bar Row (chest-supported)',
     'Barbell Squat': 'Goblet Squat or Leg Press (back support)',
     'Dumbbell Row': 'Landmine Row (neutral angle)',
     'Power Clean': 'Trapbar Deadlift (lighter weight)',
     'Hack Squat': 'Leg Press (back support)',
     'Leg Press': 'Machine Squat (guided path)',
-    'Cable Crunch': 'Pallof Press (anti-rotation)',
+    'Reverse Crunch': 'Pallof Press (anti-rotation)',
     'V-Taper Lat Pulldown': 'Chest-Supported Row'
   }
 };
@@ -1708,7 +1719,7 @@ function showBackRecoveryGuide() {
 
       <div style="margin-bottom:12px;">
         <strong>Safe Alternatives:</strong><br>
-        Trap Bar RDL, Supported Rows, Leg Press, Anti-rotation work (Pallof), Isometric holds
+        Glute Bridge, Supported Rows, Leg Press, Anti-rotation work (Pallof), Isometric holds
       </div>
 
       <div>
@@ -2172,14 +2183,14 @@ function kbBells() {
   return { heavy: 25, light: 20 }; // heaviest bell at the home gym is 25 lb
 }
 function kbDow(date) { return new Date(date + 'T12:00:00').getDay(); }
-// Day-aware targets: legs Tue/Sun already load the hinge via RDLs
+// Day-aware targets: legs Tue/Sun already load the hinge via glute/hamstring work
 function kbTarget(m, date) {
   if (m.id === 'swing' && [0, 2].includes(kbDow(date))) return 25;
   return m.target;
 }
 function kbDayNote(m, date) {
   const dow = kbDow(date);
-  if (m.id === 'swing' && (dow === 0 || dow === 2)) return 'Leg day — swings capped at 25 (RDLs already hit the hinge)';
+  if (m.id === 'swing' && (dow === 0 || dow === 2)) return 'Leg day — swings capped at 25 (leg day already hits the hinge)';
   if (m.id === 'press' && (dow === 1 || dow === 4)) return 'Main press day — go light, this is pump work';
   return '';
 }
@@ -5691,11 +5702,12 @@ function renderRestDay(dayKey) {
 // ============================================================
 // SPRINT TIMER ENGINE
 // ============================================================
+const SPRINT_DEFAULT_ROUNDS = 8; // Oct 2026: 6 -> 8 after VF held at 12
 let sprintState = {
   running: false,
   phase: 'idle',   // idle | warmup | sprint | rest | cooldown | done
   round: 0,
-  totalRounds: 6,
+  totalRounds: SPRINT_DEFAULT_ROUNDS,
   elapsed: 0,
   phaseDuration: 0,
   interval: null,
@@ -5729,7 +5741,14 @@ const SPRINT_PHASES = {
 };
 
 function renderSprintDay(dayKey, content) {
-  sprintState = { running: false, phase: 'idle', round: 0, totalRounds: 6, elapsed: 0, phaseDuration: 0, interval: null, hrAvg: '', hrMax: '' };
+  // Any TODAY re-render (habit chips, kettlebell card, tab switch) lands here. Replacing
+  // sprintState without stopping its interval orphaned a ticker that kept advancing the
+  // new state, and each START stacked another — the clock ran at 2x, 3x, ... speed.
+  const inProgress = sprintState.phase !== 'idle' && sprintState.phase !== 'done';
+  if (!inProgress) {
+    clearInterval(sprintState.interval);
+    sprintState ={ running: false, phase: 'idle', round: 0, totalRounds: SPRINT_DEFAULT_ROUNDS, elapsed: 0, phaseDuration: 0, interval: null, hrAvg: '', hrMax: '' };
+  }
   const watch = sessionState['__watch__'] || {};
 
   const tipsHtml = content.tips.slice(2).map(t =>
@@ -5746,7 +5765,7 @@ function renderSprintDay(dayKey, content) {
     <div class="sprint-rounds-adj">
       <button class="sprint-rounds-adj-btn" onclick="adjustRounds(-1)">−</button>
       <div style="text-align:center">
-        <div class="sprint-rounds-adj-val" id="spRoundsVal">6</div>
+        <div class="sprint-rounds-adj-val" id="spRoundsVal">${sprintState.totalRounds}</div>
         <div class="sprint-rounds-adj-label">rounds</div>
       </div>
       <button class="sprint-rounds-adj-btn" onclick="adjustRounds(1)">+</button>
@@ -5834,6 +5853,11 @@ function renderSprintDay(dayKey, content) {
   }
 
   buildRoundDots();
+  if (inProgress) {
+    const btn = document.getElementById('spMainBtn');
+    if (btn) { btn.textContent = sprintState.running ? 'PAUSE' : 'RESUME'; btn.className = sprintState.running ? 'sprint-btn sprint-btn-main running' : 'sprint-btn sprint-btn-main'; }
+    updateSprintDisplay();
+  }
 }
 
 // FEAT-4: Render selected alternative activity (yoga, pilates, dance, boxing)
@@ -5956,6 +5980,7 @@ function toggleSprint() {
   sprintState.running = !sprintState.running;
   const btn = document.getElementById('spMainBtn');
   if (btn) { btn.textContent = sprintState.running ? 'PAUSE' : 'RESUME'; btn.className = sprintState.running ? 'sprint-btn sprint-btn-main running' : 'sprint-btn sprint-btn-main'; }
+  clearInterval(sprintState.interval);
   if (sprintState.running) {
     acquireWakeLock();
     sprintState.interval = setInterval(tickSprint, 1000);
