@@ -1,5 +1,11 @@
 # Workout App Changelog
 
+## v12.8.3 — 2026-11-25
+### Added — FEAT-29 Swap with another day
+- **🔁 Swap with another day** on every day screen (lifting days and the Wed/Sat sprint screens). Trades today's session with any later, unlogged day this week: lift ↔ sprint, lift ↔ lift, class ↔ anything. Example: Push on Wed, and Thu becomes the sprint day.
+- Built on the existing per-date overrides (`dayTypeOverride`, and `groupActivityOverride 'sprint'` — the FEAT-15 make-up sprint with the real interval timer), so the sprint count, PR targets and logging all follow the date actually trained. Swap again to undo.
+- Warns when the swap creates back-to-back sprints or a sprint beside heavy legs (only for the two traded days).
+
 ## Macro tracker v1.1 — 2026-11-25
 ### Changed — new macro targets, now config-driven
 - **Training days:** 2,150–2,350 kcal · protein 225g · net carbs <30g · fat ~135g. **Rest days:** 1,950–2,150 kcal · protein 225g · net carbs <30g · fat ~115g.

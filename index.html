@@ -809,7 +809,7 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 // ============================================================
 // APP VERSION — update this on every release
 // ============================================================
-const APP_VERSION = 'v12.8.1';
+const APP_VERSION = 'v12.8.3';
 // v12.8.1: if a home-screen / cached copy is older than what Vercel is serving, reload once
 (async function checkForNewerBuild() {
   try {
@@ -3203,6 +3203,7 @@ function renderWorkoutBody() {
     <span class="type-selector-label">Missed a sprint, or want a class?</span>
     <button class="ga-btn" onclick="event.stopPropagation();showGroupActivitySheet()">🔄 Swap today's session</button>
   </div>`;
+  html += daySwapRowHtml();
 
   // Done banner
   const doneBannerTitle = `${workout.title} COMPLETE`;
@@ -3589,6 +3590,108 @@ function dismissAlert(id) {
   if (el) el.classList.remove('visible');
 }
 
+// ── FEAT-29: SWAP TODAY WITH ANOTHER DAY THIS WEEK ───────────
+// Trades what today and a later day this week are scheduled to be, so a lift can move onto
+// Wed/Sat (or the sprint can move off them) without breaking the week. Built on the existing
+// per-date overrides: lifts use dayTypeOverride, a sprint on a non-Wed/Sat day is the FEAT-15
+// make-up sprint (groupActivityOverride 'sprint'), classes stay classes. Logging stays under
+// the date actually trained, so sprint counts and PR targets follow for free.
+function persistDayTypeOverrides() {
+  try { window.storage.set('day-type-overrides', JSON.stringify(dayTypeOverride)).catch(()=>{}); } catch(e) {}
+  try { localStorage.setItem('day-type-overrides', JSON.stringify(dayTypeOverride)); } catch(e) {}
+}
+function dayContent(dateStr, idx) {
+  const ga = groupActivityOverride[dateStr];
+  if (ga === 'sprint') return { kind: 'sprint' };
+  if (ga) return { kind: 'class', ga };
+  const t = dayTypeOverride[dateStr] || WEEK[idx].type;
+  return t === 'rest' ? { kind: 'sprint' } : { kind: 'lift', type: t };
+}
+function applyDayContent(dateStr, idx, c) {
+  const natural = WEEK[idx];
+  const sprintDay = natural.key === 'wed' || natural.key === 'sat';
+  delete groupActivityOverride[dateStr];
+  delete dayTypeOverride[dateStr];
+  if (c.kind === 'sprint') { if (!sprintDay) groupActivityOverride[dateStr] = 'sprint'; }
+  else if (c.kind === 'class') groupActivityOverride[dateStr] = c.ga;
+  else if (c.type !== natural.type) dayTypeOverride[dateStr] = c.type;
+}
+function dayContentLabel(c) {
+  if (c.kind === 'sprint') return '⚡ Sprint';
+  if (c.kind === 'class') { const a = ALTERNATIVE_ACTIVITIES[c.ga]; return a ? `${a.emoji} ${activityShortTitle(a)}` : 'Class'; }
+  return `${WORKOUTS[c.type].emoji} ${WORKOUTS[c.type].title}`;
+}
+function dayContentLoad(c) { return c.kind === 'sprint' ? 'sprint' : c.kind === 'class' ? 'rest' : c.type; }
+// Hamstring guard: only flags what the swap itself changes (the two traded days), not the usual week
+function swapWarning(loads, changed) {
+  for (const i of changed) {
+    if (loads[i] !== 'sprint') continue;
+    for (const j of [i - 1, i + 1]) {
+      if (j < 0 || j > 6) continue;
+      if (loads[j] === 'sprint') return `back-to-back sprints (${WEEK[i].name}/${WEEK[j].name})`;
+      if (LEG_LOAD[loads[j]] === 'heavy') return `sprint beside heavy legs (${WEEK[i].name} next to ${WEEK[j].name})`;
+    }
+  }
+  return '';
+}
+function swapPartners() {
+  const today = getDateStr(), start = weekStartOf(today), logged = loggedDateSet();
+  const mine = dayContent(today, currentDayIdx);
+  const out = [];
+  for (let i = currentDayIdx + 1; i < 7; i++) {
+    const date = dateOffset(start, i);
+    if (logged.has(date)) continue;
+    const theirs = dayContent(date, i);
+    if (JSON.stringify(theirs) === JSON.stringify(mine)) continue;
+    const loads = [];
+    for (let k = 0; k < 7; k++) {
+      const d = dateOffset(start, k);
+      let c = dayContent(d, k);
+      if (k === currentDayIdx) c = theirs; else if (k === i) c = mine;
+      loads.push(dayContentLoad(c));
+    }
+    out.push({ date, idx: i, mine, theirs, warn: swapWarning(loads, [currentDayIdx, i]) });
+  }
+  return out;
+}
+function showDaySwapSheet() {
+  const overlay = document.getElementById('gaOverlay'), list = document.getElementById('gaOptionsList');
+  if (!overlay || !list) return;
+  if (loggedDateSet().has(getDateStr())) { showToast('Today is already logged — swap a day you have not trained'); return; }
+  document.getElementById('gaTitle').textContent = '🔁 SWAP TODAY WITH ANOTHER DAY';
+  const here = dayContent(getDateStr(), currentDayIdx);
+  document.getElementById('gaLabel').textContent = `Today (${WEEK[currentDayIdx].name}) is ${dayContentLabel(here)} · pick a day to trade with`;
+  const partners = swapPartners();
+  list.innerHTML = partners.length ? partners.map(p => `
+    <div class="swap-option" style="align-items:flex-start" onclick="swapWithDay('${p.date}')">
+      <div style="flex:1;min-width:0">
+        <span class="swap-option-name">${WEEK[p.idx].name} · ${dayContentLabel(p.theirs)}</span>
+        <div class="ga-elig">Today becomes ${dayContentLabel(p.theirs)}; ${WEEK[p.idx].name} becomes ${dayContentLabel(p.mine)}.${p.warn ? ` <strong style="color:var(--orange)">⚠ ${p.warn}</strong>` : ''}</div>
+      </div>
+      <span class="swap-option-tag" style="margin-left:8px;white-space:nowrap">SWAP</span>
+    </div>`).join('') : '<div class="ga-elig" style="padding:12px">No later day this week to trade with.</div>';
+  overlay.classList.add('open');
+}
+function swapWithDay(date) {
+  const today = getDateStr(), start = weekStartOf(today);
+  const idx = Math.round((new Date(date + 'T12:00:00') - new Date(start + 'T12:00:00')) / 86400000);
+  if (!(idx > currentDayIdx && idx < 7) || loggedDateSet().has(date)) return;
+  const mine = dayContent(today, currentDayIdx), theirs = dayContent(date, idx);
+  applyDayContent(today, currentDayIdx, theirs);
+  applyDayContent(date, idx, mine);
+  persistDayTypeOverrides();
+  persistGroupActivityOverrides();
+  closeGroupActivitySheet();
+  showToast(`🔁 Today → ${dayContentLabel(theirs)} · ${WEEK[idx].name} → ${dayContentLabel(mine)}`);
+  renderWorkoutView();
+}
+function daySwapRowHtml() {
+  return `<div class="ga-row">
+    <span class="type-selector-label">Different day this week?</span>
+    <button class="ga-btn" onclick="event.stopPropagation();showDaySwapSheet()">🔁 Swap with another day</button>
+  </div>`;
+}
+
 // ── FEAT-15: ANY-DAY GROUP ACTIVITY SWAP ─────────────────────
 function persistGroupActivityOverrides() {
   try { window.storage.set('group-activity-overrides', JSON.stringify(groupActivityOverride)).catch(()=>{}); } catch(e) {}
@@ -3609,6 +3712,9 @@ function showGroupActivitySheet() {
   if (!overlay || !list) return;
   // Make-up sprint sits above the classes: same override mechanism, but launches
   // the real sprint interval timer (sprintState/toggleSprint) instead of a checklist.
+  const t1 = document.getElementById('gaTitle'), t2 = document.getElementById('gaLabel');
+  if (t1) t1.textContent = '🥊 SWAP TODAY FOR A CLASS / ACTIVITY';
+  if (t2) t2.textContent = "Make up a missed sprint, or swap for a class · replaces today's planned session";
   const e = sprintEligibility();
   const blocked = e.level === 'blocked' || e.level === 'done';
   const sprintOpt = `<div class="swap-option ${blocked ? 'blocked' : ''}" style="border-color:${blocked ? 'var(--border2)' : 'rgba(232,255,71,0.4)'};align-items:flex-start" ${blocked ? '' : `onclick="setGroupActivity('sprint')"`}>
@@ -5685,6 +5791,7 @@ function renderRestDay(dayKey) {
       </div>
     </div>`;
   }
+  if (isSprint) document.getElementById('mainScroll').insertAdjacentHTML('afterbegin', daySwapRowHtml());
   document.getElementById('mainScroll').scrollTop = 0;
 }
 
@@ -6271,10 +6378,10 @@ init();
 <div class="swap-overlay" id="gaOverlay" onclick="closeGroupActivitySheet(event)">
   <div class="swap-sheet">
     <div class="swap-sheet-hdr">
-      <span class="swap-sheet-title">🥊 SWAP TODAY FOR A CLASS / ACTIVITY</span>
+      <span class="swap-sheet-title" id="gaTitle">🥊 SWAP TODAY FOR A CLASS / ACTIVITY</span>
       <button class="swap-close-btn" onclick="closeGroupActivitySheet()">✕</button>
     </div>
-    <div class="swap-section-label">Make up a missed sprint, or swap for a class · replaces today's planned session</div>
+    <div class="swap-section-label" id="gaLabel">Make up a missed sprint, or swap for a class · replaces today's planned session</div>
     <div class="swap-options" id="gaOptionsList"></div>
   </div>
 </div>
