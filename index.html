@@ -809,7 +809,7 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 // ============================================================
 // APP VERSION — update this on every release
 // ============================================================
-const APP_VERSION = 'v12.8.1';
+const APP_VERSION = 'v12.8.2';
 // v12.8.1: if a home-screen / cached copy is older than what Vercel is serving, reload once
 (async function checkForNewerBuild() {
   try {
@@ -3150,7 +3150,12 @@ function renderWorkoutBody() {
   // Compute effective workout type (date override, then reset-week upper/lower folding)
   const effectiveType = scheduledType(currentDayIdx);
 
-  if (effectiveType === 'rest') { renderRestDay(day.key); return; }
+  if (effectiveType === 'rest') {
+    renderRestDay(day.key);
+    // v12.8.2: Wed/Sat used to be sprint-only — no way to lift on them. Offer the lift picker above the sprint view.
+    document.getElementById('mainScroll').insertAdjacentHTML('afterbegin', liftInsteadRowHtml());
+    return;
+  }
 
   const workout = WORKOUTS[effectiveType];
   if (!workout) { scroll.innerHTML = '<div class="empty-state">No workout data for this day.</div>'; return; }
@@ -3705,7 +3710,18 @@ function sprintEligibility() {
   return { level:'ideal', badge:'IDEAL', color:'var(--green)', reason:'No leg load yesterday or tomorrow — clean slot.', timing };
 }
 
-function switchDayType(newType) {
+// Lift picker shown on sprint/recovery days (Wed/Sat). Uses the same dayTypeOverride path as the
+// lifting-day picker; the lifting view then shows a RESET button that returns to the sprint.
+function liftInsteadRowHtml() {
+  const types = resetProtocol.active ? ['upper', 'legs'] : ['upper', 'push', 'pull', 'legs'];
+  const labels = resetProtocol.active ? { upper: 'UPPER', legs: 'LOWER' } : { upper: 'UPPER', push: 'PUSH', pull: 'PULL', legs: 'LEGS' };
+  return `<div class="w-type-selector" style="padding:10px 13px 2px;margin-bottom:0">
+    <span class="type-selector-label">Lift today instead:</span>
+    ${types.map(t => `<button class="type-btn bg-${t}" onclick="event.stopPropagation();switchDayType('${t}');">${labels[t]}</button>`).join('')}
+  </div>`;
+}
+
+async function switchDayType(newType) {
   const todayDateStr = getDateStr();
   const day = WEEK[currentDayIdx];
 
@@ -3719,6 +3735,14 @@ function switchDayType(newType) {
   // Persist overrides (try-catch because window.storage may throw synchronously)
   try { window.storage.set('day-type-overrides', JSON.stringify(dayTypeOverride)).catch(()=>{}); } catch(e) {}
   try { localStorage.setItem('day-type-overrides', JSON.stringify(dayTypeOverride)); } catch(e) {}
+
+  // PRs are only synced at init for today's *scheduled* type — on a sprint day that's none,
+  // so sync for the type we're switching to before rendering (same as selectDay does).
+  if (newType && newType !== 'rest') {
+    showPRSyncPill();
+    try { await syncPRsFromSupabase(newType); } catch(e) {}
+    hidePRSyncPill();
+  }
 
   renderWorkoutView();
 }

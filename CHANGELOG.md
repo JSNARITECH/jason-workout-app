@@ -1,5 +1,10 @@
 # Workout App Changelog
 
+## v12.8.2 — 2026-11-25
+### Fixed
+- Wed/Sat (sprint days) only offered the sprint timer — there was no way to pick Push/Pull/Upper/Legs. The Upper/Push/Pull/Legs picker now shows above the sprint view ("Lift today instead"); tapping a type switches today to that lift, and the lift view's RESET button returns to the sprint.
+- Switching a day's type now syncs PRs for the new type first. Previously PRs were only synced for the day's *scheduled* type, so a lift chosen on a sprint day had no PR baselines.
+
 ## v12.8.1 — 2026-10-12
 ### Fixed
 - Phones kept showing a stale copy of the app (the old Hassan-on-every-exercise program) after v12.8 deployed. `vercel.json` now sends `Cache-Control: no-cache` for the HTML, and the app checks the served version on load and reloads once if it's newer.
