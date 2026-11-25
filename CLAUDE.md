@@ -566,7 +566,7 @@ Configuration → Redirect URLs.
 `body_composition` row and uses the scale's own `bmr_calories`, falling back to
 Mifflin-St Jeor (10×kg + 6.25×cm − 5×age + 5, using 5'9"/42M) only when the scan
 didn't report one. Calorie target = BMR × activity multiplier (1.15 rest, 1.3
-training), clamped to 2000–2200 / 2200–2400. As Jason's weight drops, the targets
+training), clamped to the ranges in `app_config` (`macro_rest_kcal` / `macro_training_kcal`, currently 1950–2150 / 2150–2350; protein `macro_protein_g`, recalibrate weight `macro_recal_weight`, fat guides `macro_*_fat_g`). Change a target with an `update` on that row — no deploy. As Jason's weight drops, the targets
 follow on their own; that's the whole point of the endpoint existing.
 
 ---

@@ -1,4 +1,5 @@
 import { requireUser, CORS_ALLOW_HEADERS } from '../_shared/auth.ts';
+import { loadMacroConfig } from '../_shared/macro-config.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
 const SERVICE_ROLE = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
@@ -9,7 +10,6 @@ const CORS_HEADERS = {
   'Access-Control-Allow-Headers': CORS_ALLOW_HEADERS,
 };
 
-const PROTEIN_TARGET_G = 225;
 const NET_CARB_CEILING_G = 30;
 
 function isoDateDaysAgo(days: number): string {
@@ -29,6 +29,7 @@ Deno.serve(async (req) => {
   const since = isoDateDaysAgo(days - 1);
 
   try {
+    const { protein_g: PROTEIN_TARGET_G } = await loadMacroConfig();
     const res = await fetch(
       `${SUPABASE_URL}/rest/v1/nutrition_log?log_date=gte.${since}&select=log_date,protein_g,calories,net_carbs_g&order=log_date.asc`,
       { headers: { apikey: SERVICE_ROLE, Authorization: `Bearer ${SERVICE_ROLE}` } }

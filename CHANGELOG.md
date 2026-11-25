@@ -1,5 +1,11 @@
 # Workout App Changelog
 
+## Macro tracker v1.1 — 2026-11-25
+### Changed — new macro targets, now config-driven
+- **Training days:** 2,150–2,350 kcal · protein 225g · net carbs <30g · fat ~135g. **Rest days:** 1,950–2,150 kcal · protein 225g · net carbs <30g · fat ~115g.
+- Targets moved out of code into `app_config` (`macro_training_kcal`, `macro_rest_kcal`, `macro_protein_g`, `macro_recal_weight`, plus `macro_training_fat_g` / `macro_rest_fat_g`). `nutrition-targets` and `nutrition-history` read them via `_shared/macro-config.ts` (in-code defaults if a row is missing). Recalibrating is now a one-row `update`, no deploy.
+- TODAY shows the day's range, carb ceiling, fat guide and "recalibrate at 203.6 lb". The plan-state text uses the live protein target instead of a hardcoded 225g.
+
 ## v12.8.1 — 2026-10-12
 ### Fixed
 - Phones kept showing a stale copy of the app (the old Hassan-on-every-exercise program) after v12.8 deployed. `vercel.json` now sends `Cache-Control: no-cache` for the HTML, and the app checks the served version on load and reloads once if it's newer.

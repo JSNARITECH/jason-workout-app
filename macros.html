@@ -253,9 +253,11 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 <div class="sheet" id="sheet"><div class="sheet-grip"></div><div id="sheetBody"></div></div>
 
 <script>
-const APP_VERSION = 'v1.0';
+const APP_VERSION = 'v1.1';
 const API = 'https://fnjjfnsdxibjbzldfgit.supabase.co/functions/v1';
 
+// Fallbacks only — live values come from nutrition-targets (app_config), so a
+// recalibration is a row update, not a deploy.
 const PROTEIN_TARGET = 225;
 const CARB_CEILING = 30;
 const CARB_WARN = 20;
@@ -359,7 +361,7 @@ function getDayType() { return lsGet(dayTypeKey(), 'training'); }
 function setDayType(t) { lsSet(dayTypeKey(), t); renderToday(); }
 
 function calorieTarget() {
-  if (!targets) return getDayType() === 'rest' ? 2100 : 2300;
+  if (!targets) return getDayType() === 'rest' ? 2050 : 2250;
   return targets.calorie_targets[getDayType()].target;
 }
 
@@ -776,6 +778,14 @@ function carbColor(carbs) {
   return 'var(--green)';
 }
 
+function targetNote(dayType, carbCeil) {
+  const ct = targets?.calorie_targets?.[dayType];
+  if (!ct) return '';
+  const fat = ct.fat_g ? ` · fat ~${ct.fat_g}g` : '';
+  const recal = targets.recal_weight_lbs ? ` · recalibrate at ${targets.recal_weight_lbs} lb` : '';
+  return `<div class="daytype-label" style="margin:-2px 0 8px;text-transform:none;letter-spacing:.3px">${ct.min.toLocaleString()}–${ct.max.toLocaleString()} cal · net carbs &lt;${carbCeil}g${fat}${recal}</div>`;
+}
+
 function renderToday() {
   const t = totals();
   const pTarget = targets?.protein_target_g || PROTEIN_TARGET;
@@ -823,6 +833,7 @@ function renderToday() {
       <span style="flex:1"></span>
       <span class="daytype-label">${cTarget} cal</span>
     </div>
+    ${targetNote(dayType, carbCeil)}
 
     <div class="rings">
       <div class="ring-hero">
@@ -1229,7 +1240,7 @@ function renderPlans() {
   const state = !any ? { color: 'var(--dim2)', text: 'Pick a meal to start' }
     : gap > 0 ? { color: 'var(--orange)', text: `${fmtG(gap)}g short — swap a meal for a bigger one` }
     : gap < -25 ? { color: 'var(--gold)', text: `${fmtG(-gap)}g over — fine, or drop a portion` }
-    : { color: 'var(--accent)', text: '✓ hits your 225g' };
+    : { color: 'var(--accent)', text: `✓ hits your ${pTarget}g` };
 
   $('viewPlans').innerHTML = `
     <div class="filter-row">
