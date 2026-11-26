@@ -809,7 +809,7 @@ html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-
 // ============================================================
 // APP VERSION — update this on every release
 // ============================================================
-const APP_VERSION = 'v12.8.1';
+const APP_VERSION = 'v12.9';
 // v12.8.1: if a home-screen / cached copy is older than what Vercel is serving, reload once
 (async function checkForNewerBuild() {
   try {
@@ -3388,10 +3388,20 @@ function buildExCard(ex, isDone, savedWeights, hasPR, type) {
   }
   if (ex.burnout) detail += `<div class="burnout-badge">🔥 Burnout: ${ex.burnout}</div>`;
 
+  const bilateral = BILATERAL_CABLE_IDS.includes(ex.id);
+  const perSide = bilateral && isPerSide(ex.id);
+  if (bilateral) {
+    detail += `<div class="rest-config" style="margin-bottom:6px">
+      <span class="rest-config-label">Weight entry:</span>
+      <button class="rest-preset ${perSide ? '' : 'active-rest'}" id="ps-comb-${ex.id}" onclick="event.stopPropagation();setPerSide('${ex.id}',false)">Combined</button>
+      <button class="rest-preset ${perSide ? 'active-rest' : ''}" id="ps-side-${ex.id}" onclick="event.stopPropagation();setPerSide('${ex.id}',true)">Per side (×2)</button>
+    </div>`;
+  }
   detail += `<table class="set-table">
-    <tr><th>Set</th><th>Weight (lbs)</th><th>Target</th><th></th><th></th></tr>`;
+    <tr><th>Set</th><th>Weight (lbs${bilateral ? (perSide ? ', per side' : ', combined') : ''})</th><th>Target</th><th></th><th></th></tr>`;
   ex.sets.forEach((set, i) => {
-    const w = savedWeights[i] !== undefined ? savedWeights[i] : set.wt;
+    const wStored = savedWeights[i] !== undefined ? savedWeights[i] : set.wt;
+    const w = perSide ? (parseFloat(wStored) || 0) / 2 : wStored;
     const storedPR = prStore[getPRKey(ex.id)];
     const isSetPR = storedPR && parseFloat(w) > parseFloat(storedPR.weight);
     const prClass = isSetPR ? 'pr' : '';
@@ -3402,7 +3412,7 @@ function buildExCard(ex, isDone, savedWeights, hasPR, type) {
     detail += `<tr>
       <td class="set-num">${label}</td>
       <td><input class="w-input ${prClass}" type="number" value="${w}" id="wi-${ex.id}-${i}"
-          onchange="updateWeight('${ex.id}',${i},this.value)"
+          onchange="updateWeight('${ex.id}',${i},toCombined('${ex.id}',this.value))"
           oninput="onWeightInput(this,'${ex.id}',${i})" min="0" step="1"></td>
       <td class="set-reps">${set.reps}</td>
       <td class="set-pr-cell">${starHtml}</td>
@@ -3497,8 +3507,30 @@ function checkIfPR(exId, weights) {
   return weights.some(w => parseFloat(w) > parseFloat(stored.weight));
 }
 
+// FEAT-28: bilateral cable moves store COMBINED weight; "per side" entry doubles on the way in.
+const BILATERAL_CABLE_IDS = ['u-bicep', 'pull-curl'];
+let perSidePrefs = {};
+try { perSidePrefs = JSON.parse(localStorage.getItem('per-side-ex') || '{}'); } catch(e) {}
+function isPerSide(exId) { return !!perSidePrefs[exId]; }
+function toCombined(exId, val) {
+  const v = parseFloat(val) || 0;
+  return BILATERAL_CABLE_IDS.includes(exId) && isPerSide(exId) ? v * 2 : v;
+}
+function setPerSide(exId, on) {
+  perSidePrefs[exId] = !!on;
+  try { localStorage.setItem('per-side-ex', JSON.stringify(perSidePrefs)); } catch(e) {}
+  const ex = getExById(exId);
+  const stored = sessionState[exId]?.weights || (ex ? ex.sets.map(s => s.wt) : []);
+  stored.forEach((w, i) => {
+    const el = document.getElementById(`wi-${exId}-${i}`);
+    if (el) el.value = on ? (parseFloat(w) || 0) / 2 : w;
+  });
+  document.getElementById(`ps-comb-${exId}`)?.classList.toggle('active-rest', !on);
+  document.getElementById(`ps-side-${exId}`)?.classList.toggle('active-rest', !!on);
+}
+
 function onWeightInput(input, exId, setIdx) {
-  const val = parseFloat(input.value) || 0;
+  const val = toCombined(exId, input.value);
   const stored = prStore[getPRKey(exId)];
   const isNewPR = stored && val > parseFloat(stored.weight);
   input.classList.toggle('pr', isNewPR);
@@ -4570,6 +4602,9 @@ async function saveSprintWorkout(dayKey) {
   }
 }
 
+// FEAT-27: active gym location for exports
+function locationLabel() { return sessionLocation === 'LT' ? 'Lifetime Fitness' : 'Home Gym'; }
+
 // ── SESSION SUMMARY SHARE (Build 4) ─────────────────────────
 function generateSessionSummary(type) {
   const day = WEEK[currentDayIdx];
@@ -4584,6 +4619,7 @@ function generateSessionSummary(type) {
   let lines = [];
   lines.push(`${type === 'recovery' ? '🦴 RECOVERY SESSION' : '🏋🏾 WORKOUT COMPLETE'} — ${APP_VERSION}`);
   lines.push(`${workout.title} · ${date}${dur ? ' · ' + dur : ''}`);
+  lines.push(`📍 Location: ${locationLabel()}`);
   lines.push('');
   lines.push(type === 'recovery' ? '🏥 REHAB EXERCISES' : '💪 EXERCISES');
 
@@ -4596,7 +4632,8 @@ function generateSessionSummary(type) {
       const setStr  = ex.sets.map((s, i) => `${weights[i] || s.wt}×${s.reps}`).join(', ');
       const done    = state.done ? '✓' : '–';
       const note    = notesStore[ex.id]?.todayNote ? ` [${notesStore[ex.id].todayNote}]` : '';
-      lines.push(`${done} ${displayName}: ${setStr}${note}`);
+      const comb    = BILATERAL_CABLE_IDS.includes(ex.id) ? ' (combined lbs)' : '';
+      lines.push(`${done} ${displayName}${comb}: ${setStr}${note}`);
     });
   });
 
@@ -4642,6 +4679,7 @@ function shareSprintToClaude() {
   let lines = [];
   lines.push(`⚡ SPRINT SESSION — ${APP_VERSION}`);
   lines.push(`${date}${dur ? ' · ' + dur : ''}`);
+  lines.push(`📍 Location: ${locationLabel()}`);
   lines.push('');
   lines.push(`Rounds: ${rounds} × 30-sec max effort sprints`);
   if (hrAvg) lines.push(`Avg HR: ${hrAvg} bpm`);
@@ -4670,6 +4708,7 @@ function shareActivityToClaude(activityId) {
   let lines = [];
   lines.push(`${activity.emoji} ${activity.title.toUpperCase()} — ${APP_VERSION}`);
   lines.push(`${date}${dur ? ' · ' + dur : ''}`);
+  lines.push(`📍 Location: ${locationLabel()}`);
   lines.push('');
   lines.push(activity.description);
 
